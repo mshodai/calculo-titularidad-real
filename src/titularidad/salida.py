@@ -130,15 +130,27 @@ class Informe:
 # --- Cálculo ------------------------------------------------------------------------------
 
 
-def informe(carga: ResultadoCarga) -> Informe:
-    """Calcula los dos regímenes y los compara. Si la entrada no es válida, solo lleva los errores."""
+def informe(carga: ResultadoCarga, regimenes=(ESPANA, AMLR)) -> Informe:
+    """Calcula los regímenes pedidos y, si son los dos, los compara.
+
+    Si la entrada no es válida, el informe solo lleva los errores.
+    """
     if carga.entrada is None:
         return Informe("", None, carga.errores, carga.avisos, None, None, (), ())
     entrada = carga.entrada
-    r_es, r_amlr = espana.calcular_espana(entrada), amlr.calcular_amlr(entrada)
-    filas = _filas(r_es, r_amlr)
+    r_es = espana.calcular_espana(entrada) if ESPANA in regimenes else None
+    r_amlr = amlr.calcular_amlr(entrada) if AMLR in regimenes else None
+    filas, diferencias = (), ()
+    if r_es and r_amlr:
+        filas = _filas(r_es, r_amlr)
+        diferencias = _diferencias(r_es, r_amlr, filas)
     return Informe(entrada.entidad_objetivo, entrada.fecha_referencia, (), carga.avisos, r_es, r_amlr, filas,
-                   _diferencias(r_es, r_amlr, filas))
+                   diferencias)
+
+
+def regimenes(inf: Informe) -> tuple:
+    """Los resultados calculados, como (nombre, resultado)."""
+    return tuple((nombre, r) for nombre, r in ((ESPANA, inf.espana), (AMLR, inf.amlr)) if r is not None)
 
 
 def _estado_por_persona(titulares, posibles, pruebas_de):
@@ -205,12 +217,26 @@ def texto(inf: Informe) -> str:
 
     lineas = [f"Titularidad real de «{inf.objetivo}» a {inf.fecha}", "", _envolver(ADVERTENCIA, 0), ""]
 
-    lineas += ["ESTADO", f"  {ESPANA:<7} {inf.espana.estado}", f"  {AMLR:<7} {inf.amlr.estado}"]
-    if inf.espana.estado != inf.amlr.estado:
+    lineas += ["ESTADO"] + [f"  {nombre:<7} {r.estado}" for nombre, r in regimenes(inf)]
+    if inf.espana and inf.amlr and inf.espana.estado != inf.amlr.estado:
         lineas.append("  ≠ Los dos regímenes llegan a estados distintos.")
     lineas.append("")
 
-    lineas += ["COMPARACIÓN (según las lecturas aplicadas)"]
+    if inf.espana and inf.amlr:
+        lineas += _comparacion(inf)
+    if inf.espana:
+        lineas += _seccion_espana(inf.espana) + [""]
+    if inf.amlr:
+        lineas += _seccion_amlr(inf.amlr) + [""]
+    lineas += _seccion_lecturas(inf)
+    if inf.avisos_entrada:
+        lineas += ["", "AVISOS DE LA VALIDACIÓN DE LA ENTRADA (modelo de datos, §6.2)"]
+        lineas += [_envolver(f"{a.codigo}  {a.mensaje}", 2) for a in inf.avisos_entrada]
+    return "\n".join(lineas) + "\n"
+
+
+def _comparacion(inf):
+    lineas = ["COMPARACIÓN (según las lecturas aplicadas)"]
     if inf.filas:
         lineas += _tabla(inf.filas)
         distintas = sum(f.difiere for f in inf.filas)
@@ -227,13 +253,7 @@ def texto(inf: Informe) -> str:
     lineas.append("EN QUÉ DIFIEREN")
     lineas += [_envolver(d, 2, "- ") for d in inf.diferencias] or ["  En nada de lo que se calcula."]
     lineas.append("")
-
-    lineas += _seccion_espana(inf.espana) + [""] + _seccion_amlr(inf.amlr) + [""]
-    lineas += _seccion_lecturas(inf)
-    if inf.avisos_entrada:
-        lineas += ["", "AVISOS DE LA VALIDACIÓN DE LA ENTRADA (modelo de datos, §6.2)"]
-        lineas += [_envolver(f"{a.codigo}  {a.mensaje}", 2) for a in inf.avisos_entrada]
-    return "\n".join(lineas) + "\n"
+    return lineas
 
 
 def _tabla(filas):
@@ -315,10 +335,10 @@ def _incidencias(titulo, incidencias, regimen):
 
 def _seccion_lecturas(inf):
     lineas = ["LECTURAS DE LAS QUE DEPENDE ESTE RESULTADO"]
-    for regimen in (ESPANA, AMLR):
+    for regimen, _ in regimenes(inf):
         lineas += [_envolver(f"{regimen}: {l}", 2, "- ") for l in LECTURAS[regimen]]
     lineas += [_envolver(l, 2, "- ") for l in LECTURAS_COMUNES]
-    casos = sorted({n for regimen, r in ((ESPANA, inf.espana), (AMLR, inf.amlr)) for i in r.posibles + r.avisos
+    casos = sorted({n for regimen, r in regimenes(inf) for i in r.posibles + r.avisos
                     for n in CASOS_POR_AVISO.get(i.codigo, {}).get(regimen, ())}, key=lambda n: int(n[1:]))
     if casos:
         lineas.append("  Casos que la norma no resuelve y que afectan a esta entrada:")
@@ -371,22 +391,29 @@ def _envolver(texto_, sangria, prefijo=""):
 def como_dict(inf: Informe) -> dict:
     if inf.errores:
         return {"valida": False, "errores": [_incidencia(e) for e in inf.errores]}
-    return {
+    datos = {
         "valida": True,
         "advertencia": ADVERTENCIA,
         "entidad_objetivo": inf.objetivo,
         "fecha_referencia": str(inf.fecha),
-        "espana": _espana(inf.espana),
-        "amlr": _amlr(inf.amlr),
-        "comparacion": [
+    }
+    lecturas = {}
+    if inf.espana:
+        datos["espana"] = _espana(inf.espana)
+        lecturas["espana"] = list(LECTURAS[ESPANA])
+    if inf.amlr:
+        datos["amlr"] = _amlr(inf.amlr)
+        lecturas["amlr"] = list(LECTURAS[AMLR])
+    if inf.espana and inf.amlr:
+        datos["comparacion"] = [
             {"persona": f.persona, "espana": {"resultado": f.espana, "detalle": list(f.detalle_espana)},
              "amlr": {"resultado": f.amlr, "detalle": list(f.detalle_amlr)}, "difiere": f.difiere}
             for f in inf.filas
-        ],
-        "diferencias": list(inf.diferencias),
-        "lecturas": {"espana": list(LECTURAS[ESPANA]), "amlr": list(LECTURAS[AMLR]), "comunes": list(LECTURAS_COMUNES)},
-        "avisos_entrada": [_incidencia(a) for a in inf.avisos_entrada],
-    }
+        ]
+        datos["diferencias"] = list(inf.diferencias)
+    datos["lecturas"] = {**lecturas, "comunes": list(LECTURAS_COMUNES)}
+    datos["avisos_entrada"] = [_incidencia(a) for a in inf.avisos_entrada]
+    return datos
 
 
 def como_json(inf: Informe) -> str:

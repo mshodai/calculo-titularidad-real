@@ -7,5 +7,8 @@ name = "calculo-titularidad-real"
 version = "0.1.0"
 description = "Calcula la titularidad real de una entidad jurídica según la Ley 10/2010 y el AMLR"
 
+[project.scripts]
+calcular-titularidad = "titularidad.cli:main"
+
 [tool.pytest.ini_options]
 pythonpath = ["src"]
