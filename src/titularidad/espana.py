@@ -105,7 +105,7 @@ def calcular_espana(entrada: Entrada) -> ResultadoEspana:
     if titulares_a != ev.titulares:
         cambian = tuple(sorted(titulares_a ^ ev.titulares))
         avisos.append(Incidencia("CICLO-SENS", "Con el método A de ciclos cambia quién es titular real en "
-                                 f"España: {', '.join(cambian)} (N7/N12)", cambian))
+                                 f"España: {', '.join(cambian)} (N7)", cambian))
 
     avisos += _umbral_exacto(grafo, base, cotizadas, ev)
 
@@ -136,7 +136,7 @@ def calcular_espana(entrada: Entrada) -> ResultadoEspana:
         # el resultado cuando alguien sí es titular por E1. Se da
         # «determinado» con los titulares de E1 y el aviso DOMINIO-INESTABLE:
         # puede haber más titulares por E2.
-        return ResultadoEspana(DETERMINADO, "Hay titulares reales por E1 o E2 (C19)", titulares,
+        return ResultadoEspana(DETERMINADO, "Con la lectura aplicada (L1 ∪ L2, C19), hay titulares reales por E1 o E2", titulares,
                                tuple(posibles), (), tuple(avisos))
     return _supletorio(entrada, ev, tuple(posibles), tuple(avisos))
 

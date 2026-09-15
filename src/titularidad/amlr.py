@@ -182,7 +182,7 @@ def calcular_amlr(entrada: Entrada) -> ResultadoAmlr:
             Titular(p, cumple[p], marcas_por_cuenta_de(grafo, own, p),
                     {m: enumerar_cadenas(grafo, m, p) for m in MAGNITUDES})
             for p in sorted(titulares))
-        return ResultadoAmlr(DETERMINADO, "Hay titulares reales por A1 a A4 (C14)", resultado, tuple(posibles), (),
+        return ResultadoAmlr(DETERMINADO, "Con la unión de pruebas (C14), hay titulares reales por alguna de A1 a A4", resultado, tuple(posibles), (),
                              tuple(avisos), tuple(notas))
     return _sin_titular(entrada, tuple(posibles), avisos, tuple(notas))
 
