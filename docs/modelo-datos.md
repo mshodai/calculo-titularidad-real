@@ -192,6 +192,8 @@ S tiene tres socios: P (45 %), Q (35 %) y H (20 %). A su vez, S tiene el 60 % de
 | B. Todas las cadenas: serie infinita, cada vuelta multiplica por 0,6 × 0,2 = 0,12 | 51,14 % (45/0,88) | 39,77 % | 9,09 % | 100 % |
 | C. Votos por analogía con la Dir. 22.5: se quita el 20 % de H del total porque H es filial de S | 56,25 % (45/80) | 43,75 % | 0 % | 100 % |
 
+Estas cifras se recalculan con fracciones exactas en [`verificacion/test_cifras_ciclos.py`](../verificacion/test_cifras_ciclos.py) (especificación del cálculo, §6.5).
+
 **Lectura (mía):**
 - Por el umbral del 25 %, los tres métodos dan el mismo resultado: P y Q son titulares reales y R no.
 - Por el umbral de control del «50 % más una» (AMLR 53.2.c), P controla S con los métodos B y C, y no con el A. Si S fuera una entidad intermedia de una cadena más larga, eso cambiaría el resultado del art. 54.

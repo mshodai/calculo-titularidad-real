@@ -147,12 +147,16 @@ El control por otros medios (53.3 y 53.4) queda fuera de v0.1 (modelo, D19).
 - Dir. 22.5: «deben sustraerse de la totalidad de los derechos de voto […] los derechos de voto propios de las acciones o participaciones de las que sea titular esta misma empresa, una empresa filial de esta, o una persona que actúe en su propio nombre pero por cuenta de dichas empresas».
 
 **[C12 — decisión propia] Definición:**
-- **Votos agregados:** va(X, Y) = suma de h_votos(Z, Y) para Z ∈ {X} ∪ Dep(X). Las personas interpuestas ya están incluidas por C2.
-- **Base ajustada:** base(Y) = 100 − suma de h_votos(Z, Y) para Z ∈ {Y} ∪ Dep(Y).
+- **Votos neutralizados de Y:** los que tienen Y misma y sus dependientes, es decir, los h_votos(Z, Y) con Z ∈ {Y} ∪ Dep(Y). Es el supuesto de la Dir. 22.5.
+- **Base ajustada:** base(Y) = 100 − votos neutralizados de Y.
+- **Votos agregados:** va(X, Y) = suma de h_votos(Z, Y) para Z ∈ {X} ∪ Dep(X), **sin contar los votos neutralizados de Y**. Las personas interpuestas ya están incluidas por C2.
+  - Sin esa exclusión, los mismos votos saldrían de la base y a la vez se sumarían al dominante de Y. Si P domina S y S domina H, los votos de H en S contarían para P y a la vez se restarían del total.
+  - La primera versión de esta definición tenía ese error. Lo detectó la verificación del §6.5: en el ejemplo del modelo, §4.2, daba 81,25 % en lugar de 56,25 %.
 - **Dominio:** Y ∈ Dep(X) si va(X, Y) · 100 / base(Y) > 50.
-- **Cálculo.** Se empieza con Dep(X) vacío para todo X y se recalcula hasta que no cambie nada.
-  - Termina siempre: cada nueva dependiente solo puede aumentar los votos agregados de los demás o reducir alguna base, así que las relaciones solo crecen, y hay un número finito de nodos.
+- **Cálculo.** Se empieza con Dep(X) vacío para todo X. En cada ronda se recalculan todas las relaciones a partir de las de la ronda anterior, hasta que no cambie nada.
   - Las dependientes de una dependiente se incorporan solas en el recálculo.
+  - No está garantizado que se estabilice: al ampliarse Dep(Y), la exclusión de votos neutralizados puede hacer que otra relación deje de cumplirse.
+  - Si una ronda repite el estado de una anterior sin estabilizarse, el cálculo se detiene, la salida avisa (DOMINIO-INESTABLE) y la prueba E2 queda como no determinable. Como hay un número finito de estados, esa comprobación siempre termina.
 
 **Cuatro cosas que esta definición supone:**
 - **La persona física como dominante.** El art. 42 está escrito entre sociedades; aplicarlo a personas físicas es la transposición que exige la remisión de la Ley 4.2.b.
@@ -394,6 +398,21 @@ Si un grupo de entidades se tiene entre sí al 100 %, sin ningún titular de fue
 - **Cómo se detecta:** por la estructura, antes de resolver el sistema. Es un grupo de entidades conectadas en ciclo en el que ninguna tiene titulares de fuera del grupo, ni reales ni huecos.
 - **Caso límite:** si hay titulares de fuera pero, por el exceso de redondeo que admite D15, la serie no converge, se trata igual.
 
+### 6.5 Verificación de las cifras
+
+Las cifras del §6.3 y las de la tabla del §4.2 del modelo de datos se recalculan con fracciones exactas en [`verificacion/test_cifras_ciclos.py`](../verificacion/test_cifras_ciclos.py). Desde la raíz del repositorio:
+
+```
+python3 -m unittest discover -s verificacion -v
+```
+
+- **Qué comprueba.**
+  - Los métodos A, B y C, la atribución «por cuenta de» (C2), el aviso de hueco de P-DIEGO y la agregación española.
+  - Que cada cifra redondeada aparece en el documento que la cita. Si alguien cambia una cifra sin recalcularla, la comprobación falla.
+- **De dónde sale el ejemplo.** Se lee del bloque JSON del modelo de datos, así que no hay una segunda copia que pueda quedar desactualizada.
+- **Es provisional.** Implementa solo lo necesario para estas cifras. Cuando exista la implementación, estas comprobaciones pasarán a ser tests de ella.
+- **Lo que no cubre:** los ejemplos del §10. Son productos de dos o cuatro factores que se comprueban a mano.
+
 ---
 
 ## 7. Capital y votos
@@ -474,6 +493,7 @@ Si un grupo de entidades se tiene entre sí al 100 %, sin ningún titular de fue
 | CICLO-SENS | El método A cambia quién es titular real (§6.2) |
 | CICLO-CERRADO | Hay un ciclo cerrado (§6.4) |
 | T-NO-CONVERGE | La lectura extensiva no se puede calcular (§3.5) |
+| DOMINIO-INESTABLE | El cálculo de dominio del §3.4 no se estabiliza; E2 queda como no determinable |
 | AMLR-NO-APLICABLE | La fecha de referencia es anterior al 10-07-2027 (C7) |
 | COTIZADA | Lo que llega a través de cotizadas en España (C5), a título informativo |
 
@@ -601,7 +621,7 @@ Ver §6.3. Los dos regímenes identifican a P-ANA y P-CARLOS. P-DIEGO lleva avis
 | C9 | Capital y votos se propagan por separado | §3.1 | Mezclarlos al multiplicar | Ningún texto lo autoriza (N6); la mezcla solo se usa para avisar (C21) |
 | C10 | Hay control si se supera el 50: en el AMLR en cualquier magnitud, en España solo en votos | §3.2 | ≥ 50 | «50 % más una» y «mayoría» exigen más de la mitad |
 | C11 | Control en el AMLR = cierre transitivo de own > 50 | §3.3 | Solo control directo en cada nivel | El 53.2.c incluye la «propiedad directa o indirecta» del 50 % más una |
-| C12 | Dominio en España: art. 42.1.a aplicado a personas físicas, con agregación, base de la Dir. 22.5 y recálculo hasta estabilizarse | §3.4 | Solo votos directos, sin agregación | La Ley remite al art. 42 y a la Dir. 22 (1 a 5), y el art. 42 manda agregar |
+| C12 | Dominio en España: art. 42.1.a aplicado a personas físicas, con agregación y base de la Dir. 22.5; los votos neutralizados no cuentan en los agregados; rondas hasta estabilizarse, con aviso si no lo hace | §3.4 | Solo votos directos, sin agregación | La Ley remite al art. 42 y a la Dir. 22 (1 a 5), y el art. 42 manda agregar |
 | C13 | La lectura extensiva (transparencia del control) solo genera avisos | §3.5 | Contarla como titularidad real | No tiene apoyo literal fuera de las formas del art. 54 |
 | C14 | En el AMLR se unen las pruebas 52.1, 51.b, 54.a y 54.b | §4.2 | El 54 sustituye al 52.1 en las cadenas mixtas | Considerandos 106 y 108; la sustitución deja fuera a quien llega al 25 % por multiplicación (Ej. 5b) |
 | C15 | 54.a: se suman solo las entidades controladas, no la participación directa propia | §4.3 | Sumar también la directa | El texto dice «entidades jurídicas titulares»; el caso mixto se avisa (N5) |
