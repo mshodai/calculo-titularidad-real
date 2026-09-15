@@ -1,0 +1,11 @@
+# Documentos oficiales: no se redistribuyen. Sus URL están en
+# docs/fuentes/FUENTES.md.
+docs/fuentes/*.pdf
+docs/fuentes/*.html
+
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.DS_Store
