@@ -18,6 +18,7 @@ from pathlib import Path
 
 from titularidad.modelo import (
     CLASES,
+    ESPANA,
     MAGNITUDES,
     TIPOS_CARGO,
     VERSION_MODELO,
@@ -112,8 +113,8 @@ class _Carga:
     def error(self, codigo, mensaje, *ids):
         self.errores.append(Incidencia(codigo, mensaje, ids))
 
-    def aviso(self, codigo, mensaje, *ids, informativo=False):
-        self.avisos.append(Incidencia(codigo, mensaje, ids, informativo))
+    def aviso(self, codigo, mensaje, *ids, informativo_en=()):
+        self.avisos.append(Incidencia(codigo, mensaje, ids, informativo_en))
 
     def ejecutar(self, texto):
         try:
@@ -621,12 +622,14 @@ class _Carga:
         for entidad in self._entidades():
             if entidad.id not in cadena:
                 continue
-            # D26: para estos avisos, cotizar exige también los requisitos de
-            # información (D13); sin ellos, la entidad es como cualquier otra.
+            # D26: AVI-02 y AVI-03 son solo informativos en España, y solo si la
+            # entidad cotiza con requisitos de información (D13). En el AMLR la
+            # cotización no cambia el cálculo y son avisos normales.
             cotiza = (
                 entidad.cotizacion is not None
                 and entidad.cotizacion.requisitos_informacion_ue_o_equivalentes is True
             )
+            informativo_en = (ESPANA,) if cotiza else ()
             for magnitud in MAGNITUDES:
                 suma = sumas[(entidad.id, magnitud)]
                 # AMBIGÜEDAD: las aristas con la magnitud a null no suman: su
@@ -637,14 +640,15 @@ class _Carga:
                         f"«{entidad.id}»: la suma de «{magnitud}» es {suma:f}; "
                         f"quedan {CIEN - suma:f} sin identificar",
                         entidad.id,
-                        informativo=cotiza,
+                        informativo_en=informativo_en,
                     )
-            if titulares[entidad.id] == 0 and not cotiza:
+            if titulares[entidad.id] == 0:
                 self.aviso(
                     "AVI-03",
-                    f"«{entidad.id}» no tiene titulares y no cotiza: la cadena termina sin "
-                    "llegar a una persona física",
+                    f"«{entidad.id}» no tiene titulares: la cadena termina sin llegar a una "
+                    "persona física",
                     entidad.id,
+                    informativo_en=informativo_en,
                 )
             if entidad.clase is not None and entidad.clase != "sociedad":
                 self.aviso(

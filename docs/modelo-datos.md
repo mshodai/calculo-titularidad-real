@@ -318,8 +318,8 @@ Estas cifras se recalculan con fracciones exactas en [`verificacion/test_cifras_
 | Código | Regla | Origen |
 |---|---|---|
 | AVI-01 | Hay un ciclo, incluida la arista reflexiva. Se indican los nodos | §4 |
-| AVI-02 | En una entidad de la cadena, la suma de `capital` o de `votos` es menor que 100 − ⌊n/2⌋ × 0,0001, siendo *n* el número de aristas con esa magnitud no nula. Se indica el porcentaje sin identificar. Si la entidad cotiza en el sentido de D26, es solo informativo | Ley 4.4; RD 9.3; D15, D26 |
-| AVI-03 | Una entidad de la cadena no tiene titulares y no cotiza en el sentido de D26: la cadena termina sin llegar a una persona física | Ley 4.4; RD 9.3; D26 |
+| AVI-02 | En una entidad de la cadena, la suma de `capital` o de `votos` es menor que 100 − ⌊n/2⌋ × 0,0001, siendo *n* el número de aristas con esa magnitud no nula. Se indica el porcentaje sin identificar. Si la entidad cotiza en el sentido de D26, es solo informativo en España | Ley 4.4; RD 9.3; D15, D26 |
+| AVI-03 | Una entidad de la cadena no tiene titulares: la cadena termina sin llegar a una persona física. Si la entidad cotiza en el sentido de D26, es solo informativo en España | Ley 4.4; RD 9.3; D26 |
 | AVI-04 | Una arista tiene `capital` o `votos` a `null` | D5 |
 | AVI-05 | Hay en la cadena una entidad cuya `clase` no es `sociedad` | D8; RD 8; AMLR 52.4 |
 | AVI-06 | Hay aristas con `por_cuenta_de`: su tratamiento depende del régimen | §5 |
@@ -333,9 +333,11 @@ Estas cifras se recalculan con fracciones exactas en [`verificacion/test_cifras_
   - Para saber qué está conectado hay que fiarse antes de las aristas. Una referencia rota (ERR-04) o un titular equivocado cambian qué nodos llegan a la entidad objetivo.
   - Un error en otra parte del documento suele tener una causa que también puede afectar a la parte que se usa: fechas mezcladas o datos duplicados (§6.1).
   - Coste: quien pase los datos de todo un grupo tendrá que corregir también los errores de las partes que no usa.
-- **[D26 — decisión propia]** Para AVI-02 y AVI-03, una entidad «cotiza» si tiene `cotizacion` con `requisitos_informacion_ue_o_equivalentes: true`. Con `false`, tiene los mismos avisos que cualquier otra entidad.
-  - Esos avisos se rebajan o se omiten porque, en una cotizada, lo que queda sin identificar no hace falta identificarlo. Así lo dicen la Ley 4.2.b, párr. 3, y el RD 9.4, y los dos lo condicionan a la segunda condición. El RD 9.4 dice «cuando aquéllas estén sometidas a obligaciones de información que aseguren la adecuada transparencia de su titularidad real».
+- **[D26 — decisión propia]** AVI-02 y AVI-03 son solo informativos **en España** cuando la entidad tiene `cotizacion` con `requisitos_informacion_ue_o_equivalentes: true`. Con `false`, o en el AMLR, son avisos normales. Como la validación no depende del régimen (D2), el aviso dice en qué régimen es informativo.
+  - En España se rebajan porque, en una cotizada, lo que queda sin identificar no hace falta identificarlo. Así lo dicen la Ley 4.2.b, párr. 3, y el RD 9.4, y los dos lo condicionan a la segunda condición. El RD 9.4 dice «cuando aquéllas estén sometidas a obligaciones de información que aseguren la adecuada transparencia de su titularidad real».
   - Bastar con que coticen daría por cumplida esa condición, que es una valoración. Es justo lo que D13 evita al separar las dos.
+  - En el AMLR la cotización no cambia el cálculo (especificación, C5): lo que falta en una cotizada es un hueco como cualquier otro.
+  - Las filiales de cotizadas del RD 9.4 no se tienen en cuenta aquí. Saber si una entidad es filial participada mayoritariamente exige calcular participaciones indirectas, y eso es cosa del cálculo (especificación, C30).
 
 ---
 
@@ -391,7 +393,7 @@ La columna «Origen» indica cuándo se planteó la alternativa descartada:
 | D23 | Un valor igual a un umbral (25 o 50) se lee como exacto; el cálculo avisa si leerlo al otro lado cambia quién es titular real | §3.4 | (a) Registrar el número de acciones y de votos, o fracciones exactas (D4, alternativa c). (b) Más decimales | (a) Cambia la base del modelo para un caso que solo aparece en el valor exacto del umbral y que el cálculo puede detectar. (b) Solo desplaza el límite: con cualquier número fijo de decimales hay un tamaño a partir del cual pasa lo mismo | revisión |
 | D24 | Las validaciones se aplican a toda la entrada, también a lo que AVI-08 ignora | §6.2 | Validar solo la parte conectada con la entidad objetivo | Qué está conectado depende de las aristas, que hay que validar antes; y un error en otra parte suele tener una causa que afecta a todo el documento | revisión |
 | D25 | AVI-01 se busca con la arista del titular formal y la del principal, con todas las aristas, en todo el grafo, y con un aviso por componente fuertemente conexa | §4.3 | (a) Solo aristas formales (versión anterior de la implementación). (b) Un aviso por ciclo elemental | (a) No detectaría un ciclo que aparece al atribuir al principal, como la autocartera a través de otra persona (Dir. 22.5). (b) Puede haber una cantidad exponencial de ciclos | revisión |
-| D26 | Para AVI-02 y AVI-03, «cotiza» exige `cotizacion` con `requisitos_informacion_ue_o_equivalentes: true` | §6.2 | Basta con tener `cotizacion` (versión anterior de la implementación) | Contradice D13: da por cumplida la condición de los requisitos de información, a la que la Ley 4.2.b, párr. 3, y el RD 9.4 atan la excepción | revisión |
+| D26 | AVI-02 y AVI-03 son solo informativos en España, y solo si la entidad tiene `cotizacion` con `requisitos_informacion_ue_o_equivalentes: true`; en el AMLR, son avisos normales | §6.2 | (a) Basta con tener `cotizacion` (versión anterior de la implementación). (b) Informativos en los dos regímenes (versión anterior de la implementación) | (a) Contradice D13: da por cumplida la condición de los requisitos de información, a la que la Ley 4.2.b, párr. 3, y el RD 9.4 atan la excepción. (b) La excepción es española; en el AMLR la cotización no cambia el cálculo | revisión |
 
 ## 9. Pendiente para la especificación del cálculo
 

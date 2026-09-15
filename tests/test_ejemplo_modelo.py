@@ -53,7 +53,7 @@ def test_detalle_de_los_avisos():
     # AVI-02 y AVI-03: E-FONDO no tiene titulares (0 %) y no cotiza
     assert [a.ids for a in por_codigo["AVI-02"]] == [("E-FONDO",), ("E-FONDO",)]
     assert all("quedan 100 sin identificar" in a.mensaje for a in por_codigo["AVI-02"])
-    assert not any(a.informativo for a in por_codigo["AVI-02"])
+    assert all(a.informativo_en == () for a in por_codigo["AVI-02"] + por_codigo["AVI-03"])
     assert [a.ids for a in por_codigo["AVI-03"]] == [("E-FONDO",)]
 
     # AVI-06: la arista p03 tiene por_cuenta_de

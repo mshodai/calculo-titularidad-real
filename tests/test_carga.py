@@ -11,7 +11,7 @@ from decimal import Decimal
 import pytest
 
 from titularidad.carga import cargar, cargar_fichero
-from titularidad.modelo import EntidadJuridica, PersonaFisica
+from titularidad.modelo import ESPANA, EntidadJuridica, PersonaFisica
 
 
 def base():
@@ -407,7 +407,7 @@ def test_avi02_suma_por_debajo_de_100():
     assert codigos(resultado.avisos) == ["AVI-02"]
     assert "capital" in resultado.avisos[0].mensaje
     assert "quedan 20 sin identificar" in resultado.avisos[0].mensaje
-    assert not resultado.avisos[0].informativo
+    assert resultado.avisos[0].informativo_en == ()
 
 
 @pytest.mark.parametrize(
@@ -426,12 +426,13 @@ def test_avi02_tolerancia_de_redondeo_por_debajo(valores, aviso):
     assert bool(de_capital) == aviso
 
 
-def test_avi02_informativo_si_la_entidad_cotiza():
+def test_avi02_informativo_solo_en_espana_si_la_entidad_cotiza():
+    """D26: la excepción es española; en el AMLR el hueco es un aviso normal."""
     datos = base()
     datos["nodos"][0]["cotizacion"] = {"mercado": "XMAD", "requisitos_informacion_ue_o_equivalentes": True}
     datos["participaciones"][0].update(capital=30, votos=30)
     avisos = [a for a in cargar_dict(datos).avisos if a.codigo == "AVI-02"]
-    assert len(avisos) == 2 and all(a.informativo for a in avisos)
+    assert len(avisos) == 2 and all(a.informativo_en == (ESPANA,) for a in avisos)
 
 
 def test_avi02_normal_si_cotiza_sin_requisitos_de_informacion():
@@ -440,7 +441,7 @@ def test_avi02_normal_si_cotiza_sin_requisitos_de_informacion():
     datos["nodos"][0]["cotizacion"] = {"mercado": "X", "requisitos_informacion_ue_o_equivalentes": False}
     datos["participaciones"][0].update(capital=30, votos=30)
     avisos = [a for a in cargar_dict(datos).avisos if a.codigo == "AVI-02"]
-    assert len(avisos) == 2 and not any(a.informativo for a in avisos)
+    assert len(avisos) == 2 and all(a.informativo_en == () for a in avisos)
 
 
 def test_avi03_entidad_sin_titulares_en_la_cadena():
@@ -452,15 +453,16 @@ def test_avi03_entidad_sin_titulares_en_la_cadena():
     assert [a.ids for a in resultado.avisos if a.codigo == "AVI-03"] == [("F",)]
 
 
-@pytest.mark.parametrize("requisitos, aviso", [(True, False), (False, True)])
-def test_avi03_segun_cotice_con_requisitos_de_informacion(requisitos, aviso):
-    """D26: AVI-03 solo se omite si la entidad cumple las dos condiciones de D13."""
+@pytest.mark.parametrize("requisitos, informativo_en", [(True, (ESPANA,)), (False, ())])
+def test_avi03_informativo_solo_en_espana_si_cotiza_con_requisitos(requisitos, informativo_en):
+    """D26: AVI-03 siempre sale; solo es informativo en España, y con las dos condiciones de D13."""
     cotizacion = {"mercado": "XMAD", "requisitos_informacion_ue_o_equivalentes": requisitos}
     datos = base()
     datos["nodos"].append(entidad("F", cotizacion=cotizacion))
     datos["participaciones"][0].update(capital=80, votos=80)
     datos["participaciones"].append(arista("a2", "F", "S", 20, 20))
-    assert ("AVI-03" in codigos(cargar_dict(datos).avisos)) == aviso
+    (aviso,) = [a for a in cargar_dict(datos).avisos if a.codigo == "AVI-03"]
+    assert aviso.informativo_en == informativo_en
 
 
 def test_avi05_entidad_que_no_es_sociedad():

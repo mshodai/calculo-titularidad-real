@@ -10,6 +10,8 @@ from datetime import date
 from decimal import Decimal
 
 VERSION_MODELO = "0.1"
+ESPANA = "espana"
+AMLR = "amlr"
 MAGNITUDES = ("capital", "votos")
 CLASES = ("sociedad", "fundacion", "asociacion", "otra")
 TIPOS_CARGO = ("miembro_organo_administracion", "directivo")
@@ -101,12 +103,17 @@ class Entrada:
 
 @dataclass(frozen=True)
 class Incidencia:
-    """Error o aviso del §6.2. `ids` son los nodos o aristas afectados."""
+    """Error o aviso del §6.2. `ids` son los nodos o aristas afectados.
+
+    La validación no depende del régimen (D2). `informativo_en` dice en qué
+    regímenes el aviso es solo informativo (ESPANA, AMLR); en los demás es un
+    aviso normal.
+    """
 
     codigo: str
     mensaje: str
     ids: tuple[str, ...] = ()
-    informativo: bool = False
+    informativo_en: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

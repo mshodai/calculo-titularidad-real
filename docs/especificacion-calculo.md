@@ -95,7 +95,20 @@ El volumen que llega a S a través de estos titulares virtuales se usa en los av
     - La excepción depende de esa condición («cuando aquéllas estén sometidas…»), no solo de cotizar. Es la valoración que D13 pide afirmar por separado, la misma que exige D26 en la validación.
     - **Con `false`, la intermedia se trata como cualquier otra entidad:** se recorren sus titulares, y lo que falte es un hueco (C4).
     - El modelo solo tiene un dato para esa condición, redactado según la Ley 4.2.b, párr. 3 («requisitos de información acordes con el Derecho de la Unión o a normas internacionales equivalentes»). Se usa también para la del RD 9.4, que lo dice de otra forma, igual que en D26.
-- **AMLR:** la cotización no cambia el cálculo. El art. 65.a exime a ciertas cotizadas de las obligaciones de los arts. 63 y 64, pero no toca la definición de los arts. 51 a 55. Si S cotiza, la salida lo indica como información.
+  - **[C30 — decisión propia] Filiales de cotizadas.** El RD 9.4 exime también a las «filiales participadas mayoritariamente» de las cotizadas, «cuando aquéllas estén sometidas a obligaciones de información». «Aquéllas» son las cotizadas, así que la condición se mira en la cotizada, no en la filial.
+    - **[N14 — no resuelto]** El texto no dice cómo se mide «participada mayoritariamente»: con qué magnitud, ni si cuenta la participación indirecta.
+    - **Qué es una filial participada mayoritariamente.** X lo es de L si L tiene `cotizacion` con `requisitos_informacion_ue_o_equivalentes: true` y own_capital(L, X) > 50 (§3.1). Es decir, L tiene más de la mitad del capital de X, directamente o sumando cadenas.
+    - **Con el capital,** porque «participada» habla de participación. Cuando la Ley y el CCom se refieren a los votos, hablan de «control» o «dominio», y el RD 9.4 no usa esas palabras.
+    - **Directa o indirecta, multiplicando.** «Filiales» incluye las indirectas, y la multiplicación es la medida de participación de este documento (C17). Una cadena de mayorías no basta: el 60 % del 60 % es un 36 %, que no es una participación mayoritaria.
+    - **Cada cotizada por separado.** Dos cotizadas que juntas pasan del 50 % no hacen filial a nadie: el texto dice «sus filiales».
+    - **Por qué la lectura estrecha.** El RD 9.4 dice «no será preceptiva la identificación»: dispensa, no prohíbe. Si la lectura se queda corta, como mucho se identifica a alguien sin necesidad. Si se pasa, deja sin identificar a un titular real que el texto no dispensa.
+    - **Si S es filial de una cotizada,** el resultado es «exceptuada», como si cotizara. La salida indica la base (RD 9.4), la cotizada y su participación en S.
+    - **Si la filial es una entidad intermedia, no se aplica:** se recorren sus titulares como los de cualquier otra entidad.
+      - Lo que llega a través de la propia cotizada ya va a `COTIZADA(L)`, por la regla anterior.
+      - La exención solo añadiría dejar de recorrer a los demás socios de la filial, y la transparencia de la cotizada no los cubre. En el Ej. 8b, un socio con el 49 % de la filial tiene el 34,3 % de S y es titular real.
+      - El RD 9.4 habla del cliente. Extenderlo a las intermedias es una decisión de este documento, y aquí no hay razón para hacerlo.
+    - **Señal de N14.** Si S no es filial según esta regla, pero lo sería con otra lectura, la salida da el aviso **EXENCION-SENS**. Las otras lecturas son dos: medir con los votos (own_votos(L, S) > 50) y aceptar una cadena de participaciones directas de más del 50 % del capital en cada nivel. Con cualquiera de ellas, la identificación no sería preceptiva (C25).
+- **AMLR:** la cotización no cambia el cálculo, tampoco la de la sociedad de la que S es filial. El art. 65.a exime a ciertas cotizadas de las obligaciones de los arts. 63 y 64, pero no toca la definición de los arts. 51 a 55. Si S cotiza, la salida lo indica como información.
 
 ### 2.6 Aritmética
 
@@ -350,7 +363,7 @@ Dos observaciones:
 
 ### 5.4 Algoritmo
 
-1. **Preparar el grafo** (§2). Si S es cotizada exceptuada (C5), el resultado es «exceptuada» y se termina.
+1. **Preparar el grafo** (§2). Si S es cotizada exceptuada (C5), o filial participada mayoritariamente de una cotizada (C30, con own_capital del §3.1), el resultado es «exceptuada» y se termina.
 2. **Calcular own_m(P, X)** (§3.1).
 3. **Calcular Dep, va y base** (§3.4).
 4. **Aplicar las pruebas a cada persona física P:**
@@ -527,7 +540,7 @@ python3 -m unittest discover -s verificacion -v
   - `determinado`;
   - `supletorio (condicional)` en España, o `sin titular real identificado (provisional)` en el AMLR;
   - `no determinable`;
-  - `exceptuada`, solo en España.
+  - `exceptuada`, solo en España: S cotiza (C5) o es filial de una cotizada (C30). La salida indica cuál de las dos.
 - **Titulares reales.** Cada uno con la persona, las pruebas que cumple (A1–A4 o E1–E2), la magnitud, el valor exacto y el redondeado, las cadenas que lo explican y la marca «por cuenta de» si procede.
 - **Posibles titulares reales.** Personas que no lo son por las reglas aplicadas, pero sí por una lectura no resuelta, con el código correspondiente:
 
@@ -553,6 +566,7 @@ python3 -m unittest discover -s verificacion -v
 | DOMINIO-INESTABLE | El cálculo de dominio del §3.4 no se estabiliza; E2 queda como no determinable |
 | AMLR-NO-APLICABLE | La fecha de referencia es anterior al 10-07-2027 (C7) |
 | COTIZADA | Lo que llega a través de cotizadas con requisitos de información en España (C5), a título informativo |
+| EXENCION-SENS | S no es filial de una cotizada según C30, pero lo sería midiendo con los votos o con una cadena de mayorías directas de capital: la identificación podría no ser preceptiva (RD 9.4). Solo España. Cubre N14 |
 
 «Alcanza el umbral» significa **> 25 en España** y **≥ 25 en el AMLR**. **[C24 — decisión propia]** Todos los avisos usan el umbral del régimen en el que se calculan.
 
@@ -653,6 +667,32 @@ A: P tiene 60 % del capital y 10 % de los votos; Q, 40 % del capital y 90 % de l
 
 Ver §6.3. Los dos regímenes identifican a P-ANA y P-CARLOS. P-DIEGO lleva aviso de hueco (POS-HUECO). El resultado no depende del método de ciclos. En el AMLR, P-CARLOS lleva ART54-SENS (N3). En España, P-ANA además controla E-OBJETIVO.
 
+### Ej. 8: filiales de cotizadas (C30, N14)
+
+L es una sociedad con `cotizacion` y `requisitos_informacion_ue_o_equivalentes: true`, sin titulares en la entrada.
+
+**Ej. 8a: S es filial.** S: L 60 %, P 40 %.
+
+| | AMLR | España |
+|---|---|---|
+| S | Se calcula: la cotización no cambia nada | own_capital(L, S) = 60 > 50: S es filial de L → **exceptuada** (RD 9.4) |
+| P | Titular real por A1 (40 %) | No se calcula |
+| Avisos | H1: lo que llega a través de L (60 %) va a `NO_IDENTIFICADO(L)` | — |
+
+Variante: si L tuviera el 40 % del capital y el 60 % de los votos, S no sería filial según C30 y se calcularía: P sería titular real (60 % del capital). Midiendo con los votos sí sería filial, así que la salida daría **EXENCION-SENS**.
+
+**Ej. 8b: la filial es una intermedia.** X: L 51 %, P 49 %. S: X 70 %, R 30 %.
+
+| | AMLR | España |
+|---|---|---|
+| S | Se calcula | own_capital(L, S) = 0,51 × 70 = 35,7: S no es filial. X sí lo es, pero es intermedia y se recorre (C30) |
+| P | Titular real por A1 (0,49 × 70 = 34,3 %) y A4 (X controla S y P tiene el 49 % de X) | **Titular real** por E1 (34,3 %) |
+| R | Titular real (30 %) | Titular real (30 %) |
+| L | Su 35,7 % en S va a `NO_IDENTIFICADO(L)`: aviso H1 | Su 35,7 % va a `COTIZADA(L)`, sin aviso de hueco |
+| Avisos | H1 | **EXENCION-SENS**: con una cadena de mayorías directas (51 % de X, 70 % de S), S sería filial de L |
+
+Si la exención se aplicara también a la filial intermedia, los socios de X no se recorrerían y P, con el 34,3 % de S, quedaría sin identificar en España.
+
 ### Resumen de diferencias
 
 | Ej. | AMLR | España | Por qué difieren |
@@ -665,6 +705,8 @@ Ver §6.3. Los dos regímenes identifican a P-ANA y P-CARLOS. P-DIEGO lleva avis
 | 5b | P, A2, S2 | S2 | Umbral y lectura del «salvo» del 52.1 |
 | 6 | P, Q, R | Q, R (P posible) | Control por capital y mezcla de magnitudes |
 | 7 | Ana, Carlos | Ana, Carlos | Solo difiere el criterio: en España Ana controla S |
+| 8a | P | Exceptuada | La exención del RD 9.4 no tiene equivalente en el AMLR |
+| 8b | P, R | P, R | No difieren en titulares: lo que llega a través de L es un hueco en el AMLR y va a `COTIZADA(L)` en España |
 
 ---
 
@@ -701,6 +743,7 @@ Ver §6.3. Los dos regímenes identifican a P-ANA y P-CARLOS. P-DIEGO lleva avis
 | C27 | AMLR: se comprueba si el titular lo sería sin las cadenas con tramos de control (own^O); si no, aviso ART54-SENS | §4.2 | No avisar, porque C14 ya es la lectura más amplia | La lectura contraria quita titulares, y quien lo es solo por C14 debe saberse |
 | C28 | Un valor igual a un umbral se toma como exacto; se repite el cálculo leyéndolo justo por encima y justo por debajo, y si cambia quién es titular real, aviso UMBRAL-EXACTO | §2.6 | (a) Avisar siempre que un valor coincida con un umbral. (b) Declarar «no determinable» | (a) Saltaría en cualquier sociedad al 50/50 aunque no cambie nada. (b) Casi siempre un 50 registrado es la mitad justa; el límite solo aparece a partir de cientos de miles de acciones (modelo, D23) |
 | C29 | Se repite el cálculo con las aristas `por_cuenta_de` en su titular formal: en el AMLR, en las dos magnitudes; en España, solo en capital. Si alguien pasa a cumplir alguna prueba, POS-FORMAL | §2.2 | (a) Dejar N9 y N13 señalados solo con la marca «por cuenta de». (b) En España, atribuir también los votos al titular formal | (a) La marca solo sale en el principal; no avisa si con la otra lectura el titular formal sería titular real. (b) Para los votos hay texto: CCom 42.1 y Dir. 22.4.a |
+| C30 | España: S es «exceptuada» si es filial participada mayoritariamente de una cotizada con requisitos de información: own_capital(L, S) > 50, por cada cotizada. No se aplica a las filiales intermedias. EXENCION-SENS si otra lectura la haría filial | §2.5 | (a) Medir con los votos, o con capital o votos. (b) Cadena de mayorías directas. (c) Aplicarlo también a las filiales intermedias | El RD 9.4 dispensa, no prohíbe: una lectura estrecha como mucho identifica de más, y una amplia puede dejar sin identificar a un titular real. (a) «Participada» habla de participación, no de control. (b) El 60 % del 60 % no es una participación mayoritaria. (c) Dejaría sin recorrer a los socios minoritarios de la filial, que la transparencia de la cotizada no cubre (Ej. 8b) |
 
 ## 12. Casos que la norma no resuelve
 
@@ -719,6 +762,7 @@ Ver §6.3. Los dos regímenes identifican a P-ANA y P-CARLOS. P-DIEGO lleva avis
 | N11 | AMLR: dos personas que controlan a la vez, una por capital y otra por votos (53.2.c) | §3.3, Ej. 4 | Se acepta tal como sale del texto | Ninguna (ver abajo) |
 | N12 | AMLR: si la autocartera se descuenta al decidir el control | §6.2 | La serie completa la descuenta de hecho; ninguna norma del AMLR lo dice | CICLO-SENS: el método A no la descuenta (§6.2) |
 | N13 | España: a quién se atribuye el capital de una participación por cuenta de otro | §2.2, §6.3 | C2 (al principal) | Marca «por cuenta de» y POS-FORMAL (C29) |
+| N14 | España: cómo se mide la «filial participada mayoritariamente» del RD 9.4 | §2.5, Ej. 8 | C30 (más del 50 % del capital, multiplicando) | EXENCION-SENS (C30) |
 
 **Por qué N10 y N11 no tienen señal.** En los dos casos no hay otra lectura con la que comparar la entrada (C25).
 - **N10.** La única alternativa a «> 50» sería «≥ 50», y el 50 % no es mayoría: con esa lectura, dos socios al 50 % dominarían a la vez la misma sociedad (C10).
