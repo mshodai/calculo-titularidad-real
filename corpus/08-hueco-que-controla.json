@@ -1,0 +1,100 @@
+{
+  "version_modelo": "0.1",
+  "fecha_referencia": "2027-07-10",
+  "entidad_objetivo": "S",
+  "nodos": [
+    {
+      "id": "S",
+      "tipo": "entidad_juridica",
+      "denominacion": "Sociedad ficticia S",
+      "clase": "sociedad",
+      "cargos": [
+        {
+          "persona": "ADM",
+          "cargo": "miembro_organo_administracion",
+          "ejecutivo": true
+        }
+      ]
+    },
+    {
+      "id": "X",
+      "tipo": "entidad_juridica",
+      "denominacion": "Sociedad ficticia X",
+      "clase": "sociedad"
+    },
+    {
+      "id": "ADM",
+      "tipo": "persona_fisica",
+      "nombre": "Persona ficticia ADM"
+    },
+    {
+      "id": "Q1",
+      "tipo": "persona_fisica",
+      "nombre": "Persona ficticia Q1"
+    },
+    {
+      "id": "Q2",
+      "tipo": "persona_fisica",
+      "nombre": "Persona ficticia Q2"
+    },
+    {
+      "id": "Q3",
+      "tipo": "persona_fisica",
+      "nombre": "Persona ficticia Q3"
+    },
+    {
+      "id": "Q4",
+      "tipo": "persona_fisica",
+      "nombre": "Persona ficticia Q4"
+    },
+    {
+      "id": "R",
+      "tipo": "persona_fisica",
+      "nombre": "Persona ficticia R"
+    }
+  ],
+  "participaciones": [
+    {
+      "id": "q1",
+      "titular": "Q1",
+      "participada": "X",
+      "capital": 10,
+      "votos": 10
+    },
+    {
+      "id": "q2",
+      "titular": "Q2",
+      "participada": "X",
+      "capital": 10,
+      "votos": 10
+    },
+    {
+      "id": "q3",
+      "titular": "Q3",
+      "participada": "X",
+      "capital": 10,
+      "votos": 10
+    },
+    {
+      "id": "q4",
+      "titular": "Q4",
+      "participada": "X",
+      "capital": 10,
+      "votos": 10
+    },
+    {
+      "id": "a1",
+      "titular": "X",
+      "participada": "S",
+      "capital": 30,
+      "votos": 30
+    },
+    {
+      "id": "a2",
+      "titular": "R",
+      "participada": "S",
+      "capital": 70,
+      "votos": 70
+    }
+  ]
+}

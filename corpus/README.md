@@ -1,0 +1,23 @@
+# Corpus
+
+Estructuras sintéticas con su resultado esperado. Lo genera `corpus/generar.py`, que comprueba cada caso con el código de `src/` antes de escribirlo. No se edita a mano.
+
+```
+python corpus/generar.py
+```
+
+Cada caso tiene la entrada (`NN-nombre.json`, según `docs/modelo-datos.md`) y el resultado esperado (`NN-nombre.esperado.json`). El código de salida es el de `calcular-titularidad`: 0 si los dos regímenes quedan determinados, estables, completos y con los mismos titulares; 1 si no.
+
+| Caso | Qué demuestra | España | AMLR | Código |
+|---|---|---|---|---|
+| 01-cuatro-socios-al-25 | Umbral: el AMLR pide «25 % o más» y España «superior al 25». Con cuatro socios al 25 % justo, los cuatro son titulares en el AMLR y en España se aplica el supuesto supletorio del administrador. El 25 % justo hace el resultado inestable en los dos (UMBRAL-EXACTO, C28). | supletorio (condicional): ninguno | determinado: P1, P2, P3, P4 | 1 |
+| 02-art54a-control-arriba | Art. 54.a: P controla H (60 %), que tiene el 30 % de S. En el AMLR se le atribuye entero (A3); en España, por la agregación de votos del art. 42 (E2). Por multiplicación solo llega al 18 %. Los dos regímenes coinciden y el resultado es estable y completo: código 0. | determinado: P, X | determinado: P, X | 0 |
+| 03-art54b-participacion-arriba | Art. 54.b: C controla S (60 %) y P tiene el 30 % de C. En el AMLR, P es titular (A4). En España no: L1 da el 18 % y L2 nada, porque P no domina C. Solo queda como posible con la lectura extensiva (POS-T, N1/N2), que hace inestable el resultado español. | determinado: Q, R | determinado: P, Q, R | 1 |
+| 04-ciclo-cambia-el-resultado | Ciclo: S tiene el 40 % de H y H el 20 % de S. P tiene el 24 % directo. Con la serie completa (método B) llega a 24 / 0,92 = 26,09 % y es titular en los dos regímenes; con las cadenas simples (método A) se queda en el 24 % y no lo sería. CICLO-SENS (N7) en los dos. | determinado: P, Q | determinado: P, Q | 1 |
+| 05-cotizada-con-filial | RD 9.4: S es filial participada mayoritariamente de la cotizada L (60 % del capital), así que en España está exceptuada (C30). En el AMLR la cotización no cambia el cálculo: P es titular (A1) y lo que llega a través de L no está identificado (H1, H3), así que el resultado no es completo. | exceptuada: ninguno | determinado: P | 1 |
+| 06-filial-intermedia-de-cotizada | RD 9.4 en una intermedia (C30): X es filial de la cotizada L (51 %), pero no es la entidad objetivo, así que se recorren sus socios. P, con el 49 % de X, tiene el 34,3 % de S y es titular en los dos. Lo que llega por L va a COTIZADA(L) en España, y S sería filial de L con una cadena de mayorías directas (EXENCION-SENS, N14). | determinado: P, R | determinado: P, R | 1 |
+| 07-testaferro | Por cuenta de otro (C2): T figura con el 30 % de S por cuenta de Q, que no tiene nada más. Se atribuye a Q, que es titular en los dos regímenes con la marca «por cuenta de». Con la lectura contraria (N9 en el AMLR, N13 en España), T lo sería: POS-FORMAL. | determinado: P, Q | determinado: P, Q | 1 |
+| 08-hueco-que-controla | H3 (C33): el 60 % de X no está identificado y X tiene el 30 % de S. A S llega un 18 % sin identificar, que no da H1, y ninguno de los socios conocidos de X llega con el hueco (3 + 18). Pero quien tenga ese 60 % controla X y sería titular (A3; E2). El resultado es estable pero no completo. | determinado: R | determinado: R | 1 |
+| 09-control-por-capital-y-por-votos | N11: en A, P tiene el 60 % del capital y el 40 % de los votos, y Q al revés. En el AMLR los dos controlan A (53.2.c: capital o votos) y son titulares por A3. En España solo domina Q, porque el art. 42 solo mira los votos. | determinado: Q, R | determinado: P, Q, R | 1 |
+| 10-inestable | Inestable pero completo (C32): P y Q tienen el 50 % justo de H, que tiene el 30 % de S. Con el 50 % nadie controla H y el único titular es R. Leído justo por encima del 50, P y Q controlarían H y serían titulares (UMBRAL-EXACTO). No falta ningún dato. | determinado: R | determinado: R | 1 |
+| 11-incompleto | Incompleto pero estable (C33): solo está identificado el 60 % de S, que es de R. El 40 % que falta alcanza por sí solo el umbral (H1): puede haber otro titular. Ninguna otra lectura cambia el resultado. En España, ese 40 % cumpliría además E2 (H3). | determinado: R | determinado: R | 1 |

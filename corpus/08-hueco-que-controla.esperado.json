@@ -1,0 +1,63 @@
+{
+  "caso": "08-hueco-que-controla",
+  "demuestra": "H3 (C33): el 60 % de X no está identificado y X tiene el 30 % de S. A S llega un 18 % sin identificar, que no da H1, y ninguno de los socios conocidos de X llega con el hueco (3 + 18). Pero quien tenga ese 60 % controla X y sería titular (A3; E2). El resultado es estable pero no completo.",
+  "resultado": {
+    "codigo_salida": 1,
+    "avisos_entrada": [
+      "AVI-02",
+      "AVI-02"
+    ],
+    "espana": {
+      "estado": "determinado",
+      "titulares": {
+        "R": {
+          "pruebas": [
+            "E1",
+            "E2"
+          ],
+          "E1": {
+            "capital": "70",
+            "votos": "70"
+          },
+          "E2": "70",
+          "controla": true,
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {},
+      "avisos": [
+        "H3"
+      ],
+      "estable": true,
+      "completo": false,
+      "supletorio": []
+    },
+    "amlr": {
+      "estado": "determinado",
+      "titulares": {
+        "R": {
+          "pruebas": [
+            "A1",
+            "A2"
+          ],
+          "A1": {
+            "capital": "70",
+            "votos": "70"
+          },
+          "A2": true,
+          "A3": {},
+          "A4": {},
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {},
+      "avisos": [
+        "H3"
+      ],
+      "estable": true,
+      "completo": false,
+      "supletorio": []
+    },
+    "difieren": []
+  }
+}

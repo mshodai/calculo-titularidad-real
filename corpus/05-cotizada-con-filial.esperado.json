@@ -1,0 +1,50 @@
+{
+  "caso": "05-cotizada-con-filial",
+  "demuestra": "RD 9.4: S es filial participada mayoritariamente de la cotizada L (60 % del capital), así que en España está exceptuada (C30). En el AMLR la cotización no cambia el cálculo: P es titular (A1) y lo que llega a través de L no está identificado (H1, H3), así que el resultado no es completo.",
+  "resultado": {
+    "codigo_salida": 1,
+    "avisos_entrada": [
+      "AVI-02",
+      "AVI-02",
+      "AVI-03"
+    ],
+    "espana": {
+      "estado": "exceptuada",
+      "titulares": {},
+      "posibles": {},
+      "avisos": [],
+      "estable": true,
+      "completo": true,
+      "supletorio": []
+    },
+    "amlr": {
+      "estado": "determinado",
+      "titulares": {
+        "P": {
+          "pruebas": [
+            "A1"
+          ],
+          "A1": {
+            "capital": "40",
+            "votos": "40"
+          },
+          "A2": false,
+          "A3": {},
+          "A4": {},
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {},
+      "avisos": [
+        "H1",
+        "H3"
+      ],
+      "estable": true,
+      "completo": false,
+      "supletorio": []
+    },
+    "difieren": [
+      "P"
+    ]
+  }
+}

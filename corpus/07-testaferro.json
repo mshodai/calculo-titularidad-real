@@ -1,0 +1,57 @@
+{
+  "version_modelo": "0.1",
+  "fecha_referencia": "2027-07-10",
+  "entidad_objetivo": "S",
+  "nodos": [
+    {
+      "id": "S",
+      "tipo": "entidad_juridica",
+      "denominacion": "Sociedad ficticia S",
+      "clase": "sociedad",
+      "cargos": [
+        {
+          "persona": "ADM",
+          "cargo": "miembro_organo_administracion",
+          "ejecutivo": true
+        }
+      ]
+    },
+    {
+      "id": "ADM",
+      "tipo": "persona_fisica",
+      "nombre": "Persona ficticia ADM"
+    },
+    {
+      "id": "P",
+      "tipo": "persona_fisica",
+      "nombre": "Persona ficticia P"
+    },
+    {
+      "id": "Q",
+      "tipo": "persona_fisica",
+      "nombre": "Persona ficticia Q"
+    },
+    {
+      "id": "T",
+      "tipo": "persona_fisica",
+      "nombre": "Persona ficticia T"
+    }
+  ],
+  "participaciones": [
+    {
+      "id": "a1",
+      "titular": "T",
+      "participada": "S",
+      "capital": 30,
+      "votos": 30,
+      "por_cuenta_de": "Q"
+    },
+    {
+      "id": "a2",
+      "titular": "P",
+      "participada": "S",
+      "capital": 70,
+      "votos": 70
+    }
+  ]
+}

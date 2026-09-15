@@ -1,0 +1,96 @@
+{
+  "caso": "07-testaferro",
+  "demuestra": "Por cuenta de otro (C2): T figura con el 30 % de S por cuenta de Q, que no tiene nada más. Se atribuye a Q, que es titular en los dos regímenes con la marca «por cuenta de». Con la lectura contraria (N9 en el AMLR, N13 en España), T lo sería: POS-FORMAL.",
+  "resultado": {
+    "codigo_salida": 1,
+    "avisos_entrada": [
+      "AVI-06"
+    ],
+    "espana": {
+      "estado": "determinado",
+      "titulares": {
+        "P": {
+          "pruebas": [
+            "E1",
+            "E2"
+          ],
+          "E1": {
+            "capital": "70",
+            "votos": "70"
+          },
+          "E2": "70",
+          "controla": true,
+          "por_cuenta_de": []
+        },
+        "Q": {
+          "pruebas": [
+            "E1",
+            "E2"
+          ],
+          "E1": {
+            "capital": "30",
+            "votos": "30"
+          },
+          "E2": "30",
+          "controla": false,
+          "por_cuenta_de": [
+            "a1"
+          ]
+        }
+      },
+      "posibles": {
+        "T": [
+          "POS-FORMAL"
+        ]
+      },
+      "avisos": [],
+      "estable": false,
+      "completo": true,
+      "supletorio": []
+    },
+    "amlr": {
+      "estado": "determinado",
+      "titulares": {
+        "P": {
+          "pruebas": [
+            "A1",
+            "A2"
+          ],
+          "A1": {
+            "capital": "70",
+            "votos": "70"
+          },
+          "A2": true,
+          "A3": {},
+          "A4": {},
+          "por_cuenta_de": []
+        },
+        "Q": {
+          "pruebas": [
+            "A1"
+          ],
+          "A1": {
+            "capital": "30",
+            "votos": "30"
+          },
+          "A2": false,
+          "A3": {},
+          "A4": {},
+          "por_cuenta_de": [
+            "a1"
+          ]
+        }
+      },
+      "posibles": {
+        "T": [
+          "POS-FORMAL"
+        ]
+      },
+      "avisos": [],
+      "estable": false,
+      "completo": true,
+      "supletorio": []
+    },
+    "difieren": []
+  }
+}

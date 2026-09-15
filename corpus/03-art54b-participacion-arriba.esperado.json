@@ -1,0 +1,113 @@
+{
+  "caso": "03-art54b-participacion-arriba",
+  "demuestra": "Art. 54.b: C controla S (60 %) y P tiene el 30 % de C. En el AMLR, P es titular (A4). En España no: L1 da el 18 % y L2 nada, porque P no domina C. Solo queda como posible con la lectura extensiva (POS-T, N1/N2), que hace inestable el resultado español.",
+  "resultado": {
+    "codigo_salida": 1,
+    "avisos_entrada": [],
+    "espana": {
+      "estado": "determinado",
+      "titulares": {
+        "Q": {
+          "pruebas": [
+            "E1",
+            "E2"
+          ],
+          "E1": {
+            "capital": "42",
+            "votos": "42"
+          },
+          "E2": "60",
+          "controla": true,
+          "por_cuenta_de": []
+        },
+        "R": {
+          "pruebas": [
+            "E1",
+            "E2"
+          ],
+          "E1": {
+            "capital": "40",
+            "votos": "40"
+          },
+          "E2": "40",
+          "controla": false,
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {
+        "P": [
+          "POS-T"
+        ]
+      },
+      "avisos": [],
+      "estable": false,
+      "completo": true,
+      "supletorio": []
+    },
+    "amlr": {
+      "estado": "determinado",
+      "titulares": {
+        "P": {
+          "pruebas": [
+            "A4"
+          ],
+          "A1": {},
+          "A2": false,
+          "A3": {},
+          "A4": {
+            "C": {
+              "capital": "30",
+              "votos": "30"
+            }
+          },
+          "por_cuenta_de": []
+        },
+        "Q": {
+          "pruebas": [
+            "A1",
+            "A2",
+            "A3",
+            "A4"
+          ],
+          "A1": {
+            "capital": "42",
+            "votos": "42"
+          },
+          "A2": true,
+          "A3": {
+            "capital": "60",
+            "votos": "60"
+          },
+          "A4": {
+            "C": {
+              "capital": "70",
+              "votos": "70"
+            }
+          },
+          "por_cuenta_de": []
+        },
+        "R": {
+          "pruebas": [
+            "A1"
+          ],
+          "A1": {
+            "capital": "40",
+            "votos": "40"
+          },
+          "A2": false,
+          "A3": {},
+          "A4": {},
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {},
+      "avisos": [],
+      "estable": true,
+      "completo": true,
+      "supletorio": []
+    },
+    "difieren": [
+      "P"
+    ]
+  }
+}

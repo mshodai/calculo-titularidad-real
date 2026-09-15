@@ -1,0 +1,91 @@
+{
+  "caso": "01-cuatro-socios-al-25",
+  "demuestra": "Umbral: el AMLR pide «25 % o más» y España «superior al 25». Con cuatro socios al 25 % justo, los cuatro son titulares en el AMLR y en España se aplica el supuesto supletorio del administrador. El 25 % justo hace el resultado inestable en los dos (UMBRAL-EXACTO, C28).",
+  "resultado": {
+    "codigo_salida": 1,
+    "avisos_entrada": [],
+    "espana": {
+      "estado": "supletorio (condicional)",
+      "titulares": {},
+      "posibles": {},
+      "avisos": [
+        "UMBRAL-EXACTO"
+      ],
+      "estable": false,
+      "completo": true,
+      "supletorio": [
+        "ADM"
+      ]
+    },
+    "amlr": {
+      "estado": "determinado",
+      "titulares": {
+        "P1": {
+          "pruebas": [
+            "A1"
+          ],
+          "A1": {
+            "capital": "25",
+            "votos": "25"
+          },
+          "A2": false,
+          "A3": {},
+          "A4": {},
+          "por_cuenta_de": []
+        },
+        "P2": {
+          "pruebas": [
+            "A1"
+          ],
+          "A1": {
+            "capital": "25",
+            "votos": "25"
+          },
+          "A2": false,
+          "A3": {},
+          "A4": {},
+          "por_cuenta_de": []
+        },
+        "P3": {
+          "pruebas": [
+            "A1"
+          ],
+          "A1": {
+            "capital": "25",
+            "votos": "25"
+          },
+          "A2": false,
+          "A3": {},
+          "A4": {},
+          "por_cuenta_de": []
+        },
+        "P4": {
+          "pruebas": [
+            "A1"
+          ],
+          "A1": {
+            "capital": "25",
+            "votos": "25"
+          },
+          "A2": false,
+          "A3": {},
+          "A4": {},
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {},
+      "avisos": [
+        "UMBRAL-EXACTO"
+      ],
+      "estable": false,
+      "completo": true,
+      "supletorio": []
+    },
+    "difieren": [
+      "P1",
+      "P2",
+      "P3",
+      "P4"
+    ]
+  }
+}

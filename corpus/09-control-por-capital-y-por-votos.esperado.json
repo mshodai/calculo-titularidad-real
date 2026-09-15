@@ -1,0 +1,96 @@
+{
+  "caso": "09-control-por-capital-y-por-votos",
+  "demuestra": "N11: en A, P tiene el 60 % del capital y el 40 % de los votos, y Q al revés. En el AMLR los dos controlan A (53.2.c: capital o votos) y son titulares por A3. En España solo domina Q, porque el art. 42 solo mira los votos.",
+  "resultado": {
+    "codigo_salida": 1,
+    "avisos_entrada": [],
+    "espana": {
+      "estado": "determinado",
+      "titulares": {
+        "Q": {
+          "pruebas": [
+            "E2"
+          ],
+          "E1": {
+            "capital": "12",
+            "votos": "18"
+          },
+          "E2": "30",
+          "controla": false,
+          "por_cuenta_de": []
+        },
+        "R": {
+          "pruebas": [
+            "E1",
+            "E2"
+          ],
+          "E1": {
+            "capital": "70",
+            "votos": "70"
+          },
+          "E2": "70",
+          "controla": true,
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {},
+      "avisos": [],
+      "estable": true,
+      "completo": true,
+      "supletorio": []
+    },
+    "amlr": {
+      "estado": "determinado",
+      "titulares": {
+        "P": {
+          "pruebas": [
+            "A3"
+          ],
+          "A1": {},
+          "A2": false,
+          "A3": {
+            "capital": "30",
+            "votos": "30"
+          },
+          "A4": {},
+          "por_cuenta_de": []
+        },
+        "Q": {
+          "pruebas": [
+            "A3"
+          ],
+          "A1": {},
+          "A2": false,
+          "A3": {
+            "capital": "30",
+            "votos": "30"
+          },
+          "A4": {},
+          "por_cuenta_de": []
+        },
+        "R": {
+          "pruebas": [
+            "A1",
+            "A2"
+          ],
+          "A1": {
+            "capital": "70",
+            "votos": "70"
+          },
+          "A2": true,
+          "A3": {},
+          "A4": {},
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {},
+      "avisos": [],
+      "estable": true,
+      "completo": true,
+      "supletorio": []
+    },
+    "difieren": [
+      "P"
+    ]
+  }
+}

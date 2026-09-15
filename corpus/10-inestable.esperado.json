@@ -1,0 +1,60 @@
+{
+  "caso": "10-inestable",
+  "demuestra": "Inestable pero completo (C32): P y Q tienen el 50 % justo de H, que tiene el 30 % de S. Con el 50 % nadie controla H y el único titular es R. Leído justo por encima del 50, P y Q controlarían H y serían titulares (UMBRAL-EXACTO). No falta ningún dato.",
+  "resultado": {
+    "codigo_salida": 1,
+    "avisos_entrada": [],
+    "espana": {
+      "estado": "determinado",
+      "titulares": {
+        "R": {
+          "pruebas": [
+            "E1",
+            "E2"
+          ],
+          "E1": {
+            "capital": "70",
+            "votos": "70"
+          },
+          "E2": "70",
+          "controla": true,
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {},
+      "avisos": [
+        "UMBRAL-EXACTO"
+      ],
+      "estable": false,
+      "completo": true,
+      "supletorio": []
+    },
+    "amlr": {
+      "estado": "determinado",
+      "titulares": {
+        "R": {
+          "pruebas": [
+            "A1",
+            "A2"
+          ],
+          "A1": {
+            "capital": "70",
+            "votos": "70"
+          },
+          "A2": true,
+          "A3": {},
+          "A4": {},
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {},
+      "avisos": [
+        "UMBRAL-EXACTO"
+      ],
+      "estable": false,
+      "completo": true,
+      "supletorio": []
+    },
+    "difieren": []
+  }
+}

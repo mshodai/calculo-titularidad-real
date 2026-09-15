@@ -1,0 +1,81 @@
+{
+  "caso": "02-art54a-control-arriba",
+  "demuestra": "Art. 54.a: P controla H (60 %), que tiene el 30 % de S. En el AMLR se le atribuye entero (A3); en España, por la agregación de votos del art. 42 (E2). Por multiplicación solo llega al 18 %. Los dos regímenes coinciden y el resultado es estable y completo: código 0.",
+  "resultado": {
+    "codigo_salida": 0,
+    "avisos_entrada": [],
+    "espana": {
+      "estado": "determinado",
+      "titulares": {
+        "P": {
+          "pruebas": [
+            "E2"
+          ],
+          "E1": {
+            "capital": "18",
+            "votos": "18"
+          },
+          "E2": "30",
+          "controla": false,
+          "por_cuenta_de": []
+        },
+        "X": {
+          "pruebas": [
+            "E1",
+            "E2"
+          ],
+          "E1": {
+            "capital": "70",
+            "votos": "70"
+          },
+          "E2": "70",
+          "controla": true,
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {},
+      "avisos": [],
+      "estable": true,
+      "completo": true,
+      "supletorio": []
+    },
+    "amlr": {
+      "estado": "determinado",
+      "titulares": {
+        "P": {
+          "pruebas": [
+            "A3"
+          ],
+          "A1": {},
+          "A2": false,
+          "A3": {
+            "capital": "30",
+            "votos": "30"
+          },
+          "A4": {},
+          "por_cuenta_de": []
+        },
+        "X": {
+          "pruebas": [
+            "A1",
+            "A2"
+          ],
+          "A1": {
+            "capital": "70",
+            "votos": "70"
+          },
+          "A2": true,
+          "A3": {},
+          "A4": {},
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {},
+      "avisos": [],
+      "estable": true,
+      "completo": true,
+      "supletorio": []
+    },
+    "difieren": []
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "caso": "11-incompleto",
+  "demuestra": "Incompleto pero estable (C33): solo está identificado el 60 % de S, que es de R. El 40 % que falta alcanza por sí solo el umbral (H1): puede haber otro titular. Ninguna otra lectura cambia el resultado. En España, ese 40 % cumpliría además E2 (H3).",
+  "resultado": {
+    "codigo_salida": 1,
+    "avisos_entrada": [
+      "AVI-02",
+      "AVI-02"
+    ],
+    "espana": {
+      "estado": "determinado",
+      "titulares": {
+        "R": {
+          "pruebas": [
+            "E1",
+            "E2"
+          ],
+          "E1": {
+            "capital": "60",
+            "votos": "60"
+          },
+          "E2": "60",
+          "controla": true,
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {},
+      "avisos": [
+        "H1",
+        "H3"
+      ],
+      "estable": true,
+      "completo": false,
+      "supletorio": []
+    },
+    "amlr": {
+      "estado": "determinado",
+      "titulares": {
+        "R": {
+          "pruebas": [
+            "A1",
+            "A2"
+          ],
+          "A1": {
+            "capital": "60",
+            "votos": "60"
+          },
+          "A2": true,
+          "A3": {},
+          "A4": {},
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {},
+      "avisos": [
+        "H1"
+      ],
+      "estable": true,
+      "completo": false,
+      "supletorio": []
+    },
+    "difieren": []
+  }
+}

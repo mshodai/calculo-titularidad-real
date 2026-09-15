@@ -1,0 +1,39 @@
+{
+  "version_modelo": "0.1",
+  "fecha_referencia": "2027-07-10",
+  "entidad_objetivo": "S",
+  "nodos": [
+    {
+      "id": "S",
+      "tipo": "entidad_juridica",
+      "denominacion": "Sociedad ficticia S",
+      "clase": "sociedad",
+      "cargos": [
+        {
+          "persona": "ADM",
+          "cargo": "miembro_organo_administracion",
+          "ejecutivo": true
+        }
+      ]
+    },
+    {
+      "id": "ADM",
+      "tipo": "persona_fisica",
+      "nombre": "Persona ficticia ADM"
+    },
+    {
+      "id": "R",
+      "tipo": "persona_fisica",
+      "nombre": "Persona ficticia R"
+    }
+  ],
+  "participaciones": [
+    {
+      "id": "a1",
+      "titular": "R",
+      "participada": "S",
+      "capital": 60,
+      "votos": 60
+    }
+  ]
+}

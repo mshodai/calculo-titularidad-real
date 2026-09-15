@@ -1,0 +1,96 @@
+{
+  "caso": "06-filial-intermedia-de-cotizada",
+  "demuestra": "RD 9.4 en una intermedia (C30): X es filial de la cotizada L (51 %), pero no es la entidad objetivo, así que se recorren sus socios. P, con el 49 % de X, tiene el 34,3 % de S y es titular en los dos. Lo que llega por L va a COTIZADA(L) en España, y S sería filial de L con una cadena de mayorías directas (EXENCION-SENS, N14).",
+  "resultado": {
+    "codigo_salida": 1,
+    "avisos_entrada": [
+      "AVI-02",
+      "AVI-02",
+      "AVI-03"
+    ],
+    "espana": {
+      "estado": "determinado",
+      "titulares": {
+        "P": {
+          "pruebas": [
+            "E1"
+          ],
+          "E1": {
+            "capital": "343/10",
+            "votos": "343/10"
+          },
+          "E2": "0",
+          "controla": false,
+          "por_cuenta_de": []
+        },
+        "R": {
+          "pruebas": [
+            "E1",
+            "E2"
+          ],
+          "E1": {
+            "capital": "30",
+            "votos": "30"
+          },
+          "E2": "30",
+          "controla": false,
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {},
+      "avisos": [
+        "COTIZADA",
+        "EXENCION-SENS"
+      ],
+      "estable": false,
+      "completo": true,
+      "supletorio": []
+    },
+    "amlr": {
+      "estado": "determinado",
+      "titulares": {
+        "P": {
+          "pruebas": [
+            "A1",
+            "A4"
+          ],
+          "A1": {
+            "capital": "343/10",
+            "votos": "343/10"
+          },
+          "A2": false,
+          "A3": {},
+          "A4": {
+            "X": {
+              "capital": "49",
+              "votos": "49"
+            }
+          },
+          "por_cuenta_de": []
+        },
+        "R": {
+          "pruebas": [
+            "A1"
+          ],
+          "A1": {
+            "capital": "30",
+            "votos": "30"
+          },
+          "A2": false,
+          "A3": {},
+          "A4": {},
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {},
+      "avisos": [
+        "H1",
+        "H3"
+      ],
+      "estable": true,
+      "completo": false,
+      "supletorio": []
+    },
+    "difieren": []
+  }
+}

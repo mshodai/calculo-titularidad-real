@@ -1,0 +1,87 @@
+{
+  "caso": "04-ciclo-cambia-el-resultado",
+  "demuestra": "Ciclo: S tiene el 40 % de H y H el 20 % de S. P tiene el 24 % directo. Con la serie completa (método B) llega a 24 / 0,92 = 26,09 % y es titular en los dos regímenes; con las cadenas simples (método A) se queda en el 24 % y no lo sería. CICLO-SENS (N7) en los dos.",
+  "resultado": {
+    "codigo_salida": 1,
+    "avisos_entrada": [
+      "AVI-01"
+    ],
+    "espana": {
+      "estado": "determinado",
+      "titulares": {
+        "P": {
+          "pruebas": [
+            "E1"
+          ],
+          "E1": {
+            "capital": "600/23",
+            "votos": "600/23"
+          },
+          "E2": "24",
+          "controla": false,
+          "por_cuenta_de": []
+        },
+        "Q": {
+          "pruebas": [
+            "E1",
+            "E2"
+          ],
+          "E1": {
+            "capital": "1400/23",
+            "votos": "1400/23"
+          },
+          "E2": "56",
+          "controla": true,
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {},
+      "avisos": [
+        "CICLO-SENS"
+      ],
+      "estable": false,
+      "completo": true,
+      "supletorio": []
+    },
+    "amlr": {
+      "estado": "determinado",
+      "titulares": {
+        "P": {
+          "pruebas": [
+            "A1"
+          ],
+          "A1": {
+            "capital": "600/23",
+            "votos": "600/23"
+          },
+          "A2": false,
+          "A3": {},
+          "A4": {},
+          "por_cuenta_de": []
+        },
+        "Q": {
+          "pruebas": [
+            "A1",
+            "A2"
+          ],
+          "A1": {
+            "capital": "1400/23",
+            "votos": "1400/23"
+          },
+          "A2": true,
+          "A3": {},
+          "A4": {},
+          "por_cuenta_de": []
+        }
+      },
+      "posibles": {},
+      "avisos": [
+        "CICLO-SENS"
+      ],
+      "estable": false,
+      "completo": true,
+      "supletorio": []
+    },
+    "difieren": []
+  }
+}
