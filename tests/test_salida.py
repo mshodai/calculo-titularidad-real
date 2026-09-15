@@ -178,16 +178,16 @@ def test_todos_los_avisos_tienen_origen():
         assert all(n in CASOS_NO_RESUELTOS for ns in casos.values() for n in ns)
 
 
-def test_la_correspondencia_sigue_el_12_de_la_especificacion():
-    """La columna «Señal en la salida» del §12: cada código que nombra señala ese caso."""
-    especificacion = (RAIZ / "docs" / "especificacion-calculo.md").read_text(encoding="utf-8")
-    filas = re.findall(r"^\| (N\d+) \|.*\| ([^|]*) \|$", especificacion, re.MULTILINE)
+def test_la_correspondencia_sigue_ambiguedades_md():
+    """La columna «Señal en la salida» de docs/ambiguedades.md: cada código que nombra señala ese caso."""
+    ambiguedades = (RAIZ / "docs" / "ambiguedades.md").read_text(encoding="utf-8")
+    filas = re.findall(r"^\| (N\d+) \|.*\| ([^|]*) \|$", ambiguedades, re.MULTILINE)
     assert len(filas) == 14
     for n, senal in filas:
         for codigo in re.findall(r"\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b", senal):
             regimenes = CASOS_POR_AVISO.get(codigo, {})
             assert any(n in casos for casos in regimenes.values()), (n, codigo)
-    # Y al revés: cada caso que da la salida está en el §12 con ese código.
+    # Y al revés: cada caso que da la salida está en la tabla con ese código.
     por_caso = dict(filas)
     for codigo, regimenes in CASOS_POR_AVISO.items():
         for casos in regimenes.values():
@@ -262,3 +262,18 @@ def test_c33_sigue_la_especificacion():
     lista = c33[c33.index("No lo es si lleva alguno de estos avisos:"):c33.index("Lo que llega por cotizadas")]
     assert set(re.findall(r"\*\*([A-Z][A-Z0-9-]*)", lista)) | set(re.findall(r"\b(POS-HUECO)\b", lista)) == FALTAN_DATOS
     assert not (FALTAN_DATOS & (CAMBIARIA_CON_OTRA_LECTURA | SIN_COMPROBAR))
+
+
+def test_ambiguedades_md_tiene_cada_caso_con_sus_apartados():
+    """Los catorce casos N y los del formato del dato, cada uno con sus apartados."""
+    texto_ = (RAIZ / "docs" / "ambiguedades.md").read_text(encoding="utf-8")
+    secciones = re.split(r"^## ", texto_, flags=re.MULTILINE)
+    casos = {s.split(".")[0]: s for s in secciones if re.match(r"[NF]\d+\.", s)}
+    assert sorted(casos, key=lambda c: (c[0], int(c[1:]))) == [f"F{i}" for i in range(1, 5)] + [f"N{i}" for i in range(1, 15)]
+    for nombre, seccion in casos.items():
+        origen = "**Qué dice la norma.**" if nombre.startswith("N") else "**De dónde viene.**"
+        for apartado in (origen, "**Por qué no determina", "**Qué hace esta implementación.**", "**Cómo se señala en la salida.**"):
+            assert apartado in seccion, (nombre, apartado)
+        if nombre.startswith("N"):
+            assert "**Régimen.**" in seccion, nombre
+    assert set(CASOS_NO_RESUELTOS) <= set(casos)  # los casos que cita la salida están documentados

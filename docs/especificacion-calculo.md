@@ -12,9 +12,9 @@ No fija el formato de salida, solo su contenido mínimo (§9).
 
 - Las citas literales van entre comillas «…» con artículo, apartado y letra. Las fuentes y sus versiones están en [`fuentes/FUENTES.md`](fuentes/FUENTES.md).
 - **[Cn — decisión propia]** marca una elección de este documento que no viene de los textos. El prefijo C evita confusiones con las decisiones D del modelo de datos. Todas están en el §11, con la alternativa descartada y el motivo.
-- **[Nn — no resuelto]** marca un caso que la norma no resuelve. Nunca se resuelve en silencio: el §12 dice, para cada uno, qué hace el cálculo y cómo lo señala la salida.
+- **[Nn — no resuelto]** marca un caso que la norma no resuelve. Nunca se resuelve en silencio: [ambiguedades.md](ambiguedades.md) dice, para cada uno, qué hace el cálculo y cómo lo señala la salida.
   - **[C25 — decisión propia]** La salida señala un caso N cuando otra lectura del texto se puede calcular con los datos de la entrada y cambiaría quién es titular real. Lo hace con los avisos del §9; en N9 y N13, además, con la marca «por cuenta de».
-  - N10 y N11 no tienen señal propia, porque no hay otra lectura con la que comparar. El §12 explica por qué.
+  - N10 y N11 no tienen señal propia, porque no hay otra lectura con la que comparar. [ambiguedades.md](ambiguedades.md) explica por qué.
 - Los porcentajes van de 0 a 100, como en el modelo (D4).
 - **Patrón a vigilar: dar por supuesta una condición o un régimen.** Ha aparecido tres veces. La regla de las cotizadas intermedias (C5) trataba como cotizada a una entidad sin comprobar los requisitos de información. AVI-02 y AVI-03 se rebajaban o se omitían en los dos regímenes por una excepción que solo es española (modelo, D26). Al escribir o revisar una regla, hay que comprobar dos cosas:
   - que se cumplen todas las condiciones del texto en que se basa, no solo la más visible;
@@ -671,7 +671,7 @@ S: A 30 %, R 70 %. A: P tiene 60 % del capital y 40 % de los votos; Q tiene 40 %
 | España | **No**: L1 da 18 de capital y 12 de votos; L2, 0, porque con 40 % de votos no domina A | Sí, por L2: domina A → va = 30 | Sí |
 
 **Diferencias:**
-- en el AMLR dos personas controlan A a la vez (N11). No hay aviso (§12);
+- en el AMLR dos personas controlan A a la vez (N11). No hay aviso ([ambiguedades.md](ambiguedades.md), N11);
 - el art. 42 solo reconoce el control por votos.
 
 ### Ej. 5: varios tramos de control (N4)
@@ -784,7 +784,7 @@ Si la exención se aplicara también a la filial intermedia, los socios de X no 
 | C22 | Supletorio en España: administradores, siempre condicional; no determinable si hay huecos | §8.1 | Aplicarlo sin condiciones | v0.1 no evalúa el control por otros medios, y la Ley exige que «no exista» nadie por encima del umbral |
 | C23 | Supletorio en el AMLR: cargos ejecutivos que sean personas físicas, siempre provisional; nunca como titulares reales | §8.2 | Presentarlos como titulares reales | Considerando 125 |
 | C24 | Los avisos usan el umbral del régimen en el que se calculan | §9 | Un umbral único | Evitar avisos que el propio régimen no reconocería |
-| C25 | Un caso N se señala en la salida cuando otra lectura se puede calcular con la entrada y cambiaría quién es titular real. N10 y N11 solo se documentan | §0 | Un aviso por cada caso N | Un aviso que no compara con nada no dice nada del caso concreto: o salta siempre, o compara con una regla que no está en ningún texto (§12) |
+| C25 | Un caso N se señala en la salida cuando otra lectura se puede calcular con la entrada y cambiaría quién es titular real. N10 y N11 solo se documentan | §0 | Un aviso por cada caso N | Un aviso que no compara con nada no dice nada del caso concreto: o salta siempre, o compara con una regla que no está en ningún texto (ambiguedades.md) |
 | C26 | AMLR: control agregado C⁺ (C11 más la suma de lo que tienen X y sus controladas), solo para avisar (POS-AGREGADO) | §3.3 | Contar C⁺ como control | N8: el AMLR no lo dice; en v0.1 no se considera control |
 | C27 | AMLR: se comprueba si el titular lo sería sin las cadenas con tramos de control (own^O); si no, aviso ART54-SENS | §4.2 | No avisar, porque C14 ya es la lectura más amplia | La lectura contraria quita titulares, y quien lo es solo por C14 debe saberse |
 | C28 | Un valor igual a un umbral se toma como exacto; se repite el cálculo leyéndolo justo por encima y justo por debajo, y si cambia quién es titular real, aviso UMBRAL-EXACTO | §2.6 | (a) Avisar siempre que un valor coincida con un umbral. (b) Declarar «no determinable» | (a) Saltaría en cualquier sociedad al 50/50 aunque no cambie nada. (b) Casi siempre un 50 registrado es la mitad justa; el límite solo aparece a partir de cientos de miles de acciones (modelo, D23) |
@@ -796,27 +796,4 @@ Si la exención se aplicara también a la filial intermedia, los socios de X no 
 
 ## 12. Casos que la norma no resuelve
 
-| # | Caso | Dónde se nota | Qué hace v0.1 | Señal en la salida (C25) |
-|---|---|---|---|---|
-| N1 | España: método para la participación indirecta | §5.1 | C17 (multiplicación) | POS-T (§5.3) |
-| N2 | España: si el art. 42 sirve para medir el porcentaje que alguien «controla» | §5.1 | C19; L3 solo como aviso | POS-T |
-| N3 | AMLR: si el 54 sustituye al 52.1 o se añade a él | §4.2, §6.3, Ej. 5b | C14 (se añade) | ART54-SENS (C27) |
-| N4 | AMLR: cadenas con varios tramos de control | §4.4, Ej. 5 | Reglas literales | POS-T |
-| N5 | AMLR 54.a: si se suma la participación directa propia | §4.3 | C15 | POS-T |
-| N6 | Mezcla de magnitudes dentro de una cadena | §7, Ej. 6 | C21 | POS-MEZCLA |
-| N7 | Ciclos | §6 | C20 | CICLO-SENS y CICLO-CERRADO |
-| N8 | AMLR: control conjunto a través de varias entidades controladas | §3.3 | No se considera control | POS-AGREGADO (C26) |
-| N9 | AMLR: si la participación de un nominatario cuenta como propiedad del nominador (52.1 frente a 53.4.c) | §2.2 | C2 | Marca «por cuenta de» y POS-FORMAL (C29) |
-| N10 | España: qué es «mayoría» en el CCom 42.1.a | §3.2 | C10 (> 50) | Ninguna propia (ver abajo) |
-| N11 | AMLR: dos personas que controlan a la vez, una por capital y otra por votos (53.2.c) | §3.3, Ej. 4 | Se acepta tal como sale del texto | Ninguna (ver abajo) |
-| N12 | AMLR: si la autocartera se descuenta al decidir el control | §6.2 | La serie completa la descuenta de hecho; ninguna norma del AMLR lo dice | CICLO-SENS: el método A no la descuenta (§6.2) |
-| N13 | España: a quién se atribuye el capital de una participación por cuenta de otro | §2.2, §6.3 | C2 (al principal) | Marca «por cuenta de» y POS-FORMAL (C29) |
-| N14 | España: cómo se mide la «filial participada mayoritariamente» del RD 9.4 | §2.5, Ej. 8 | C30 (más del 50 % del capital, multiplicando) | EXENCION-SENS (C30) |
-
-**Por qué N10 y N11 no tienen señal.** En los dos casos no hay otra lectura con la que comparar la entrada (C25).
-- **N10.** La única alternativa a «> 50» sería «≥ 50», y el 50 % no es mayoría: con esa lectura, dos socios al 50 % dominarían a la vez la misma sociedad (C10).
-  - Con porcentajes a 4 decimales, a partir de cierto número de acciones un 50 registrado no distingue la mitad justa de la mitad más una. Eso no es un caso de la norma, sino un límite de los datos. Afecta igual al «50 % más una» del AMLR y a los umbrales del 25.
-  - Está documentado en el modelo (D23), y la salida lo señala con UMBRAL-EXACTO (C28). En la práctica, ese aviso también calcula la lectura «≥ 50», pero por el dato y no por la norma.
-- **N11.** El texto sí da el resultado: con «acciones o los derechos de voto» (53.2.c), las dos personas controlan. Lo único que falta es que el AMLR comente esa consecuencia.
-  - El 53.2.a define el control en general como poder «imponer decisiones pertinentes», pero el 53.2.c no condiciona a eso el control a través de participación.
-  - Una regla que eligiera a una de las dos personas (que prevalezcan los votos, o el capital) no está en ningún texto. Comparar con ella sería inventar la alternativa.
+Están en [ambiguedades.md](ambiguedades.md): los catorce casos N1 a N14, con qué dice la norma, por qué no determina un comportamiento único, qué hace esta implementación, cómo se señala en la salida y a qué régimen afecta. El mismo fichero recoge, aparte, los casos que vienen del formato del dato y no de la norma (F1 a F4), como el límite de precisión de D23.

@@ -24,7 +24,7 @@ ADVERTENCIA = (
     "lectura podría dar otro resultado. Las decisiones de la especificación se citan como C…."
 )
 
-# Casos que la norma no resuelve (§12), en una línea.
+# Casos que la norma no resuelve (docs/ambiguedades.md), en una línea.
 CASOS_NO_RESUELTOS = {
     "N1": "España: método para la participación indirecta",
     "N2": "España: si el art. 42 sirve para medir el porcentaje que alguien «controla»",
@@ -40,7 +40,7 @@ CASOS_NO_RESUELTOS = {
     "N14": "España: cómo se mide la «filial participada mayoritariamente» del RD 9.4",
 }
 
-# Aviso → casos no resueltos que señala, por régimen (§9 y §12).
+# Aviso → casos no resueltos que señala, por régimen (especificación §9; docs/ambiguedades.md).
 CASOS_POR_AVISO = {
     "POS-T": {ESPANA: ("N1", "N2"), AMLR: ("N4", "N5")},
     "T-NO-CONVERGE": {ESPANA: ("N1", "N2"), AMLR: ("N4", "N5")},
