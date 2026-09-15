@@ -329,6 +329,18 @@ class EspecificacionSeccion63(ComprobacionDocumento):
         self.assertFalse({y for x, y in control(h) if x == "P-BRUNO"})
         self.assertEnDocumento(*valores)
 
+    def test_sin_c2_en_capital_espana(self):
+        """N13: capital en el titular formal; los votos siguen en el principal (C29)."""
+        _, sin = preparar(leer_ejemplo_modelo(), con_c2=False)
+        h = {"capital": sin["capital"], "votos": self.h["votos"]}
+        bruno = metodo_b(h["capital"], "P-BRUNO", self.S)
+        carlos = [metodo_b(h[m], "P-CARLOS", self.S) for m in MAGNITUDES]
+        self.assertEqual(bruno, Fraction(1800, 94))
+        self.assertLessEqual(bruno, 25)
+        self.assertEqual(carlos, [Fraction(600, 94), Fraction(2700, 93)])
+        self.assertGreater(carlos[1], 25)
+        self.assertEnDocumento(bruno, *carlos)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -382,7 +382,7 @@ La columna «Origen» indica cuándo se planteó la alternativa descartada:
 Nada de lo siguiente está resuelto en los textos. La [especificación del cálculo](especificacion-calculo.md) fija cómo se trata cada punto en v0.1; la referencia va al final de cada uno.
 
 1. **Ciclos:** qué método se usa en cada régimen (§4.2). → Especificación §6 (C20).
-2. **Participaciones por cuenta de otro:** se atribuyen al principal o se tratan como control por otros medios, y en qué magnitudes (§5.2). → Especificación §2.2 (C2).
+2. **Participaciones por cuenta de otro:** se atribuyen al principal o se tratan como control por otros medios, y en qué magnitudes (§5.2). → Especificación §2.2 (C2). Quedan abiertos N9 (AMLR) y N13 (España, capital), que se señalan con POS-FORMAL (C29).
 3. **España, participación indirecta:** si se multiplica a lo largo de la cadena o se suman los votos completos de las entidades controladas, como en el CCom 42.1 y la Dir. 22.3. La Ley no da método. → Especificación §5 (C17 a C19).
 4. **Mezcla de magnitudes en una cadena:** si se multiplica capital por capital y votos por votos, o si se pueden mezclar. Ni la Ley 4.2.b ni el AMLR 52.1 lo dicen. Por eso el modelo guarda las dos magnitudes en cada arista y no una sola. → Especificación §7 (C21).
 5. **AMLR, «acciones» frente a «capital»** cuando no son proporcionales (D7). → La especificación no lo trata: v0.1 sigue con la aproximación de D7.

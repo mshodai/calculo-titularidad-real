@@ -13,7 +13,7 @@ No fija el formato de salida, solo su contenido mínimo (§9).
 - Las citas literales van entre comillas «…» con artículo, apartado y letra. Las fuentes y sus versiones están en [`fuentes/FUENTES.md`](fuentes/FUENTES.md).
 - **[Cn — decisión propia]** marca una elección de este documento que no viene de los textos. El prefijo C evita confusiones con las decisiones D del modelo de datos. Todas están en el §11, con la alternativa descartada y el motivo.
 - **[Nn — no resuelto]** marca un caso que la norma no resuelve. Nunca se resuelve en silencio: el §12 dice, para cada uno, qué hace el cálculo y cómo lo señala la salida.
-  - **[C25 — decisión propia]** La salida señala un caso N cuando otra lectura del texto se puede calcular con los datos de la entrada y cambiaría quién es titular real. Lo hace con los avisos del §9; en N9, además, con la marca «por cuenta de».
+  - **[C25 — decisión propia]** La salida señala un caso N cuando otra lectura del texto se puede calcular con los datos de la entrada y cambiaría quién es titular real. Lo hace con los avisos del §9; en N9 y N13, además, con la marca «por cuenta de».
   - N10 y N11 no tienen señal propia, porque no hay otra lectura con la que comparar. El §12 explica por qué.
 - Los porcentajes van de 0 a 100, como en el modelo (D4).
 
@@ -60,11 +60,13 @@ Estos pasos transforman la entrada validada en el grafo sobre el que se calcula.
   - Dir. 22.4.a: se restan al titular formal los derechos de las acciones «de las que se ostente la titularidad por cuenta de una persona distinta».
 - **Lo que queda sin resolver:**
   - **[N9 — no resuelto]** El AMLR clasifica los acuerdos de nominatario como control por otros medios (53.4.c) y no dice si cuentan como propiedad del nominador en el cálculo del 52.1.
-  - Para el capital, ningún texto dice nada.
+  - **[N13 — no resuelto]** En España, ningún texto dice a quién se atribuye el capital de una participación por cuenta de otro. El CCom 42.1 y la Dir. 22.4.a solo hablan de votos, y la Ley 4.2.b no menciona a las personas interpuestas. En el AMLR el capital no es un caso aparte: el 52.1 incluye las «acciones», así que forma parte de N9.
 - **Lo que registra la salida.** Cada atribución hecha así lleva la marca «por cuenta de», para que se vea que depende de C2.
-  - La marca solo sale en quien recibe la participación, así que no cubre el otro lado de N9: que, con la lectura contraria, fuera titular real el titular formal.
-  - **[C29 — decisión propia]** En el AMLR se repite el cálculo sin C2: cada arista con `por_cuenta_de` se atribuye a su `titular` formal, en todas las pruebas (A1 a A4).
-  - Si con eso alguien que no es titular real por las reglas aplicadas cumpliría alguna prueba, la salida lo marca **POS-FORMAL** (N9). Puede ser el propio titular formal o, si es una entidad, quien participe en ella o la controle. Nunca lo cuenta como titular real.
+  - La marca solo sale en quien recibe la participación, así que no cubre el otro lado de N9 y N13: que, con la lectura contraria, fuera titular real el titular formal.
+  - **[C29 — decisión propia]** Se repite el cálculo con la lectura contraria, en la que cada arista con `por_cuenta_de` se atribuye a su `titular` formal:
+    - **AMLR (N9):** en las dos magnitudes y en todas las pruebas (A1 a A4).
+    - **España (N13):** solo en capital. Los votos siguen atribuidos al principal, porque ahí sí hay texto (CCom 42.1 y Dir. 22.4.a). Por eso solo cambia own_capital y, con él, E1. E2 y el dominio no cambian, porque solo usan votos.
+  - Si con eso alguien que no es titular real por las reglas aplicadas cumpliría alguna prueba, la salida lo marca **POS-FORMAL**. Puede ser el propio titular formal o, si es una entidad, quien participe en ella o la controle. Nunca lo cuenta como titular real.
   - Lo que el principal pierde con esa lectura ya lo indica la marca «por cuenta de».
 
 ### 2.3 Aristas paralelas
@@ -359,6 +361,7 @@ Dos observaciones:
 5. **Condición de titular real:** E1 o E2 (C19).
 6. **Avisos** (§9):
    - lectura L3;
+   - lectura contraria de N13 (C29);
    - mezcla de magnitudes;
    - huecos;
    - sensibilidad al método de ciclos;
@@ -429,7 +432,9 @@ Cómo se obtienen las cifras del método B: P-ANA tiene 20 % directo y 60 % × 3
 - **Sin esa cadena no llega al umbral:** se queda en 18/94 = 19,15 % de capital y 20/93 = 21,51 % de votos.
 - **Resultado.** Es titular real por la unión de pruebas (C14), pero dejaría de serlo si el 54 sustituyera al 52.1. Por eso la salida da ART54-SENS.
 
-**Lectura contraria de N9 (C29):** si la arista p03 se atribuyera a P-BRUNO, él tendría 18/94 = 19,15 % de capital y 20/93 = 21,51 % de votos. No llega al 25 ni controla nada, así que no hay POS-FORMAL. Con esa lectura, P-CARLOS dejaría de ser titular real, cosa que ya indica la marca «por cuenta de».
+**Lectura contraria de N9 y N13 (C29):**
+- **AMLR (N9).** Si la arista p03 se atribuyera a P-BRUNO, él tendría 18/94 = 19,15 % de capital y 20/93 = 21,51 % de votos. No llega al 25 ni controla nada, así que no hay POS-FORMAL. Con esa lectura, P-CARLOS dejaría de ser titular real, cosa que ya indica la marca «por cuenta de».
+- **España (N13), solo capital.** P-BRUNO tendría el mismo 19,15 % de capital, que no pasa de 25: tampoco hay POS-FORMAL. P-CARLOS se quedaría en 6/94 = 6,38 % de capital, pero seguiría siendo titular real por votos (29,03 %), que no cambian.
 
 **Valores iguales a un umbral (C28):** el ejemplo tiene dos del 50 % en E-BETA, pero leerlos por encima o por debajo no cambia quién es titular real en ninguno de los dos regímenes. No hay UMBRAL-EXACTO.
 
@@ -452,7 +457,7 @@ python3 -m unittest discover -s verificacion -v
 - **Qué comprueba.**
   - Los métodos A, B y C, la atribución «por cuenta de» (C2), el aviso de hueco de P-DIEGO y la agregación española.
   - El aviso ART54-SENS de P-CARLOS, y que el método A no cambia la relación de control del AMLR.
-  - Las cifras de P-BRUNO sin C2 (C29).
+  - Las cifras de P-BRUNO y P-CARLOS con la lectura contraria de N9 y N13 (C29).
   - Que cada cifra redondeada aparece en el documento que la cita. Si alguien cambia una cifra sin recalcularla, la comprobación falla.
 - **De dónde sale el ejemplo.** Se lee del bloque JSON del modelo de datos, así que no hay una segunda copia que pueda quedar desactualizada.
 - **Es provisional.** Implementa solo lo necesario para estas cifras. Cuando exista la implementación, estas comprobaciones pasarán a ser tests de ella.
@@ -528,7 +533,7 @@ python3 -m unittest discover -s verificacion -v
 | POS-T | eff_m(P, S) alcanza el umbral del régimen (§3.5) | N1 y N2 en España; N4 y N5 en el AMLR |
 | POS-AGREGADO | Con el control agregado C⁺, P cumpliría A2, A3 o A4 (§3.3). Solo AMLR | N8 |
 | POS-MEZCLA | El producto mixto alcanza el umbral (§7) | N6 |
-| POS-FORMAL | Con las aristas `por_cuenta_de` atribuidas al titular formal, P cumpliría A1, A2, A3 o A4 (§2.2). Solo AMLR | N9 |
+| POS-FORMAL | Con las aristas `por_cuenta_de` atribuidas al titular formal, P cumpliría A1, A2, A3 o A4 en el AMLR, o E1 en España, donde la atribución al titular formal es solo en capital (§2.2) | N9 en el AMLR; N13 en España |
 | POS-HUECO | own_m(P, S) + U_m alcanza el umbral, siendo U_m lo que llega a S desde los titulares `NO_IDENTIFICADO` y `OPACA` (C4) | Estructura incompleta |
 
 - **Avisos:**
@@ -692,7 +697,7 @@ Ver §6.3. Los dos regímenes identifican a P-ANA y P-CARLOS. P-DIEGO lleva avis
 | C26 | AMLR: control agregado C⁺ (C11 más la suma de lo que tienen X y sus controladas), solo para avisar (POS-AGREGADO) | §3.3 | Contar C⁺ como control | N8: el AMLR no lo dice; en v0.1 no se considera control |
 | C27 | AMLR: se comprueba si el titular lo sería sin las cadenas con tramos de control (own^O); si no, aviso ART54-SENS | §4.2 | No avisar, porque C14 ya es la lectura más amplia | La lectura contraria quita titulares, y quien lo es solo por C14 debe saberse |
 | C28 | Un valor igual a un umbral se toma como exacto; se repite el cálculo leyéndolo justo por encima y justo por debajo, y si cambia quién es titular real, aviso UMBRAL-EXACTO | §2.6 | (a) Avisar siempre que un valor coincida con un umbral. (b) Declarar «no determinable» | (a) Saltaría en cualquier sociedad al 50/50 aunque no cambie nada. (b) Casi siempre un 50 registrado es la mitad justa; el límite solo aparece a partir de cientos de miles de acciones (modelo, D23) |
-| C29 | AMLR: se repite el cálculo sin C2 y, si alguien pasa a cumplir A1 a A4, POS-FORMAL | §2.2 | Dejar N9 señalado solo con la marca «por cuenta de» | La marca solo sale en el principal; no avisa si con la otra lectura el titular formal sería titular real |
+| C29 | Se repite el cálculo con las aristas `por_cuenta_de` en su titular formal: en el AMLR, en las dos magnitudes; en España, solo en capital. Si alguien pasa a cumplir alguna prueba, POS-FORMAL | §2.2 | (a) Dejar N9 y N13 señalados solo con la marca «por cuenta de». (b) En España, atribuir también los votos al titular formal | (a) La marca solo sale en el principal; no avisa si con la otra lectura el titular formal sería titular real. (b) Para los votos hay texto: CCom 42.1 y Dir. 22.4.a |
 
 ## 12. Casos que la norma no resuelve
 
@@ -710,6 +715,7 @@ Ver §6.3. Los dos regímenes identifican a P-ANA y P-CARLOS. P-DIEGO lleva avis
 | N10 | España: qué es «mayoría» en el CCom 42.1.a | §3.2 | C10 (> 50) | Ninguna propia (ver abajo) |
 | N11 | AMLR: dos personas que controlan a la vez, una por capital y otra por votos (53.2.c) | §3.3, Ej. 4 | Se acepta tal como sale del texto | Ninguna (ver abajo) |
 | N12 | AMLR: si la autocartera se descuenta al decidir el control | §6.2 | La serie completa la descuenta de hecho; ninguna norma del AMLR lo dice | CICLO-SENS: el método A no la descuenta (§6.2) |
+| N13 | España: a quién se atribuye el capital de una participación por cuenta de otro | §2.2, §6.3 | C2 (al principal) | Marca «por cuenta de» y POS-FORMAL (C29) |
 
 **Por qué N10 y N11 no tienen señal.** En los dos casos no hay otra lectura con la que comparar la entrada (C25).
 - **N10.** La única alternativa a «> 50» sería «≥ 50», y el 50 % no es mayoría: con esa lectura, dos socios al 50 % dominarían a la vez la misma sociedad (C10).
