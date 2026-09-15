@@ -90,8 +90,11 @@ El volumen que llega a S a través de estos titulares virtuales se usa en los av
 **[C5 — decisión propia]**
 - **España:**
   - **Si S tiene `cotizacion` con `requisitos_informacion_ue_o_equivalentes: true`,** el resultado es «exceptuada» y no se calcula. Base: Ley 4.2.b, párr. 3, «Se exceptúan las sociedades que coticen en un mercado regulado y que estén sujetas a requisitos de información acordes con el Derecho de la Unión o a normas internacionales equivalentes».
-  - **Si la que cotiza es una entidad intermedia,** sus titulares no se recorren. Lo que llega a través de ella se atribuye a un titular virtual `COTIZADA(X)`, que no genera avisos de hueco.
+  - **Si una entidad intermedia tiene `cotizacion` con `requisitos_informacion_ue_o_equivalentes: true`,** sus titulares no se recorren. Lo que llega a través de ella se atribuye a un titular virtual `COTIZADA(X)`, que no genera avisos de hueco.
     - Base: RD 9.4, «No será preceptiva la identificación de los accionistas o titulares reales de empresas cotizadas o de sus filiales participadas mayoritariamente cuando aquéllas estén sometidas a obligaciones de información que aseguren la adecuada transparencia de su titularidad real».
+    - La excepción depende de esa condición («cuando aquéllas estén sometidas…»), no solo de cotizar. Es la valoración que D13 pide afirmar por separado, la misma que exige D26 en la validación.
+    - **Con `false`, la intermedia se trata como cualquier otra entidad:** se recorren sus titulares, y lo que falte es un hueco (C4).
+    - El modelo solo tiene un dato para esa condición, redactado según la Ley 4.2.b, párr. 3 («requisitos de información acordes con el Derecho de la Unión o a normas internacionales equivalentes»). Se usa también para la del RD 9.4, que lo dice de otra forma, igual que en D26.
 - **AMLR:** la cotización no cambia el cálculo. El art. 65.a exime a ciertas cotizadas de las obligaciones de los arts. 63 y 64, pero no toca la definición de los arts. 51 a 55. Si S cotiza, la salida lo indica como información.
 
 ### 2.6 Aritmética
@@ -549,7 +552,7 @@ python3 -m unittest discover -s verificacion -v
 | T-NO-CONVERGE | La lectura extensiva no se puede calcular (§3.5) |
 | DOMINIO-INESTABLE | El cálculo de dominio del §3.4 no se estabiliza; E2 queda como no determinable |
 | AMLR-NO-APLICABLE | La fecha de referencia es anterior al 10-07-2027 (C7) |
-| COTIZADA | Lo que llega a través de cotizadas en España (C5), a título informativo |
+| COTIZADA | Lo que llega a través de cotizadas con requisitos de información en España (C5), a título informativo |
 
 «Alcanza el umbral» significa **> 25 en España** y **≥ 25 en el AMLR**. **[C24 — decisión propia]** Todos los avisos usan el umbral del régimen en el que se calculan.
 
@@ -673,7 +676,7 @@ Ver §6.3. Los dos regímenes identifican a P-ANA y P-CARLOS. P-DIEGO lleva avis
 | C2 | La arista `por_cuenta_de` se atribuye al principal en todos los cálculos; el titular formal no recibe nada | §2.2 | (a) Atribuirla al titular formal. (b) En el AMLR, tratarla solo como control por otros medios (53.4.c), fuera de v0.1 | (a) Da falsos positivos y negativos. (b) Dejaría sin atribuir una participación conocida. El CCom 42 y la Dir. 22.3–22.4 la atribuyen al principal |
 | C3 | Las aristas paralelas del mismo titular, tras C2, se suman | §2.3 | Tratarlas por separado | Sumarlas es lo que hace el CCom 42.1: «se añadirán» |
 | C4 | Los huecos son titulares virtuales que se propagan | §2.4 | Ignorar los huecos | Ignorarlos haría que la regla de los administradores (4.2.b bis) se aplicara sin tener en cuenta a quien puede estar en el hueco |
-| C5 | España: S cotizada se exceptúa; las intermedias cotizadas no se recorren. AMLR: la cotización no cambia el cálculo | §2.5 | Aplicar el 65.a del AMLR como excepción | El 65.a exime de obligaciones (arts. 63 y 64), no de la definición (51–55) |
+| C5 | España: S cotizada con requisitos de información se exceptúa, y las intermedias en ese caso no se recorren; sin esos requisitos, se tratan como cualquier otra entidad. AMLR: la cotización no cambia el cálculo | §2.5 | (a) Aplicar el 65.a del AMLR como excepción. (b) Que baste con cotizar en las intermedias (versión anterior) | (a) El 65.a exime de obligaciones (arts. 63 y 64), no de la definición (51–55). (b) El RD 9.4 condiciona la excepción a las obligaciones de información; bastar con cotizar las daría por cumplidas, contra D13 |
 | C6 | Aritmética con fracciones exactas; solo se redondea al mostrar | §2.6 | Coma flotante binaria | Los umbrales > 25 y ≥ 25 se deciden en el valor exacto |
 | C7 | El AMLR se calcula aunque la fecha sea anterior a 2027-07-10, con aviso | §2.7 | No calcularlo | Comparar los dos regímenes es el objetivo del proyecto |
 | C8 | own_m se calcula resolviendo un sistema lineal (serie completa), con el titular como origen | §3.1 | Enumerar cadenas | Con ciclos hay infinitas cadenas; el sistema da su suma exacta |
