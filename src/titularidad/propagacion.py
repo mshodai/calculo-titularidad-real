@@ -227,21 +227,7 @@ def _tratar_ciclos(h, magnitud):
     M-matriz no singular). Si solo hay titulares internos al 100 %, un pivote es
     0; si el exceso de redondeo lo impide, un pivote es negativo.
     """
-    entidades = {y for _, y in h}
-    sucesores = defaultdict(list)
-    reflexivas = set()
-    for (titular, participada), valor in h.items():
-        if valor > 0 and titular in entidades:
-            sucesores[titular].append(participada)
-            if titular == participada:
-                reflexivas.add(titular)
-
-    for componente in componentes_fuertes(sorted(entidades), sucesores):
-        grupo = set(componente)
-        if len(grupo) == 1 and componente[0] not in reflexivas:
-            continue
-        if _converge(h, sorted(grupo)):
-            continue
+    for grupo in grupos_sin_convergencia(h):
         externos = any(v > 0 for (z, y), v in h.items() if y in grupo and z not in grupo)
         # AMBIGÜEDAD: el §6.4 dice que esas entidades «se tratan como un hueco
         # (NO_IDENTIFICADO)», pero no cómo. Se quitan las aristas internas del
@@ -258,6 +244,27 @@ def _tratar_ciclos(h, magnitud):
             if fuera < CIEN:
                 h[(hueco, entidad)] = CIEN - fuera
         yield CicloCerrado(magnitud, tuple(sorted(grupo)), externos)
+
+
+def grupos_sin_convergencia(h) -> list[set]:
+    """Grupos de entidades en ciclo cuya serie no converge, con la comprobación
+    exacta que describe `_tratar_ciclos`. Vacío si la serie converge en todo h."""
+    entidades = {y for _, y in h}
+    sucesores = defaultdict(list)
+    reflexivas = set()
+    for (titular, participada), valor in h.items():
+        if valor > 0 and titular in entidades:
+            sucesores[titular].append(participada)
+            if titular == participada:
+                reflexivas.add(titular)
+    grupos = []
+    for componente in componentes_fuertes(sorted(entidades), sucesores):
+        grupo = set(componente)
+        if len(grupo) == 1 and componente[0] not in reflexivas:
+            continue
+        if not _converge(h, sorted(grupo)):
+            grupos.append(grupo)
+    return grupos
 
 
 def _converge(h, grupo):
@@ -301,9 +308,20 @@ def serie_completa(grafo: Grafo, magnitud: str) -> dict:
     entran en X. Los orígenes sin aristas de entrada (personas y virtuales)
     comparten matriz y se resuelven juntos.
     """
-    h = grafo.h[magnitud]
-    entidades = sorted(grafo.entidades(magnitud))
-    externos = sorted(grafo.titulares(magnitud) - set(entidades), key=str)
+    return serie_sobre(grafo.h[magnitud])
+
+
+def serie_sobre(h: dict) -> dict:
+    """El método B sobre unos pesos cualesquiera, en %.
+
+    Sirve para las lecturas que solo avisan y cambian los pesos de las
+    aristas: la transparencia del control (§3.5) y el producto mixto (§7).
+    Quien la llame debe comprobar antes la convergencia con
+    `grupos_sin_convergencia`.
+    """
+    entidades = sorted({y for _, y in h})
+    titulares = {z for z, _ in h}
+    externos = sorted(titulares - set(entidades), key=str)
     resultado = {}
 
     if externos:
@@ -311,7 +329,7 @@ def serie_completa(grafo: Grafo, magnitud: str) -> dict:
         for x, solucion in zip(externos, soluciones):
             resultado[x] = dict(zip(entidades, solucion))
     for x in entidades:
-        if x not in grafo.titulares(magnitud):
+        if x not in titulares:
             continue
         resto = [y for y in entidades if y != x]
         (solucion,) = _resolver(h, resto, [[h.get((x, y), 0) for y in resto]])
@@ -412,12 +430,15 @@ class Dominio:
         return self.agregados(x, y) * CIEN / base
 
 
-def base_directiva(grafo: Grafo) -> Dominio:
+def base_directiva(grafo: Grafo, inclusivo: bool = False) -> Dominio:
     """Método C: Dep(X) por rondas desde vacío hasta que no cambie (§3.4).
 
     El umbral de dominio (> 50, C10) es parte de la definición del método: el
     art. 42 que lo aplica solo se usa en España (L2), pero el método C es ese.
+    Con `inclusivo`, el umbral pasa a ≥ 50: es la repetición de C28
+    (UMBRAL-EXACTO).
     """
+    supera = (lambda v: v >= 50) if inclusivo else (lambda v: v > 50)
     h = grafo.h["votos"]
     origenes = {z for z, _ in h}
     entidades = {y for _, y in h}
@@ -432,7 +453,7 @@ def base_directiva(grafo: Grafo) -> Dominio:
         nuevo = {
             x: frozenset(
                 y for y in entidades - {x}
-                if actual.base(y) > 0 and actual.agregados(x, y) * CIEN / actual.base(y) > 50
+                if actual.base(y) > 0 and supera(actual.agregados(x, y) * CIEN / actual.base(y))
             )
             for x in origenes
         }

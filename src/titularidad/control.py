@@ -160,6 +160,24 @@ def pruebas_amlr(grafo: Grafo, own: dict, control: Control, persona: str) -> fro
     return frozenset(pruebas)
 
 
+# --- España: dominio del art. 42 ---------------------------------------------------
+
+
+def dominio_espana(grafo: Grafo, inclusivo: bool = False) -> tuple[Dominio, tuple[Incidencia, ...]]:
+    """El dominio del §3.4 (C10 y C12) y, si no se estabiliza, DOMINIO-INESTABLE.
+
+    Con `inclusivo`, el umbral es ≥ 50: la repetición de C28 (UMBRAL-EXACTO).
+    """
+    dominio = base_directiva(grafo, inclusivo)
+    if dominio.estable:
+        return dominio, ()
+    return dominio, (Incidencia(
+        "DOMINIO-INESTABLE",
+        "El cálculo de dominio del §3.4 no se estabiliza: la agregación de votos (L2) no se "
+        "puede calcular y E2 queda como no determinable",
+    ),)
+
+
 # --- Todo junto ------------------------------------------------------------------
 
 
@@ -185,7 +203,7 @@ def calcular_control(grafo: Grafo) -> ResultadoControl:
     c_b = control_amlr(grafo, own_b)
     c_a = control_amlr(grafo, own_a)
     c_mas = control_agregado(grafo, c_b)
-    dominio = base_directiva(grafo)
+    dominio, avisos_espana = dominio_espana(grafo)
 
     personas = sorted(grafo.personas)
     avisos_amlr = []
@@ -208,12 +226,4 @@ def calcular_control(grafo: Grafo) -> ResultadoControl:
                 (p,),
             ))
 
-    avisos_espana = []
-    if not dominio.estable:
-        avisos_espana.append(Incidencia(
-            "DOMINIO-INESTABLE",
-            "El cálculo de dominio del §3.4 no se estabiliza: la agregación de votos (L2) no se "
-            "puede calcular y E2 queda como no determinable",
-        ))
-
-    return ResultadoControl(c_b, c_a, c_mas, dominio, tuple(avisos_amlr), tuple(avisos_espana))
+    return ResultadoControl(c_b, c_a, c_mas, dominio, tuple(avisos_amlr), avisos_espana)

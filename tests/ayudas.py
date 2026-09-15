@@ -22,21 +22,34 @@ def verificacion():
     return modulo
 
 
-def entrada(aristas, objetivo="S", entidades=(), clases=None):
+def entrada(aristas, objetivo="S", entidades=(), clases=None, cargos=None, cotizadas=None):
     """Entrada validada a partir de (id, titular, participada, capital, votos[, por_cuenta_de]).
 
     Son entidades el objetivo, las participadas y las de `entidades`; el resto,
     personas. Pasa por `cargar`, así que la entrada es válida según el modelo.
+
+    `cargos` son los de la entidad objetivo, como en el JSON. `cotizadas` da,
+    para cada entidad que cotiza, el valor de requisitos_informacion_ue_o_equivalentes.
+    Las personas que solo aparecen en los cargos se crean también.
     """
     clases = clases or {}
-    nombres = {objetivo} | set(entidades)
+    cotizadas = cotizadas or {}
+    cargos = cargos or []
+    nombres = {objetivo} | set(entidades) | set(cotizadas)
+    for cargo in cargos:
+        nombres |= {cargo["persona"]} | ({cargo["representante"]} if "representante" in cargo else set())
     for a in aristas:
         nombres |= {a[1], a[2]} | ({a[5]} if len(a) > 5 else set())
-    son_entidad = {objetivo} | set(entidades) | {a[2] for a in aristas}
+    son_entidad = {objetivo} | set(entidades) | set(cotizadas) | {a[2] for a in aristas}
     nodos = []
     for n in sorted(nombres):
         if n in son_entidad:
-            nodos.append({"id": n, "tipo": "entidad_juridica", "denominacion": n, "clase": clases.get(n, "sociedad")})
+            nodo = {"id": n, "tipo": "entidad_juridica", "denominacion": n, "clase": clases.get(n, "sociedad")}
+            if n in cotizadas:
+                nodo["cotizacion"] = {"mercado": "XMAD", "requisitos_informacion_ue_o_equivalentes": cotizadas[n]}
+            if n == objetivo and cargos:
+                nodo["cargos"] = cargos
+            nodos.append(nodo)
         else:
             nodos.append({"id": n, "tipo": "persona_fisica", "nombre": n})
     participaciones = []
