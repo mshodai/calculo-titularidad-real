@@ -51,9 +51,21 @@ No fija el formato de salida, solo su contenido mínimo (§9).
 
 Estos pasos transforman la entrada validada en el grafo sobre el que se calcula. Son iguales para los dos regímenes, salvo el §2.5.
 
+**Orden.** Las secciones no van en el orden en que se aplican. Se aplican así, en cada magnitud por separado:
+1. C2 (atribución al principal) y C3 (aristas paralelas), sobre toda la entrada;
+2. las entidades cuyos titulares no se recorren (`OPACA`, C4; `COTIZADA`, C5);
+3. C1 (subgrafo), sobre el grafo que resulta;
+4. los huecos de C4;
+5. los ciclos cerrados (§6.4);
+6. C1 otra vez, porque tratar un ciclo cerrado puede dejar nodos sin camino hasta S.
+
+Se hace por magnitud porque, con la lectura contraria de C29 en España, C2 se aplica en votos y no en capital, y los dos grafos son distintos.
+
 ### 2.1 Subgrafo relevante
 
 **[C1 — decisión propia]** Solo se calcula sobre los nodos que tienen un camino de aristas hasta S, además de S. El resto ya generó el aviso AVI-08 en la validación y se ignora (modelo, D21). Los `cargos` de S se conservan para el supuesto supletorio (§8).
+- **El camino se busca en el grafo ya atribuido por C2**, no en el de la entrada.
+- **La versión anterior tenía un error:** aplicaba C1 antes que C2. Un principal sin participaciones propias no tiene aristas en la entrada, así que quedaba fuera del subgrafo. Después, C2 le atribuía una arista que ya no se recorría, y se perdía un titular real.
 
 ### 2.2 Participaciones por cuenta de otro
 
@@ -84,9 +96,14 @@ Estos pasos transforman la entrada validada en el grafo sobre el que se calcula.
 |---|---|
 | Entidad en la cadena cuya suma en la magnitud m es menor que 100 | `NO_IDENTIFICADO(X)`, con 100 − suma en m. Si la suma se aparta de 100 por el redondeo que admite D15, por encima o por debajo, no hay hueco |
 | Entidad en la cadena sin titulares | `NO_IDENTIFICADO(X)`, con 100 en capital y en votos |
-| Entidad cuya `clase` no es `sociedad` (modelo, D8) | `OPACA(X)`: sus titulares no se recorren y ella recibe todo lo que le llegue |
+| Entidad intermedia cuya `clase` no es `sociedad` (modelo, D8) | `OPACA(X)`: sus titulares no se recorren y ella recibe todo lo que le llegue. Si la que no es sociedad es S, ver C31 |
 
 El volumen que llega a S a través de estos titulares virtuales se usa en los avisos del §9 y puede impedir el supuesto supletorio (§8).
+
+**[C31 — decisión propia] Entidad objetivo que no es una sociedad.** Si S tiene una `clase` distinta de `sociedad`, el resultado es **«fuera de alcance»** en los dos regímenes y no se calcula.
+- **Por qué no se calcula.** Las fundaciones, asociaciones y demás entidades tienen reglas propias de titularidad real: el RD 8 (por ejemplo, «25 por ciento o más de los derechos de voto del Patronato») y el AMLR 52.4. v0.1 no las tiene (modelo, D8 y §7). Calcular como si S fuera una sociedad daría un resultado que ninguna de las dos normas prevé.
+- **Por qué «no hay titulares» no es el resultado correcto.** Aplicar a S la regla de `OPACA` mandaría todo a `OPACA(S)`, y nadie sería titular. De ahí se pasaría al supuesto supletorio, que ni siquiera se aplicaría: el 100 % estaría en un hueco (H1) y el estado sería «no determinable». Ese estado dice que faltan datos, cuando lo que falta son las reglas.
+- **Qué indica la salida.** La `clase` de S y que v0.1 no tiene sus reglas. No se da el supuesto supletorio: sus administradores o cargos de dirección no son el resultado de ninguna regla aplicable.
 
 ### 2.5 Sociedades cotizadas
 
@@ -290,7 +307,7 @@ Hay dos formas que el art. 54 sí regula:
 
 ### 4.5 Algoritmo
 
-1. **Preparar el grafo** (§2).
+1. **Preparar el grafo** (§2). Si S no es una sociedad (C31), el resultado es «fuera de alcance» y se termina.
 2. **Calcular own_m(P, X)** para cada persona física P, cada titular virtual y cada entidad X (§3.1).
 3. **Calcular la relación de control C** (§3.3).
 4. **Aplicar las pruebas a cada persona física P,** en cada magnitud m:
@@ -366,7 +383,7 @@ Dos observaciones:
 
 ### 5.4 Algoritmo
 
-1. **Preparar el grafo** (§2). Si S es cotizada exceptuada (C5), o filial participada mayoritariamente de una cotizada (C30, con own_capital del §3.1), el resultado es «exceptuada» y se termina.
+1. **Preparar el grafo** (§2). Si S no es una sociedad (C31), el resultado es «fuera de alcance» y se termina. Si S es cotizada exceptuada (C5), o filial participada mayoritariamente de una cotizada (C30, con own_capital del §3.1), el resultado es «exceptuada» y se termina.
 2. **Calcular own_m(P, X)** (§3.1).
 3. **Calcular Dep, va y base** (§3.4).
 4. **Aplicar las pruebas a cada persona física P:**
@@ -545,6 +562,7 @@ python3 -m unittest discover -s verificacion -v
   - `determinado`;
   - `supletorio (condicional)` en España, o `sin titular real identificado (provisional)` en el AMLR;
   - `no determinable`;
+  - `fuera de alcance`, en los dos regímenes: S no es una sociedad (C31);
   - `exceptuada`, solo en España: S cotiza (C5) o es filial de una cotizada (C30). La salida indica cuál de las dos.
 - **Titulares reales.** Cada uno con la persona, las pruebas que cumple (A1–A4 o E1–E2), la magnitud, el valor exacto y el redondeado, las cadenas que lo explican y la marca «por cuenta de» si procede.
 - **Posibles titulares reales.** Personas que no lo son por las reglas aplicadas, pero sí por una lectura no resuelta, con el código correspondiente:
@@ -719,7 +737,7 @@ Si la exención se aplicara también a la filial intermedia, los socios de X no 
 
 | # | Decisión | Sección | Alternativa descartada | Motivo |
 |---|---|---|---|---|
-| C1 | Solo se calcula sobre los nodos con camino hasta S | §2.1 | Calcular sobre todo el grafo | Los nodos sin camino no pueden aportar nada a S; es coherente con D21 |
+| C1 | Solo se calcula sobre los nodos con camino hasta S, buscado en el grafo ya atribuido por C2 | §2.1 | Calcular sobre todo el grafo | Los nodos sin camino no pueden aportar nada a S; es coherente con D21 |
 | C2 | La arista `por_cuenta_de` se atribuye al principal en todos los cálculos; el titular formal no recibe nada | §2.2 | (a) Atribuirla al titular formal. (b) En el AMLR, tratarla solo como control por otros medios (53.4.c), fuera de v0.1 | (a) Da falsos positivos y negativos. (b) Dejaría sin atribuir una participación conocida. El CCom 42 y la Dir. 22.3–22.4 la atribuyen al principal |
 | C3 | Las aristas paralelas del mismo titular, tras C2, se suman | §2.3 | Tratarlas por separado | Sumarlas es lo que hace el CCom 42.1 («se añadirán») y el AMLR 52.1 («sumando los resultados de esas distintas cadenas») |
 | C4 | Los huecos son titulares virtuales que se propagan | §2.4 | Ignorar los huecos | En España, ignorarlos haría que la regla de los administradores (4.2.b bis) se aplicara sin tener en cuenta a quien puede estar en el hueco. En el AMLR, se declararía que no hay titular real sin poder afirmar que se han «agotado todos los medios posibles de identificación» (22.2) |
@@ -749,6 +767,7 @@ Si la exención se aplicara también a la filial intermedia, los socios de X no 
 | C28 | Un valor igual a un umbral se toma como exacto; se repite el cálculo leyéndolo justo por encima y justo por debajo, y si cambia quién es titular real, aviso UMBRAL-EXACTO | §2.6 | (a) Avisar siempre que un valor coincida con un umbral. (b) Declarar «no determinable» | (a) Saltaría en cualquier sociedad al 50/50 aunque no cambie nada. (b) Casi siempre un 50 registrado es la mitad justa; el límite solo aparece a partir de cientos de miles de acciones (modelo, D23) |
 | C29 | Se repite el cálculo con las aristas `por_cuenta_de` en su titular formal: en el AMLR, en las dos magnitudes; en España, solo en capital. Si alguien pasa a cumplir alguna prueba, POS-FORMAL | §2.2 | (a) Dejar N9 y N13 señalados solo con la marca «por cuenta de». (b) En España, atribuir también los votos al titular formal | (a) La marca solo sale en el principal; no avisa si con la otra lectura el titular formal sería titular real. (b) Para los votos hay texto: CCom 42.1 y Dir. 22.4.a |
 | C30 | España: S es «exceptuada» si es filial participada mayoritariamente de una cotizada con requisitos de información: own_capital(L, S) > 50, por cada cotizada. No se aplica a las filiales intermedias. EXENCION-SENS si otra lectura la haría filial | §2.5 | (a) Medir con los votos, o con capital o votos. (b) Cadena de mayorías directas. (c) Aplicarlo también a las filiales intermedias | El RD 9.4 dispensa, no prohíbe: una lectura estrecha como mucho identifica de más, y una amplia puede dejar sin identificar a un titular real. (a) «Participada» habla de participación, no de control. (b) El 60 % del 60 % no es una participación mayoritaria. (c) Dejaría sin recorrer a los socios minoritarios de la filial, que la transparencia de la cotizada no cubre (Ej. 8b) |
+| C31 | Si S no es una sociedad, el resultado es «fuera de alcance» en los dos regímenes y no se calcula | §2.4 | (a) Tratar S como `OPACA(S)`. (b) Calcular como si fuera una sociedad | (a) Nadie sería titular y el supletorio acabaría en «no determinable», que sugiere que faltan datos cuando lo que falta son las reglas. (b) El RD 8 y el AMLR 52.4 tienen reglas propias para esas entidades, que v0.1 no tiene (modelo, D8) |
 
 ## 12. Casos que la norma no resuelve
 

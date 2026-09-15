@@ -17,6 +17,7 @@ from titularidad.carga import cargar
 from titularidad.modelo import MAGNITUDES
 from titularidad.propagacion import (
     NO_IDENTIFICADO,
+    FueraDeAlcance,
     OPACA,
     Virtual,
     enumerar_cadenas,
@@ -205,6 +206,18 @@ def test_c2_atribuciones_con_marca(modelo):
     assert marcas == {("p03", "P-BRUNO", "P-CARLOS", "capital"), ("p03", "P-BRUNO", "P-CARLOS", "votos")}
 
 
+def test_c1_despues_de_c2_no_pierde_al_principal_sin_participaciones_propias():
+    """§2, orden: Q no tiene aristas en la entrada; solo T tiene el 30 % por cuenta de Q.
+
+    Con C1 antes de C2, Q quedaba fuera del subgrafo y se perdía un titular real.
+    """
+    grafo = preparar(entrada([("a1", "T", "S", 30, 30, "Q"), ("a2", "P", "S", 70, 70)]))
+    propagacion = propagar(grafo)
+    assert propagacion.serie["capital"]["Q"] == 30
+    assert propagacion.serie["capital"]["T"] == 0
+    assert [(a.titular_formal, a.principal) for a in grafo.atribuciones] == [("T", "Q"), ("T", "Q")]
+
+
 def test_c29_lectura_contraria_en_las_dos_magnitudes():
     """AMLR, N9: las cifras de verificacion.test_sin_c2_bruno_no_llega."""
     propagacion = propagar(preparar(MODELO, c2_en=()))
@@ -253,12 +266,11 @@ def test_c4_entidad_que_no_es_sociedad_es_opaca():
     assert propagacion.serie["capital"]["Q"] == 0
 
 
-def test_c4_objetivo_que_no_es_sociedad():
-    """Decisión marcada con AMBIGÜEDAD: todo va a OPACA(S)."""
+def test_c31_objetivo_que_no_es_sociedad_queda_fuera_de_alcance():
+    """C31: no se calcula; no es un caso de «no hay titulares»."""
     e = entrada([("a1", "P", "S", 100, 100)], clases={"S": "fundacion"})
-    propagacion = propagar(preparar(e))
-    assert propagacion.serie["capital"]["P"] == 0
-    assert propagacion.serie["capital"][Virtual(OPACA, "S")] == 100
+    with pytest.raises(FueraDeAlcance, match="fuera de alcance"):
+        preparar(e)
 
 
 def test_detener_para_el_regimen():

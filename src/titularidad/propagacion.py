@@ -31,6 +31,10 @@ NO_IDENTIFICADO = "NO_IDENTIFICADO"
 OPACA = "OPACA"
 
 
+class FueraDeAlcance(ValueError):
+    """La entidad objetivo no es una sociedad: no se calcula (especificación, C31)."""
+
+
 @dataclass(frozen=True, order=True)
 class Virtual:
     """Titular virtual (C4): se propaga como uno más, pero nunca es titular real.
@@ -111,23 +115,25 @@ def preparar(entrada: Entrada, c2_en=MAGNITUDES, detener=None) -> Grafo:
     todo lo que le llega, sin recorrer sus titulares. Es el mecanismo de
     `OPACA` (C4), que se aplica solo, y el que necesitará el régimen español
     para `COTIZADA` (C5). El motor no decide qué entidades son cotizadas.
+
+    Lanza FueraDeAlcance si la entidad objetivo no es una sociedad (C31).
     """
     objetivo = entrada.entidad_objetivo
+    if entrada.nodos[objetivo].clase != "sociedad":
+        raise FueraDeAlcance(
+            f"La entidad objetivo «{objetivo}» es de clase «{entrada.nodos[objetivo].clase}»: "
+            "v0.1 no tiene sus reglas y el resultado es «fuera de alcance» (C31)"
+        )
     detener = dict(detener or {})
     for id_nodo, nodo in entrada.nodos.items():
         if isinstance(nodo, EntidadJuridica) and nodo.clase != "sociedad":
-            # AMBIGÜEDAD: C4 dice «entidad cuya clase no es sociedad» sin
-            # excluir a la entidad objetivo. Si ella misma no es una sociedad,
-            # también se detiene: todo va a OPACA(S) y no hay titulares.
-            detener.setdefault(id_nodo, OPACA)
+            detener.setdefault(id_nodo, OPACA)  # C4, solo entidades intermedias
 
     h, atribuciones, cerrados, avisos = {}, [], [], []
     for magnitud in MAGNITUDES:
-        # AMBIGÜEDAD: la especificación enumera C1 (§2.1) antes que C2 (§2.2),
-        # pero el subgrafo tiene que calcularse después de atribuir al
-        # principal, o el principal quedaría fuera. Se aplica C2 y luego C1,
-        # por separado en cada magnitud, porque con C29 en España (C2 solo en
-        # votos) los dos grafos son distintos.
+        # Orden del §2 de la especificación: C2 y C3, lo que no se recorre,
+        # C1, huecos, ciclos cerrados y C1 otra vez. C1 va después de C2: si
+        # no, un principal sin participaciones propias quedaría fuera.
         aristas, atribuidas = _aristas(entrada, magnitud, magnitud in c2_en)
         _detener(aristas, detener)
         aristas = _subgrafo(aristas, objetivo)
