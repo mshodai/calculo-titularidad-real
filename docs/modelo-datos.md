@@ -7,7 +7,8 @@ Este documento define el JSON con el que se describe una estructura de propiedad
 ## 0. Convenciones
 
 - Las citas literales van entre comillas «…» con artículo, apartado y letra.
-- Todo lo que no viene de los textos y es elección de diseño va marcado como **[Dn — decisión propia]** y se recoge en la tabla del §8.
+- Todo lo que no viene de los textos y es elección de diseño va marcado como **[Dn — decisión propia]** y se recoge en la tabla del §8, junto con la alternativa descartada y el motivo.
+  - Los números (D1–D22) son identificadores estables: no siguen el orden de aparición y no se reutilizan.
 - Lo que los textos no resuelven y queda para la especificación del cálculo va marcado como **[Pendiente]** y se recoge en el §9.
 
 ### Fuentes (en `docs/fuentes/`)
@@ -160,7 +161,11 @@ Tras la tabla de cada objeto se indica de dónde sale cada campo. Se usará un J
 **[D12 — decisión propia]** Una sola lista de cargos sirve para los dos supuestos supletorios:
 - **España:** todos los `miembro_organo_administracion`, sean o no ejecutivos, ya que la Ley dice «el administrador o administradores» sin distinguir. Si el cargo lo ocupa una persona jurídica, cuenta su `representante`.
 - **AMLR:** los `miembro_organo_administracion` con `ejecutivo: true` y los `directivo` con `ejecutivo: true`.
-- **Supuesto de equivalencia:** se trata el «órgano de administración» español como el «órgano de dirección» del AMLR 63.4. Los textos no establecen esa equivalencia.
+
+**[D22 — decisión propia]** Para aplicar el AMLR, se trata el «órgano de administración» español como el «órgano de dirección» del art. 63.4.
+- Es un supuesto: los textos no establecen esa equivalencia.
+- Los propios textos europeos distinguen ambos órganos. El AMLR 53.3.b habla del «consejo de administración o del órgano de administración, de dirección o de control», y la Dir. 22.1.b, del «órgano de administración, de dirección o de supervisión».
+- Si una entidad tiene órganos separados, el supuesto puede no valer.
 
 ---
 
@@ -251,7 +256,12 @@ S tiene tres socios: P (45 %), Q (35 %) y H (20 %). A su vez, S tiene el 60 % de
   - redondeos;
   - que se haya anotado a la vez al testaferro y a la persona por cuya cuenta actúa, o al acreedor pignoraticio y al deudor. Estos son justo los casos que la Dir. 22.4 separa.
 - **Derechos repartidos sobre las mismas acciones.** Como capital y votos son magnitudes independientes, el modelo puede expresar que el capital de unas acciones sea de uno y los votos de otro. Se hacen dos aristas: una con el capital y `votos: 0`, y otra con `capital: 0` y los votos. Así la suma de cada magnitud no pasa del 100 %.
-- **[D15 — decisión propia]** Por eso, que una magnitud sume más del 100 % es un **error**, con una tolerancia de 0,01 puntos porcentuales para redondeos.
+- **[D15 — decisión propia]** Por eso, que una magnitud sume más del 100 % es un **error**, salvo el exceso que se explica por redondeo. La tolerancia sale de D4:
+  - cada porcentaje, redondeado al valor más próximo con 4 decimales, se desvía como mucho 0,00005 de su valor real;
+  - con *n* aristas con valor (no `null`) en esa entidad y esa magnitud, la suma puede pasar de 100 como mucho en *n* × 0,00005;
+  - como la suma de valores con 4 decimales es múltiplo de 0,0001, eso equivale a admitir hasta **100 + ⌊n/2⌋ × 0,0001**: nada con 1 arista, 0,0001 con 2 o 3, 0,0003 con 6;
+  - ejemplo: seis socios con un sexto cada uno, redondeado a 16,6667, suman 100,0002 y se admite. En cambio, 100,01 no puede salir de redondear y se rechaza;
+  - el cálculo usa los valores tal cual, sin reescalarlos a 100. Admitir ese exceso no cambia ningún porcentaje individual: solo evita rechazar entradas bien redondeadas.
 - **Sumar menos del 100 % sí puede ser legítimo.** Puede haber titulares no identificados, capital flotante en una cotizada o acciones al portador (la Ley 4.4 las menciona). Pero tiene consecuencias legales:
   - Ley 4.4, párr. 2: «no establecerán o mantendrán relaciones de negocio con personas jurídicas […] cuya estructura de propiedad y de control no haya podido determinarse»;
   - lo mismo en el RD 9.3;
@@ -264,7 +274,7 @@ S tiene tres socios: P (45 %), Q (35 %) y H (20 %). A su vez, S tiene el 60 % de
 
 | Código | Regla | Origen |
 |---|---|---|
-| ERR-01 | Faltan campos obligatorios, hay tipos incorrectos o **campos desconocidos** | D14b |
+| ERR-01 | Faltan campos obligatorios, hay tipos incorrectos o **campos desconocidos** | D20 |
 | ERR-02 | Hay `id` de nodo o de arista repetidos | D16 |
 | ERR-03 | `entidad_objetivo` no existe o no es `entidad_juridica` | Requisito |
 | ERR-04 | Una arista o un cargo apunta a un nodo que no existe (`titular`, `participada`, `por_cuenta_de`, `persona`, `representante`) | Integridad |
@@ -272,13 +282,13 @@ S tiene tres socios: P (45 %), Q (35 %) y H (20 %). A su vez, S tiene el 60 % de
 | ERR-06 | Un porcentaje está fuera de [0, 100] o tiene más de 4 decimales | D4 |
 | ERR-07 | Una arista tiene `capital` y `votos` los dos a `null` | D5 |
 | ERR-08 | Hay dos aristas con la misma combinación (`titular`, `participada`, `por_cuenta_de`) | D14 |
-| ERR-09 | La suma de `capital` en una entidad supera 100 + 0,01 | D15 |
-| ERR-10 | La suma de `votos` en una entidad supera 100 + 0,01 | D15 |
+| ERR-09 | La suma de `capital` en una entidad supera 100 + ⌊n/2⌋ × 0,0001, siendo *n* el número de aristas con `capital` no nulo | D15 |
+| ERR-10 | La suma de `votos` en una entidad supera 100 + ⌊n/2⌋ × 0,0001, siendo *n* el número de aristas con `votos` no nulo | D15 |
 | ERR-11 | `por_cuenta_de` es igual a `titular`, o es no nulo en una arista reflexiva | D9, D11 |
 | ERR-12 | Un cargo lo ocupa una entidad jurídica sin `representante`, o el `representante` no es una persona física | Ley 4.2.b bis |
 
 - **[D14 — decisión propia]** Solo puede haber una arista por combinación de titular, participada y `por_cuenta_de`. Si alguien tiene varias clases de participaciones, se suman en una sola arista.
-- **[D14b — decisión propia]** Se rechazan los campos desconocidos para detectar erratas (por ejemplo, `voto` en lugar de `votos`).
+- **[D20 — decisión propia]** Se rechazan los campos desconocidos para detectar erratas. Importa sobre todo en los campos opcionales: si se escribe `por_cuenta` en lugar de `por_cuenta_de`, la arista se trataría como una participación normal sin avisar.
 
 **Avisos (la entrada se acepta y el aviso acompaña al resultado):**
 
@@ -291,9 +301,11 @@ S tiene tres socios: P (45 %), Q (35 %) y H (20 %). A su vez, S tiene el 60 % de
 | AVI-05 | Hay en la cadena una entidad cuya `clase` no es `sociedad` | D8; RD 8; AMLR 52.4 |
 | AVI-06 | Hay aristas con `por_cuenta_de`: su tratamiento depende del régimen | §5 |
 | AVI-07 | La entidad objetivo no tiene `cargos`: no se puede aplicar el supuesto supletorio | Ley 4.2.b bis; AMLR 22.2 y 63.4 |
-| AVI-08 | Hay nodos que no están conectados con la entidad objetivo ni por aristas ni por cargos: se ignoran | Decisión |
+| AVI-08 | Hay nodos que no están conectados con la entidad objetivo ni por aristas ni por cargos: se ignoran | D21 |
 
 «En la cadena» significa que la entidad tiene un camino de aristas que llega hasta la entidad objetivo.
+
+- **[D21 — decisión propia]** Los nodos no conectados se ignoran con un aviso en lugar de rechazar la entrada. Es habitual pasar los datos de todo un grupo, y esos nodos no afectan al cálculo.
 
 ---
 
@@ -317,28 +329,34 @@ S tiene tres socios: P (45 %), Q (35 %) y H (20 %). A su vez, S tiene el 60 % de
 
 ## 8. Decisiones propias
 
-| # | Decisión | Sección |
-|---|---|---|
-| D1 | La entrada recoge hechos, no conclusiones | §1 |
-| D2 | El régimen es un parámetro del cálculo, no de la entrada | §1 |
-| D3 | `fecha_referencia` obligatoria | §3.1 |
-| D4 | Porcentajes en escala 0–100, máximo 4 decimales, leídos como decimales exactos | §3.4 |
-| D5 | `capital` y `votos` obligatorios; `null` = desconocido; no se deducen el uno del otro | §3.4 |
-| D6 | `votos` en bruto; los ajustes de la Dir. 22.5 los hace el cálculo | §3.4 |
-| D7 | `capital` = % del capital social; se usa también como «acciones» en el AMLR | §2.2 |
-| D8 | `clase` de entidad; v0.1 solo calcula a través de sociedades | §3.3 |
-| D9 | Autocartera como arista reflexiva | §4.3 |
-| D10 | Los ciclos se admiten y se avisan | §4.3 |
-| D11 | `por_cuenta_de` entra en v0.1; `titular` es el titular formal | §5.2 |
-| D12 | Una sola lista de `cargos`, con `ejecutivo` y `representante`; «órgano de administración» se trata como «órgano de dirección» | §3.5 |
-| D13 | `cotizacion` con dos condiciones separadas | §3.3 |
-| D14 | Una arista por (titular, participada, `por_cuenta_de`) | §6.2 |
-| D14b | Se rechazan los campos desconocidos | §6.2 |
-| D15 | Más del 100 % en una magnitud es un error (tolerancia 0,01); menos del 100 % es un aviso | §6.1 |
-| D16 | `id` obligatorio en las aristas | §3.4 |
-| D17 | `fuente` y `desde` opcionales | §3.4 |
-| D18 | `identificacion` opcional y sin validar en v0.1 | §3.2 |
-| D19 | Lo del §7 queda fuera de v0.1 | §7 |
+La columna «Origen» indica cuándo se planteó la alternativa descartada:
+- **diseño:** se sopesó al diseñar el modelo;
+- **revisión:** se formuló después, al revisar las decisiones (2026-09-15). Es la opción obvia que la decisión deja fuera, o un cambio respecto a la versión anterior de este documento.
+
+| # | Decisión | Sección | Alternativa descartada | Motivo | Origen |
+|---|---|---|---|---|---|
+| D1 | La entrada recoge hechos, no conclusiones | §1 | Incluir conclusiones: «controla», «es titular real» o el «criterio» de la Ley 4 bis.4.g | La conclusión depende del régimen. Si va en la entrada, el cálculo solo la repite y no se pueden comparar los regímenes | revisión |
+| D2 | El régimen es un parámetro del cálculo, no de la entrada | §1 | Un campo `regimen` en el JSON | Obligaría a duplicar la estructura para calcularla con los dos regímenes | diseño |
+| D3 | `fecha_referencia` obligatoria, en la raíz | §3.1 | Opcional, o solo fechas en cada arista | Los regímenes se aplican en fechas distintas (AMLR, art. 90), y mezclar fechas es la causa típica de sumas por encima del 100 % | revisión |
+| D4 | Porcentajes de 0 a 100, máximo 4 decimales, leídos como decimales exactos | §3.4 | (a) Escala 0–1. (b) Porcentajes como texto (`"25.00"`). (c) Fracciones exactas (`"1/3"`) | (a) Los textos hablan de «25 por ciento». (b) Es más seguro frente al redondeo binario, pero hace el JSON menos natural; basta exigir lectura decimal exacta. (c) Añade complejidad para un caso raro (tercios, sextos) | diseño |
+| D5 | `capital` y `votos` obligatorios; `null` = desconocido; no se deducen el uno del otro | §3.4 | Tomar los votos iguales al capital cuando falten | Ocultaría las participaciones sin voto, y el umbral puede superarse en cualquiera de las dos magnitudes | diseño |
+| D6 | `votos` en bruto; los ajustes de la Dir. 22.5 los hace el cálculo | §3.4 | Votos ya ajustados, sin la autocartera | El ajuste depende del régimen y de qué entidades son filiales, cosa que calcula el propio programa. Si viniera hecho, no se sabría con qué criterio | diseño |
+| D7 | `capital` = % del capital social; se usa también como «acciones» en el AMLR | §2.2 | Una tercera magnitud, `derechos_economicos` (AMLR 52.1) | El requisito del modelo son dos magnitudes. Pérdida conocida: con el AMLR, v0.1 falla si los derechos económicos no son proporcionales al capital | diseño |
+| D8 | `clase` de entidad; v0.1 solo calcula a través de sociedades | §3.3 | Sin `clase`, tratando todas las entidades como sociedades | El RD 8 (fundaciones y asociaciones) y el AMLR 52.4 tienen reglas propias. Tratarlas como sociedades daría resultados erróneos sin avisar | revisión |
+| D9 | Autocartera como arista reflexiva | §4.3 | Un atributo `autocartera` en la entidad | La Dir. 22.5 trata juntas la autocartera, las acciones en manos de filiales y las que se tienen por cuenta de ellas. Con aristas, las tres se representan igual | diseño |
+| D10 | Los ciclos se admiten y se avisan | §4.3 | (a) Rechazar la entrada. (b) Romper los ciclos al leerla | (a) Existen en estructuras reales. (b) Cómo tratarlos es una decisión del cálculo, y cambia el resultado del umbral del 50 % (§4.2) | diseño |
+| D11 | `por_cuenta_de` entra en v0.1; `titular` es el titular formal | §5.2 | (a) Dejarlo fuera como control por otros medios. (b) Arista desde el principal, con un campo `a_traves_de`. (c) Un campo `motivo` (testaferro, garantía, préstamo) | (a) El CCom 42 y la Dir. 22.3 lo tratan dentro del cálculo de votos; omitirlo da falsos positivos y negativos. (b) Los registros muestran al titular formal, y así lo formulan la Dir. 22.4.a y el AMLR 66. (c) Hoy ninguna regla lo necesita | diseño |
+| D12 | Una sola lista de `cargos`, con `ejecutivo` y `representante` | §3.5 | Dos listas: administradores (España) y cargos de dirección de alto nivel (AMLR) | La misma persona aparecería en las dos; separarlas duplicaría datos | revisión |
+| D13 | `cotizacion` con dos condiciones separadas | §3.3 | Un simple `cotizada: true` | La Ley 4.2.b, párr. 3 exige dos condiciones y la segunda es una valoración. Con un booleano se daría por hecha | diseño |
+| D14 | Una arista por (titular, participada, `por_cuenta_de`) | §6.2 | Admitir aristas repetidas y sumarlas | Una arista repetida suele ser un dato duplicado por error, y sumarla lo taparía | diseño |
+| D15 | Más del 100 % en una magnitud es un error, salvo el exceso de redondeo: hasta 100 + ⌊n/2⌋ × 0,0001. Menos del 100 % es un aviso | §6.1 | (a) Tolerancia fija de 0,01 (versión anterior). (b) Sin tolerancia. (c) Un campo `accionariado_completo` | (a) Es 100 veces la resolución de D4 y deja pasar errores que no son de redondeo. (b) Rechaza entradas bien redondeadas: seis sextos suman 100,0002. (c) Sobra: el aviso ya da el porcentaje sin identificar | revisión (a); diseño (b, c) |
+| D16 | `id` obligatorio en las aristas | §3.4 | `id` opcional | El cálculo tiene que poder explicar cada resultado indicando la cadena exacta | diseño |
+| D17 | `fuente` y `desde` opcionales | §3.4 | Dejarlos fuera | `desde` lo pide el AMLR 62.1.b; `fuente` sirve para documentar las comprobaciones (RD 8.b, Ley 4.2.b bis) | diseño |
+| D18 | `identificacion` opcional y sin validar en v0.1 | §3.2 | (a) Omitirla. (b) Validar su contenido (DNI, fechas…) | (a) La necesitará la salida. (b) El cálculo no la usa, y validar documentos de identidad es trabajo aparte | diseño |
+| D19 | Lo del §7 queda fuera de v0.1 | §7 | Reservar campos (p. ej., `controles_otros_medios`) aunque v0.1 no los use | Un campo que el cálculo ignora da la falsa impresión de que se tiene en cuenta | diseño |
+| D20 | Se rechazan los campos desconocidos | §6.2 | Ignorarlos | Una errata en un campo opcional pasaría inadvertida (p. ej., `por_cuenta` en lugar de `por_cuenta_de`) | diseño |
+| D21 | Los nodos no conectados con la entidad objetivo se ignoran con aviso | §6.2 | Rechazar la entrada | Es habitual pasar los datos de todo un grupo, y esos nodos no afectan al cálculo | revisión |
+| D22 | El «órgano de administración» español se trata como el «órgano de dirección» del AMLR 63.4 | §3.5 | (a) No suponer nada y dejar sin calcular el supuesto supletorio del AMLR. (b) Un campo que indique qué órgano es | (a) Dejaría sin resultado el supuesto del AMLR para cualquier entidad española. (b) Se podrá añadir si aparecen entidades con órganos separados, que los textos europeos distinguen (AMLR 53.3.b; Dir. 22.1.b) | revisión |
 
 ## 9. Pendiente para la especificación del cálculo
 
