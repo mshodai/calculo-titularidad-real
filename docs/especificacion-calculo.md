@@ -1,0 +1,633 @@
+# Especificación del cálculo — v0.1
+
+Estado: borrador. Fecha: 2026-09-15. Sin código.
+
+Este documento define cómo se calcula la titularidad real de la `entidad_objetivo` a partir de una entrada válida según [`modelo-datos.md`](modelo-datos.md) v0.1, en dos regímenes:
+- **España:** Ley 10/2010, art. 4.2.b y b bis; RD 304/2014, art. 8.b; CCom art. 42 y Dir. 2013/34/UE art. 22, a los que remite la Ley.
+- **AMLR:** Reglamento (UE) 2024/1624, arts. 51 a 54, con los arts. 22.2 y 63.4 para el supuesto supletorio.
+
+No fija el formato de salida, solo su contenido mínimo (§9).
+
+## 0. Convenciones
+
+- Las citas literales van entre comillas «…» con artículo, apartado y letra. Las fuentes y sus versiones están en [`fuentes/FUENTES.md`](fuentes/FUENTES.md).
+- **[Cn — decisión propia]** marca una elección de este documento que no viene de los textos. El prefijo C evita confusiones con las decisiones D del modelo de datos. Todas están en el §11, con la alternativa descartada y el motivo.
+- **[Nn — no resuelto]** marca un caso que la norma no resuelve. Se documenta y la salida lo señala como aviso; no se resuelve en silencio. Todos están en el §12.
+- Los porcentajes van de 0 a 100, como en el modelo (D4).
+
+**Notación** (m es una magnitud: `capital` o `votos`):
+
+| Símbolo | Significado |
+|---|---|
+| S | La `entidad_objetivo` |
+| h_m(X, Y) | Participación directa de X en Y en la magnitud m, tras la preparación del §2 |
+| own_m(X, Y) | Participación multiplicativa de X en Y: todas las cadenas, multiplicadas y sumadas (§3.1) |
+| C(X, Y) | X controla Y según el AMLR (§3.3) |
+| Dep(X) | Entidades dependientes de X según el art. 42 del Código de Comercio (§3.4) |
+| va(X, Y) | Votos agregados de X en Y según el art. 42 (§3.4) |
+| base(Y) | Total de votos de Y tras el ajuste de la Dir. 22.5 (§3.4) |
+
+---
+
+## 1. Resumen
+
+| | España (lectura aplicada, C19) | AMLR |
+|---|---|---|
+| Umbral de titularidad | «superior al 25 por ciento» (Ley 4.2.b): **> 25** | «25 % o más» (52.1): **≥ 25** |
+| Umbral de control | «mayoría de los derechos de voto» (CCom 42.1.a): **> 50 en votos** (C10) | «50 % más una de las acciones o los derechos de voto» (53.2.c): **> 50 en capital o en votos** |
+| Participación indirecta | La Ley no da método. Se aplica la multiplicación (L1, C17) | Multiplicación y suma de cadenas (52.1) |
+| Control a mitad de cadena | Votos de las dependientes, sumados enteros (L2, CCom 42.1, último párrafo) | Art. 54.a y 54.b |
+| Ciclos | Multiplicación: serie completa (B). Agregación de votos: base de la Dir. 22.5 (C). Ninguna norma lo resuelve (§6) | Serie completa (B). Ninguna norma lo resuelve (§6) |
+| Nadie alcanza el umbral | Administradores (4.2.b bis), con carácter condicional en v0.1 | Cargos de dirección de alto nivel, que no son titulares reales (22.2, 63.4) |
+
+---
+
+## 2. Preparación común
+
+Estos pasos transforman la entrada validada en el grafo sobre el que se calcula. Son iguales para los dos regímenes, salvo el §2.5.
+
+### 2.1 Subgrafo relevante
+
+**[C1 — decisión propia]** Solo se calcula sobre los nodos que tienen un camino de aristas hasta S, además de S. El resto ya generó el aviso AVI-08 en la validación y se ignora (modelo, D21). Los `cargos` de S se conservan para el supuesto supletorio (§8).
+
+### 2.2 Participaciones por cuenta de otro
+
+**[C2 — decisión propia]** En todos los cálculos, una arista con `por_cuenta_de` se atribuye al principal, como si él fuera el titular. El titular formal no recibe nada por esa arista.
+- **Apoyo en los textos, solo para los votos:**
+  - CCom 42.1, último párrafo: se suman a la dominante los votos que tenga «a través de personas que actúen en su propio nombre pero por cuenta de la entidad dominante»;
+  - Dir. 22.4.a: se restan al titular formal los derechos de las acciones «de las que se ostente la titularidad por cuenta de una persona distinta».
+- **Lo que queda sin resolver:**
+  - **[N9 — no resuelto]** El AMLR clasifica los acuerdos de nominatario como control por otros medios (53.4.c) y no dice si cuentan como propiedad del nominador en el cálculo del 52.1.
+  - Para el capital, ningún texto dice nada.
+- **Lo que registra la salida.** Cada atribución hecha así lleva la marca «por cuenta de», para que se vea que depende de C2.
+
+### 2.3 Aristas paralelas
+
+**[C3 — decisión propia]** Si, tras C2, un mismo titular tiene varias aristas hacia la misma entidad (por ejemplo, una propia y otra a través de un testaferro), sus valores se suman en cada magnitud para obtener h_m.
+
+### 2.4 Huecos: participaciones sin titular identificado
+
+**[C4 — decisión propia]** Todo lo que no llega a una persona física identificada se representa con **titulares virtuales**, que se propagan como una persona más pero nunca pueden ser titulares reales:
+
+| Caso | Titular virtual |
+|---|---|
+| Entidad en la cadena cuya suma en la magnitud m es menor que 100 | `NO_IDENTIFICADO(X)`, con 100 − suma en m. Si la suma pasa de 100 por el redondeo que admite D15, no hay hueco |
+| Entidad en la cadena sin titulares | `NO_IDENTIFICADO(X)`, con 100 en capital y en votos |
+| Entidad cuya `clase` no es `sociedad` (modelo, D8) | `OPACA(X)`: sus titulares no se recorren y ella recibe todo lo que le llegue |
+
+El volumen que llega a S a través de estos titulares virtuales se usa en los avisos del §9 y puede impedir el supuesto supletorio (§8).
+
+### 2.5 Sociedades cotizadas
+
+**[C5 — decisión propia]**
+- **España:**
+  - **Si S tiene `cotizacion` con `requisitos_informacion_ue_o_equivalentes: true`,** el resultado es «exceptuada» y no se calcula. Base: Ley 4.2.b, párr. 3, «Se exceptúan las sociedades que coticen en un mercado regulado y que estén sujetas a requisitos de información acordes con el Derecho de la Unión o a normas internacionales equivalentes».
+  - **Si la que cotiza es una entidad intermedia,** sus titulares no se recorren. Lo que llega a través de ella se atribuye a un titular virtual `COTIZADA(X)`, que no genera avisos de hueco.
+    - Base: RD 9.4, «No será preceptiva la identificación de los accionistas o titulares reales de empresas cotizadas o de sus filiales participadas mayoritariamente cuando aquéllas estén sometidas a obligaciones de información que aseguren la adecuada transparencia de su titularidad real».
+- **AMLR:** la cotización no cambia el cálculo. El art. 65.a exime a ciertas cotizadas de las obligaciones de los arts. 63 y 64, pero no toca la definición de los arts. 51 a 55. Si S cotiza, la salida lo indica como información.
+
+### 2.6 Aritmética
+
+**[C6 — decisión propia]**
+- Todos los cálculos se hacen con **fracciones exactas**: la entrada, que tiene como mucho 4 decimales (D4), es racional, y los sistemas del §3.1 dan resultados racionales.
+- Las comparaciones con los umbrales (25 y 50) también son exactas. Solo se redondea al mostrar el resultado, a 2 decimales.
+- Motivo: la diferencia entre «> 25» y «≥ 25» se decide justo en el 25. Por ejemplo, 23,5 / 94 vale exactamente 25; con aritmética binaria podría salir ligeramente por encima o por debajo.
+
+### 2.7 Fecha de aplicación del AMLR
+
+**[C7 — decisión propia]** Si `fecha_referencia` es anterior al 2027-07-10, el AMLR se calcula igualmente, porque comparar los dos regímenes es el objetivo del proyecto, pero la salida avisa de que todavía no es aplicable. Base: AMLR art. 90, «Será aplicable a partir del 10 de julio de 2027».
+
+---
+
+## 3. Primitivas de cálculo
+
+### 3.1 Participación multiplicativa: own_m(X, Y)
+
+**Qué calcula.** La parte de Y que corresponde a X en la magnitud m, multiplicando los porcentajes a lo largo de cada cadena de X a Y y sumando todas las cadenas. Es la regla del AMLR 52.1: «multiplicando las acciones o los derechos de voto u otra participación en la propiedad de la que sean titulares las entidades intermedias de la cadena […] y sumando los resultados de esas distintas cadenas».
+
+**[C8 — decisión propia] Cómo se calcula:**
+- **No se enumeran las cadenas: se resuelve un sistema lineal.** Para cada entidad Y del subgrafo:
+
+  own_m(X, Y) = h_m(X, Y) + Σ_Z own_m(X, Z) · h_m(Z, Y) / 100
+
+  donde Z recorre las entidades que tienen participación en Y. Todo va en porcentaje (0–100), como la entrada.
+- **Qué incluye.** Equivale a sumar todas las cadenas de X a Y, también las que dan vueltas a un ciclo (método B del §6).
+- **X como origen.** Al calcular la participación de X, se ignoran las aristas que entran en X. Así, si X es una entidad, su participación en Y no se cuenta dos veces a través de sus propios accionistas. Las personas físicas no tienen aristas de entrada, así que para ellas no cambia nada.
+- **Si el sistema no tiene solución única** (un ciclo cerrado al 100 %, sin titulares fuera de él), no se puede calcular: ver §6.4.
+- **Explicación en la salida.** Se listan las cadenas sin repeticiones y, aparte, lo que aporta cada ciclo.
+
+**[C9 — decisión propia] Las magnitudes se propagan por separado:** own_capital multiplica solo capitales y own_votos solo votos. Dónde se mezclan y qué se hace con la mezcla está en el §7.
+
+### 3.2 Umbral de control
+
+**[C10 — decisión propia]** Hay control cuando se supera estrictamente el 50:
+- **AMLR:** en capital **o** en votos. 53.2.c: «la propiedad directa o indirecta del 50 % más una de las acciones o los derechos de voto».
+- **España:** solo en votos. CCom 42.1.a: «Posea la mayoría de los derechos de voto».
+- **Por qué «> 50».** El texto del AMLR dice «50 % más una» acción y el del Código, «mayoría», pero la entrada solo tiene porcentajes, no número de acciones. Si los porcentajes salen del número de acciones, superar el 50 % equivale a tener al menos la mitad más una. **[N10 — no resuelto]** El Código no dice qué es «mayoría».
+
+### 3.3 Control en el AMLR: C(X, Y)
+
+- **53.2.a:** control es «la posibilidad de ejercer, directa o indirectamente, una influencia significativa e imponer decisiones pertinentes en la entidad».
+- **53.2.b:** control indirecto es «el control de entidades jurídicas intermedias en la estructura de propiedad o en diversas cadenas de la estructura de propiedad, cuando se identifica el control directo en cada nivel de la estructura».
+- **53.2.c:** control a través de participación es «la propiedad directa o indirecta del 50 % más una».
+
+**[C11 — decisión propia]** C(X, Y) se cumple si ocurre alguna de estas dos cosas (es el cierre transitivo de la relación):
+1. own_capital(X, Y) > 50 u own_votos(X, Y) > 50. Es la «propiedad directa o indirecta» del 53.2.c, e incluye la participación directa.
+2. Existe una entidad Z tal que C(X, Z) y C(Z, Y). Es el control «en cada nivel» del 53.2.b.
+
+El control por otros medios (53.3 y 53.4) queda fuera de v0.1 (modelo, D19).
+- **[N8 — no resuelto]** El AMLR no dice si X controla Y cuando varias entidades controladas por X suman juntas más del 50 % de Y, sin que ninguna lo tenga por sí sola. En v0.1 no se considera control.
+- **[N11 — no resuelto]** Como el 53.2.c dice «acciones o los derechos de voto», dos personas pueden controlar a la vez la misma entidad: una con más del 50 % del capital y otra con más del 50 % de los votos (Ej. 4). El texto lleva a ese resultado y no dice nada sobre él.
+
+### 3.4 Dominio y votos agregados en España: Dep(X) y va(X, Y)
+
+**Base textual:**
+- CCom 42.1.a: «Posea la mayoría de los derechos de voto».
+- CCom 42.1, último párrafo: «a los derechos de voto de la entidad dominante se añadirán los que posea a través de otras sociedades dependientes o a través de personas que actúen en su propio nombre pero por cuenta de la entidad dominante o de otras dependientes».
+- Dir. 22.5: «deben sustraerse de la totalidad de los derechos de voto […] los derechos de voto propios de las acciones o participaciones de las que sea titular esta misma empresa, una empresa filial de esta, o una persona que actúe en su propio nombre pero por cuenta de dichas empresas».
+
+**[C12 — decisión propia] Definición:**
+- **Votos agregados:** va(X, Y) = suma de h_votos(Z, Y) para Z ∈ {X} ∪ Dep(X). Las personas interpuestas ya están incluidas por C2.
+- **Base ajustada:** base(Y) = 100 − suma de h_votos(Z, Y) para Z ∈ {Y} ∪ Dep(Y).
+- **Dominio:** Y ∈ Dep(X) si va(X, Y) · 100 / base(Y) > 50.
+- **Cálculo.** Se empieza con Dep(X) vacío para todo X y se recalcula hasta que no cambie nada.
+  - Termina siempre: cada nueva dependiente solo puede aumentar los votos agregados de los demás o reducir alguna base, así que las relaciones solo crecen, y hay un número finito de nodos.
+  - Las dependientes de una dependiente se incorporan solas en el recálculo.
+
+**Cuatro cosas que esta definición supone:**
+- **La persona física como dominante.** El art. 42 está escrito entre sociedades; aplicarlo a personas físicas es la transposición que exige la remisión de la Ley 4.2.b.
+- **Solo la letra a) del art. 42.1.** Las letras b) a d) y el concierto necesitan datos de control por otros medios, fuera de v0.1.
+- **Mayoría estricta:** «> 50» (C10).
+- **La base de la Dir. 22.5 también se usa en España,** porque la Ley remite al art. 22, apartados 1 a 5.
+
+### 3.5 Atribución con transparencia del control (lectura extensiva)
+
+**[C13 — decisión propia]** Se calcula como own_m (§3.1), pero dando peso 1 a cada arista en la que el titular controla directamente a la participada:
+- **AMLR:** h_capital > 50 o h_votos > 50.
+- **España:** h_votos · 100 / base > 50.
+- Las demás aristas pesan h_m / 100.
+
+Se escribe eff_m(P, S).
+- **Solo se usa para avisar.** Nunca convierte a nadie en titular real. Sirve para señalar los casos que los textos no regulan (§4.4 y §5.2).
+- **Si la serie no converge** (un ciclo formado solo por aristas de control), eff no se puede calcular y se avisa.
+
+---
+
+## 4. AMLR
+
+### 4.1 Reglas
+
+- **51:** son titulares reales las personas físicas que, directa o indirectamente, «a) tengan una participación en la propiedad de la sociedad, o b) controlen la sociedad u otra entidad jurídica a través de una participación en la propiedad o por otros medios». En el documento pone «una participación den la propiedad» (errata).
+- **51, párrafo 2:** el control por otros medios se determina «independientemente de la existencia de un derecho de propiedad o de un control a través de una participación en la propiedad, y de manera paralela a esta».
+- **52.1:** «participación en la propiedad de la sociedad» es «la propiedad directa o indirecta del 25 % o más de las acciones, derechos de voto u otra participación en la propiedad». La indirecta se calcula multiplicando y sumando cadenas, «salvo que resulte de aplicación el artículo 54». Además, «se tendrán en cuenta todas las participaciones en todos los niveles de propiedad».
+- **54:** «Cuando el derecho de propiedad sobre sociedades se ejerza a través de una estructura de propiedad con múltiples niveles, y cuando en una o varias cadenas de dicha estructura coexista la participación en la propiedad y el control en relación con diferentes niveles de la cadena, el titular o titulares reales serán:
+  - a) la persona o personas físicas que controlen, directa o indirectamente, a través de participación en la propiedad o por otros medios, entidades jurídicas titulares de una participación en la propiedad directa de la sociedad, ya sea de forma individual o acumulativa;
+  - b) la persona o personas físicas que, ya sea individual o acumulativamente, directa o indirectamente, sean titulares de una participación en la propiedad de la sociedad que controle directa o indirectamente la sociedad a través de una participación en la propiedad o por otros medios.»
+- **Considerando 108:** «es necesario evaluar simultáneamente si alguna persona física posee una participación directa o indirecta con el 25 % o más de las acciones, derechos de voto u otra participación en la propiedad, y si alguna persona física controla al accionista directo con el 25 % o más».
+
+### 4.2 Cuándo se aplica el 52.1 y cuándo el 54
+
+Una cadena de P a S se puede partir en tramos de dos tipos:
+- **tramo C:** aristas en las que el titular controla a la participada;
+- **tramo O:** aristas sin control, es decir, de participación.
+
+| Forma de la cadena | Regla que la cubre | Qué se atribuye a P |
+|---|---|---|
+| Solo O (O…O) | 52.1 | El producto de la cadena |
+| Solo C (C…C) | 51.b (control indirecto, 53.2.b) y 54.a | P controla S |
+| C…C y después un único O (P controla un accionista directo D) | 54.a | h(D, S) entero, no multiplicado |
+| O…O y después C…C (una entidad K controla S) | 54.b | Basta con own(P, K) ≥ 25 |
+| Otras formas (C O O…, O C O…, varias alternancias) | **Ninguna** | Ver §4.4 |
+
+**[N3 — no resuelto]** El 52.1 dice «salvo que resulte de aplicación el artículo 54», pero no aclara si el 54 **sustituye** al 52.1 en las cadenas mixtas o si se **añade** a él.
+
+**[C14 — decisión propia]** Se aplican todas las pruebas y el resultado es su unión: una persona es titular real si cumple el 52.1, el 51.b, el 54.a o el 54.b.
+- **Por qué:**
+  - el considerando 108 pide «evaluar simultáneamente» la participación y el control del accionista directo;
+  - el considerando 106 dice que las pruebas «deben realizarse en paralelo»;
+  - el art. 51 define al titular real con una disyunción («a) […], o b) […]»).
+- **Qué cambia con la lectura contraria** (el 54 sustituye al 52.1): puede dejar fuera a quien llega al 25 % por pura multiplicación a través de una cadena que tiene un tramo de control. Es el Ej. 5b del §10.
+
+### 4.3 Control a mitad de cadena
+
+Hay dos formas que el art. 54 sí regula:
+
+**54.a: el control está arriba y la participación abajo.** P controla, directa o indirectamente, una o varias entidades D que son accionistas directos de S.
+- La participación directa de esas D en S se atribuye entera a P, sin multiplicar. Se suman las de todas las D que P controla («ya sea de forma individual o acumulativa»).
+- **[C15 — decisión propia]** Solo se suman las participaciones de las entidades controladas. La participación directa de P en S no se añade, porque el texto dice «entidades jurídicas titulares».
+  - **[N5 — no resuelto]** Si P tiene un 10 % directo y controla una entidad con otro 20 %, el 54.a no dice si eso suma 30 %. La lectura extensiva (§3.5) sí lo suma, y ese caso se avisa.
+
+**54.b: la participación está arriba y el control abajo.** Una entidad K controla S, directa o indirectamente (C(K, S)).
+- Son titulares reales quienes tienen al menos el 25 % de K. Ese porcentaje se calcula con el 52.1.
+- **[C16 — decisión propia]** «individual o acumulativamente, directa o indirectamente» se interpreta como la suma de cadenas del 52.1 aplicada a K: own(P, K) ≥ 25.
+- En la práctica, el control de K sobre S hace que S sea transparente hacia K.
+
+### 4.4 Cadenas con varios tramos de control
+
+**[N4 — no resuelto]** El art. 54 solo contempla un cambio: control arriba y participación abajo (a), o participación arriba y control abajo (b). No dice nada de cadenas como C O C O.
+
+**Ejemplo (Ej. 5):** P —60 %→ A —50 %→ B —60 %→ C —50 %→ S.
+- **54.a no se aplica:** P controla A, pero A no controla B. Por tanto P no controla C, que es el accionista directo.
+- **54.b no se aplica:** C tiene solo el 50 % de S y no la controla.
+- **52.1:** 0,6 × 0,5 × 0,6 × 0,5 = 9 %.
+- **Lectura extensiva (§3.5):** 1 × 0,5 × 1 × 0,5 = 25 %, que alcanza el umbral del AMLR (≥ 25).
+
+**Cota útil.** En el AMLR, un tramo sin control tiene tanto el capital como los votos en 50 o menos, porque si no sería control (C10). Por eso, una sola cadena con dos o más tramos O no puede pasar del 25 %, ni multiplicando ni con la lectura extensiva. Consecuencias:
+- las formas no reguladas solo cambian el resultado de una cadena aislada si da exactamente el 25 %;
+- en los demás casos importan cuando se suman varias cadenas o una participación directa (N5).
+
+**Qué hace el cálculo.** Aplica las reglas literales (§4.5). Si la lectura extensiva da eff_m(P, S) ≥ 25 para alguien que no es titular real por esas reglas, lo marca como «posible titular real: forma de cadena no regulada (N4/N5)». Nunca lo cuenta como titular real (C13).
+
+### 4.5 Algoritmo
+
+1. **Preparar el grafo** (§2).
+2. **Calcular own_m(P, X)** para cada persona física P, cada titular virtual y cada entidad X (§3.1).
+3. **Calcular la relación de control C** (§3.3).
+4. **Aplicar las pruebas a cada persona física P,** en cada magnitud m:
+
+| Prueba | Condición | Base |
+|---|---|---|
+| A1 | own_m(P, S) ≥ 25 | 51.a y 52.1 |
+| A2 | C(P, S) | 51.b y 53.2 |
+| A3 | La suma de h_m(D, S) de los accionistas directos D de S que son entidades y cumplen C(P, D) es ≥ 25 | 54.a y C15 |
+| A4 | Existe una entidad K de clase `sociedad` con C(K, S) y own_m(P, K) ≥ 25 | 54.b y C16 |
+
+5. **Condición de titular real:** P lo es si cumple alguna prueba en alguna magnitud (C14). La salida guarda qué pruebas y qué magnitudes cumple, con sus valores.
+6. **Avisos** (§9):
+   - lectura extensiva (C13), si eff_m(P, S) ≥ 25 y P no es titular real;
+   - mezcla de magnitudes (§7);
+   - huecos (§9);
+   - sensibilidad al método de ciclos (§6).
+7. **Si nadie es titular real,** se aplica el supuesto supletorio (§8.2).
+
+---
+
+## 5. España
+
+### 5.1 Qué dice la Ley y qué no dice
+
+- **Ley 4.2.b:** «La persona o personas físicas que en último término posean o controlen, directa o indirectamente, un porcentaje superior al 25 por ciento del capital o de los derechos de voto de una persona jurídica, o que por otros medios ejerzan el control, directo o indirecto, de una persona jurídica. A efectos de la determinación del control serán de aplicación, entre otros, los criterios establecidos en el artículo 42 del Código de Comercio.»
+- El RD 304/2014, art. 8.b, repite la fórmula y no añade un método.
+
+**[N1 — no resuelto]** Ni la Ley ni el RD dicen cómo se calcula el porcentaje indirecto.
+
+**[N2 — no resuelto]** La remisión al art. 42 es «a efectos de la determinación del control». No se dice si también sirve para medir el porcentaje que alguien «controla».
+
+### 5.2 Lecturas posibles
+
+| Lectura | Qué significa «posean o controlen, directa o indirectamente, un porcentaje superior al 25 %» | Cálculo |
+|---|---|---|
+| **L1: multiplicación** | «Poseer indirectamente» es tener la parte proporcional de lo que tienen las sociedades intermedias | own_m(P, S) > 25 (§3.1) |
+| **L2: art. 42** | «Controlar un porcentaje» es disponer de los votos de las dependientes, sumados enteros: el control del art. 42 aplicado a medir el porcentaje | va(P, S) · 100 / base(S) > 25 (§3.4). Solo votos |
+| **L3: transparencia del control** | Las sociedades que P controla son transparentes (peso 1); el resto se multiplica | eff_m(P, S) > 25 (§3.5) |
+
+Hay una cuarta lectura, **L0 (solo participaciones directas),** que el propio texto descarta: la Ley dice «directa o indirectamente».
+
+**Qué da cada una.** Los números están en el §10:
+- **L1** falla cuando hay control a mitad de cadena. En el Ej. 2, quien controla una sociedad con el 30 % de S solo suma 60 % × 30 % = 18 %.
+- **L2** cubre el caso del 54.a, pero solo en votos. No cubre el del 54.b: quien tiene el 30 % de una sociedad que controla S no domina esa sociedad, así que no agrega nada (Ej. 3).
+- **L3** cubre los dos casos y cualquier alternancia. No tiene ningún apoyo en el texto español.
+
+Dos observaciones:
+- Con cualquier lectura, **el art. 42 solo mira los votos.** Una mayoría de capital sin mayoría de votos no es dominio (Ej. 4).
+- La cota del §4.4 vale en España **solo para los votos.** Como el capital no da control, una arista con el 90 % del capital y el 10 % de los votos es un tramo sin control con peso 0,9 en capital.
+
+### 5.3 Qué lectura se aplica
+
+**[C17 — decisión propia]** L1 se usa para «posean»: la Ley no da método, y la multiplicación es la única de las tres que atribuye una parte proporcional sin exigir control. Es también la del AMLR 52.1.
+
+**[C18 — decisión propia]** L2 compara con el 25 % sobre la misma base ajustada que usa para decidir el dominio. La Dir. 22.5 está escrita para decidir la mayoría y aquí se extiende a medir el porcentaje.
+
+**[C19 — decisión propia] Elijo L1 ∪ L2 como lectura aplicada.** Una persona es titular real en España si supera el 25 % en L1 (capital o votos) o en L2 (votos).
+- **Por qué:**
+  - L1 es la forma natural de medir «posean»;
+  - L2 es la única lectura de «controlen» basada en un texto al que la Ley remite expresamente (art. 42);
+  - L3 amplía más allá de lo que dicen los textos españoles.
+- **Qué se hace con L3.** Se calcula solo para avisar: quien sea titular real por L3 y no por L1 ∪ L2 sale como «posible titular real: lectura extensiva (N2)».
+- **Alternativas descartadas** (§11):
+  - **L1 sola:** deja fuera a quien controla una sociedad con el 30 %, a pesar de que la Ley remite al art. 42 para el control;
+  - **L3:** convertiría en titular real a quien tiene el 30 % de una sociedad que controla S (Ej. 3), cosa que solo apoya el AMLR.
+
+### 5.4 Algoritmo
+
+1. **Preparar el grafo** (§2). Si S es cotizada exceptuada (C5), el resultado es «exceptuada» y se termina.
+2. **Calcular own_m(P, X)** (§3.1).
+3. **Calcular Dep, va y base** (§3.4).
+4. **Aplicar las pruebas a cada persona física P:**
+
+| Prueba | Condición | Base |
+|---|---|---|
+| E1 | own_capital(P, S) > 25 u own_votos(P, S) > 25 | Ley 4.2.b («posean») y C17 |
+| E2 | va(P, S) · 100 / base(S) > 25 | Ley 4.2.b («controlen»), CCom 42.1, C12 y C18 |
+
+   Si además S ∈ Dep(P), la salida indica que P controla S (CCom 42.1.a). Esto no hace falta para ser titular real, porque ya implica E2.
+5. **Condición de titular real:** E1 o E2 (C19).
+6. **Avisos** (§9):
+   - lectura L3;
+   - mezcla de magnitudes;
+   - huecos;
+   - sensibilidad al método de ciclos.
+7. **Si nadie es titular real,** se aplica el supuesto supletorio (§8.1).
+
+---
+
+## 6. Ciclos
+
+### 6.1 Qué dicen las normas
+
+**Ninguna norma resuelve cómo tratar un ciclo al calcular la titularidad real** **[N7 — no resuelto]**. El análisis de fuentes está en el modelo, §4.1:
+- **Ley 10/2010, RD 304/2014, RD 609/2023 y CCom 42:** no dicen nada.
+- **AMLR:** tampoco dice nada expreso. El 52.1 manda sumar «los resultados de esas distintas cadenas» y tener en cuenta «todas las participaciones en todos los niveles». Con un ciclo hay infinitas cadenas.
+- **Dir. 22.5:** saca de la base los votos que una empresa tiene sobre sí misma o a través de sus filiales. Es la única norma que trata un ciclo, y lo hace para decidir el control, no la titularidad real.
+
+### 6.2 Método que se aplica
+
+**[C20 — decisión propia]**
+- **Para la multiplicación (AMLR 52.1 y L1 en España): método B, la serie completa.** Se resuelve el sistema del §3.1. Por qué:
+  - es el único que suma *todas* las cadenas, como pide la letra del 52.1; el método A excluye unas cadenas con un criterio que no está en ningún texto;
+  - reparte exactamente el 100 %: lo atribuido a titulares últimos más los huecos suma 100. El método A pierde una parte;
+  - con autocartera (una arista reflexiva con x %), da p / (1 − x), que es lo mismo que sacar la autocartera de la base. Coincide con la lógica de la Dir. 22.5.
+    - **[N12 — no resuelto]** El AMLR no dice si la autocartera se descuenta al decidir el control (53.2.c). Como C11 usa own_m, con el método B se descuenta de hecho: con un 10 % de autocartera, quien tiene el 48 % pasa a tener 48 / 0,9 = 53,33 % y controla.
+- **Para la agregación de votos (L2 en España): método C, la base de la Dir. 22.5** (§3.4). Por qué:
+  - es un texto al que la Ley remite (Dir. 22, apartados 1 a 5);
+  - encaja con la lógica del art. 42, que atribuye enteros los votos de las dependientes.
+- **Como prueba de sensibilidad se calcula también el método A** (solo cadenas que no repiten entidad) para E1 y A1. Si cambia quién es titular real, la salida lo avisa: «el resultado depende del método de ciclos (N7)».
+
+### 6.3 Aplicación al ejemplo del modelo de datos
+
+Ejemplo del modelo, §10: ciclo E-OBJETIVO → E-BETA (50 %) → E-HOLDING (40 %) → E-OBJETIVO (30 % de capital / 35 % de votos).
+- Cada vuelta al ciclo multiplica por 0,5 × 0,4 × 0,30 = 0,06 en capital y por 0,5 × 0,4 × 0,35 = 0,07 en votos.
+- Por C2, la participación de P-BRUNO (arista p03) se atribuye a P-CARLOS.
+
+| Titular | Capital, método B | Votos, método B | Capital, método A | Votos, método A |
+|---|---|---|---|---|
+| P-ANA | 38/94 = **40,43 %** | 46/93 = **49,46 %** | 38 % | 46 % |
+| P-CARLOS | 24/94 = **25,53 %** | 27/93 = **29,03 %** | 24 % | 27 % |
+| P-DIEGO | 12/94 = 12,77 % | 20/93 = 21,51 % | 12 % | 20 % |
+| NO_IDENTIFICADO(E-FONDO) | 20/94 = 21,28 % | 0 % | 20 % | 0 % |
+| P-BRUNO (testaferro) | 0 % | 0 % | 0 % | 0 % |
+| **Suma** | **100 %** | **100 %** | 94 % | 93 % |
+
+Cómo se obtienen las cifras del método B: P-ANA tiene 20 % directo y 60 % × 30 % = 18 % a través de E-HOLDING, en total 0,38, dividido entre (1 − 0,06). P-CARLOS tiene 18 % a través del testaferro y 50 % × 40 % × 30 % = 6 % a través de E-BETA, en total 0,24, dividido entre (1 − 0,06). En votos: P-ANA, (0,25 + 0,6 × 0,35) / 0,93; P-CARLOS, (0,20 + 0,5 × 0,4 × 0,35) / 0,93.
+
+**Agregación de votos (método C):**
+- E-OBJETIVO no tiene dependientes: su 50 % en E-BETA no es mayoría. Por tanto base(E-OBJETIVO) = 100 y no se ajusta nada.
+- P-ANA domina E-HOLDING (60 %), así que va(P-ANA, E-OBJETIVO) = 25 + 35 = 60 → **P-ANA controla E-OBJETIVO** en L2.
+- P-CARLOS no domina E-BETA (50 %), así que va(P-CARLOS, E-OBJETIVO) = 20, lo que tiene a través del testaferro.
+
+**Resultado:**
+
+| | AMLR | España |
+|---|---|---|
+| P-ANA | Titular real: A1 (40,43 / 49,46) y A3 (controla E-HOLDING, que tiene 30 / 35 directo). No controla E-OBJETIVO: 49,46 no pasa de 50 | Titular real: E1 (40,43 / 49,46) y E2 (60 %). Además **controla** E-OBJETIVO (CCom 42.1.a) |
+| P-CARLOS | Titular real: A1 (25,53 en capital, 29,03 en votos), por cuenta de | Titular real: E1 (25,53 / 29,03), por cuenta de |
+| P-DIEGO | No es titular real (12,77 / 21,51). Aviso de hueco: 12,77 + 21,28 = 34,04 ≥ 25, así que **podría serlo si participa en E-FONDO** | Igual (34,04 > 25) |
+| Sensibilidad al método de ciclos | Con el método A, P-CARLOS se queda en 24 % de capital, pero sigue siéndolo por votos (27 %). **El conjunto de titulares no cambia** | Igual |
+
+**Por qué no importa aquí el método:** P-CARLOS está cerca del umbral en capital (25,53 con B frente a 24 con A), pero los votos (29,03 y 27) lo mantienen en los dos métodos. Con otros datos, el mismo ciclo sí cambiaría el resultado. Por eso existe el aviso de sensibilidad.
+
+**Los regímenes no discrepan en quién es titular real, pero sí en el criterio:** en España P-ANA controla E-OBJETIVO porque se suman sus votos y los de E-HOLDING, que domina; en el AMLR nadie la controla.
+
+### 6.4 Ciclos cerrados
+
+Si un grupo de entidades se tiene entre sí al 100 %, sin ningún titular de fuera, el sistema del §3.1 no tiene solución única. Esas entidades se tratan como un hueco (`NO_IDENTIFICADO`) y la salida avisa de «ciclo cerrado: sin titulares externos».
+- **Cómo se detecta:** por la estructura, antes de resolver el sistema. Es un grupo de entidades conectadas en ciclo en el que ninguna tiene titulares de fuera del grupo, ni reales ni huecos.
+- **Caso límite:** si hay titulares de fuera pero, por el exceso de redondeo que admite D15, la serie no converge, se trata igual.
+
+---
+
+## 7. Capital y votos
+
+**Cómo se propagan.** Por separado, con la misma regla (C9): el capital se multiplica por capital y los votos por votos.
+
+**Dónde se mezclan:**
+
+| Punto | España | AMLR |
+|---|---|---|
+| Umbral final | En cualquiera de las dos: «del capital o de los derechos de voto» (Ley 4.2.b) | En cualquiera de las dos: «acciones, derechos de voto u otra participación» (52.1) |
+| Control | Solo votos (CCom 42.1.a). No hay mezcla | Capital **o** votos (53.2.c). Hay mezcla: el control conseguido con capital transmite también los votos de la controlada (54.a) |
+| Agregación | Solo votos (art. 42) | No hay regla de agregación (N8) |
+
+**Si una cadena supera el umbral en una magnitud y no en la otra,** la persona es titular real en los dos regímenes, porque basta con una. La salida indica en qué magnitud y con qué valor. No se pondera ni se combina.
+
+**[N6 — no resuelto]** Ningún texto dice si una misma cadena puede **mezclar** magnitudes al multiplicar. Por ejemplo, el capital en el primer tramo y los votos en el segundo. El 52.1 dice «multiplicando las acciones o los derechos de voto» sin aclararlo.
+
+**[C21 — decisión propia]** No se mezcla al multiplicar. Como aviso se calcula el **producto mixto**: en cada arista se toma el mayor de capital y votos. Si con él alguien alcanza el umbral y no es titular real por las reglas aplicadas, la salida indica «posible titular real: mezcla de magnitudes (N6)».
+- En el AMLR ese aviso casi nunca aparece, porque una arista con más del 50 % en cualquier magnitud ya es control y entra por el 54.a.
+- En España sí aparece (Ej. 6).
+
+---
+
+## 8. Supuestos supletorios
+
+### 8.1 España: administradores
+
+**Base textual:**
+- **Ley 4.2.b bis:** «Cuando no exista una persona física que posea o controle, directa o indirectamente, un porcentaje superior al 25 por ciento del capital o de los derechos de voto de la persona jurídica, o que por otros medios ejerza el control, directo o indirecto, de la persona jurídica, se considerará que ejerce dicho control el administrador o administradores. Cuando el administrador designado fuera una persona jurídica, se entenderá que el control es ejercido por la persona física nombrada por el administrador persona jurídica.»
+- **RD 8.b, párrafo 4:** «Las presunciones a las que se refiere el párrafo anterior se aplicarán salvo prueba en contrario».
+
+**[C22 — decisión propia]** Si nadie es titular real por E1 ni por E2:
+- **Quiénes salen.** Todos los `cargos` de S con `cargo: "miembro_organo_administracion"`, sean o no ejecutivos. Si el cargo lo ocupa una entidad, sale su `representante` (modelo, D12).
+- **Estado «condicional».** Siempre en v0.1, porque la Ley exige que nadie ejerza el control «por otros medios» y v0.1 no lo evalúa (D19). Además, la presunción admite prueba en contrario.
+- **Estado «no determinable» en su lugar** si hay avisos de hueco (§9, H1 o H2): con parte del capital o de los votos sin identificar no se puede afirmar que «no exista» una persona por encima del umbral. La salida recuerda además la Ley 4.4, párr. 2: «no establecerán o mantendrán relaciones de negocio con personas jurídicas […] cuya estructura de propiedad y de control no haya podido determinarse».
+- **Si S no tiene `cargos`,** se da el aviso AVI-07 y el estado es «no determinable».
+- **Si hay avisos de lectura L3,** se mantiene el supuesto supletorio y se indica que, con la lectura extensiva, habría titulares reales.
+
+### 8.2 AMLR: cargos de dirección de alto nivel
+
+**Base textual:**
+- **22.2, párrafo 2:** si, «una vez agotados todos los medios posibles de identificación, no se identifique a ninguna persona física como el titular real […], las entidades obligadas indicarán que no se ha identificado a ningún titular real e identificarán a todas las personas físicas que ejerzan un cargo de dirección de alto nivel».
+- **63.4:** «cargos de dirección de alto nivel» son «las personas físicas que son miembros ejecutivos del órgano de dirección, así como […] las personas físicas que ejercen funciones ejecutivas en una entidad jurídica y que son responsables de la gestión cotidiana».
+- **Considerando 125:** «Aunque sean identificados en esas situaciones, los cargos de dirección de alto nivel no son los titulares reales.»
+
+**[C23 — decisión propia]** Si nadie es titular real por A1 a A4:
+- **Qué sale.** «No se ha identificado titular real» y la lista de los `cargos` de S con `ejecutivo: true` ocupados por personas físicas (modelo, D12 y D22). **No se presentan como titulares reales.**
+- **Cargos ejecutivos ocupados por una entidad:** se excluyen, con un aviso. El 63.4 habla solo de personas físicas y el AMLR no tiene una regla como la del representante de la Ley 4.2.b bis.
+- **Estado «provisional».** Siempre en v0.1, porque no se han «agotado todos los medios»: el control por otros medios no se evalúa.
+- **Estado «no determinable»** si hay avisos de hueco, como en el §8.1.
+
+---
+
+## 9. Contenido mínimo de la salida y avisos
+
+**Para cada régimen, la salida contiene:**
+- **Estado:**
+  - `determinado`;
+  - `supletorio (condicional)` en España, o `sin titular real identificado (provisional)` en el AMLR;
+  - `no determinable`;
+  - `exceptuada`, solo en España.
+- **Titulares reales.** Cada uno con la persona, las pruebas que cumple (A1–A4 o E1–E2), la magnitud, el valor exacto y el redondeado, las cadenas que lo explican y la marca «por cuenta de» si procede.
+- **Posibles titulares reales.** Personas que no lo son por las reglas aplicadas, pero sí por una lectura no resuelta, con el código correspondiente:
+
+| Código | Condición | Norma no resuelta |
+|---|---|---|
+| POS-T | eff_m(P, S) alcanza el umbral del régimen (§3.5) | N2 en España; N4 y N5 en el AMLR |
+| POS-MEZCLA | El producto mixto alcanza el umbral (§7) | N6 |
+| POS-HUECO | own_m(P, S) + U_m alcanza el umbral, siendo U_m lo que llega a S desde los titulares `NO_IDENTIFICADO` y `OPACA` (C4) | Estructura incompleta |
+
+- **Avisos:**
+
+| Código | Condición |
+|---|---|
+| H1 | U_m alcanza por sí solo el umbral: puede haber un titular real sin identificar |
+| H2 | Se da algún POS-HUECO |
+| CICLO-SENS | El método A cambia quién es titular real (§6.2) |
+| CICLO-CERRADO | Hay un ciclo cerrado (§6.4) |
+| T-NO-CONVERGE | La lectura extensiva no se puede calcular (§3.5) |
+| AMLR-NO-APLICABLE | La fecha de referencia es anterior al 10-07-2027 (C7) |
+| COTIZADA | Lo que llega a través de cotizadas en España (C5), a título informativo |
+
+«Alcanza el umbral» significa **> 25 en España** y **≥ 25 en el AMLR**. **[C24 — decisión propia]** Todos los avisos usan el umbral del régimen en el que se calculan.
+
+---
+
+## 10. Ejemplos numéricos
+
+En todos los ejemplos, capital y votos coinciden salvo que se indique lo contrario. P, Q, R y las demás letras con número son personas físicas; A, B, C, D, H y K son sociedades.
+
+### Ej. 1: exactamente el 25 %
+
+S: P1, P2, P3 y P4 tienen el 25 % cada uno.
+
+| | AMLR | España |
+|---|---|---|
+| P1 a P4 | Titulares reales por A1: 25 ≥ 25 | No: 25 no es > 25 (E1) y va = 25 no es > 25 (E2) |
+| Estado | `determinado`: cuatro titulares reales | `supletorio (condicional)`: los administradores de S (4.2.b bis) |
+
+### Ej. 2: control arriba, participación abajo (54.a)
+
+S: H 30 %, X 70 %. H: P 60 %, Q 40 %.
+
+| Lectura | P | Q | X |
+|---|---|---|---|
+| AMLR, A1 (52.1) | 18 % → no | 12 % → no | 70 % → sí |
+| AMLR, A3 (54.a) | Controla H, que tiene 30 % ≥ 25 → **sí** | No controla H | — |
+| España, L1 | 18 % → no | 12 % → no | 70 % → sí |
+| España, L2 | Domina H → va = 30 > 25 → **sí** | 0 → no | sí |
+| **Titulares reales** | **AMLR: sí · España: sí (solo por L2)** | No | Sí |
+
+Variante con acumulación: P controla A1 y A2 (60 % de cada una), que tienen cada una el 15 % de S.
+- **AMLR, 54.a:** 15 + 15 = 30 ≥ 25 → **sí**.
+- **España, L2:** 30 > 25 → **sí**.
+- **España, L1:** 9 + 9 = 18 → no.
+
+Con la lectura «L1 sola», que se descarta en C19, P no sería titular real en España.
+
+### Ej. 3: participación arriba, control abajo (54.b)
+
+S: C 60 %, R 40 %. C: P 30 %, Q 70 %.
+
+| | P | Q | R |
+|---|---|---|---|
+| AMLR | **Sí**, por A4: C controla S y own(P, C) = 30 ≥ 25. Por A1 no (18 %) | Sí, por A1 (42 %) y A2 (controla C, que controla S) | Sí (40 %) |
+| España, L1 ∪ L2 | **No**: L1 = 18; L2 = 0, porque no domina C | Sí: L1 = 42; L2 = 60, controla S | Sí (40 %) |
+| España, L3 | 0,3 × 1 = 30 > 25 → **POS-T** | — | — |
+
+**Diferencia entre regímenes:** P es titular real en el AMLR y en España solo figura como posible (lectura extensiva, N2).
+
+### Ej. 4: mayoría de capital sin mayoría de votos
+
+S: A 30 %, R 70 %. A: P tiene 60 % del capital y 40 % de los votos; Q tiene 40 % del capital y 60 % de los votos.
+
+| | P | Q | R |
+|---|---|---|---|
+| AMLR | **Sí**, por A3: controla A por capital (60 > 50, según 53.2.c) y A tiene 30 ≥ 25 | Sí, por A3: controla A por votos (60 > 50) | Sí |
+| España | **No**: L1 da 18 de capital y 12 de votos; L2, 0, porque con 40 % de votos no domina A | Sí, por L2: domina A → va = 30 | Sí |
+
+**Diferencias:**
+- en el AMLR dos personas controlan A a la vez (N11);
+- el art. 42 solo reconoce el control por votos.
+
+### Ej. 5: varios tramos de control (N4)
+
+P —60 %→ A —50 %→ B —60 %→ C —50 %→ S. Los demás titulares: A2 tiene el 40 % de A, B2 el 50 % de B, C2 el 40 % de C y S2 el 50 % de S.
+
+| | P | S2 |
+|---|---|---|
+| AMLR literal (A1–A4) | No: 52.1 da 9 %; ni 54.a ni 54.b se aplican (§4.4) | Sí (50 %) |
+| AMLR, lectura extensiva | 1 × 0,5 × 1 × 0,5 = 25 ≥ 25 → **POS-T** | — |
+| España (L1, L2 y L3) | L1 = 9; L2 = 0, porque A no domina B con 50 %; L3 = 25, que no es > 25 → **ni titular ni aviso** | Sí (50 %) |
+
+### Ej. 5b: el 54 como sustitución o como suma (N3)
+
+P y A2 tienen el 50 % de A cada uno. A tiene el 100 % de D. D tiene el 50 % de S y S2 el otro 50 %.
+
+| | P (y A2, simétrico) | S2 |
+|---|---|---|
+| AMLR con unión de pruebas (C14) | **Sí**, por A1: 0,5 × 1 × 0,5 = 25 ≥ 25 | Sí |
+| AMLR si el 54 sustituye al 52.1 | **No**: la cadena mezcla control (A→D) y participación, así que solo valdría el 54; y P no controla A (50 %) ni D controla S (50 %) | Sí |
+| España | No: 25 no es > 25 | Sí |
+
+### Ej. 6: mezcla de magnitudes (N6)
+
+A: P tiene 60 % del capital y 10 % de los votos; Q, 40 % del capital y 90 % de los votos. S: A tiene 10 % del capital y 45 % de los votos; R, 90 % del capital y 55 % de los votos.
+
+| | P | Q | R |
+|---|---|---|---|
+| AMLR | **Sí**, por A3: controla A por capital, y A tiene 45 % de votos en S ≥ 25 | Sí, por A3 (controla A por votos) | Sí |
+| España | **No**: L1 da 6 de capital y 4,5 de votos; L2, 0. Producto mixto: 0,6 × 0,45 = 27 > 25 → **POS-MEZCLA** | Sí, por L2 (va = 45) | Sí |
+
+### Ej. 7: el ejemplo del modelo de datos
+
+Ver §6.3. Los dos regímenes identifican a P-ANA y P-CARLOS. P-DIEGO lleva aviso de hueco (POS-HUECO). El resultado no depende del método de ciclos. En España, P-ANA además controla E-OBJETIVO.
+
+### Resumen de diferencias
+
+| Ej. | AMLR | España | Por qué difieren |
+|---|---|---|---|
+| 1 | P1 a P4 | Supletorio: administradores | Umbral ≥ 25 frente a > 25 |
+| 2 | P, X | P, X | No difieren, pero en España P solo sale por L2 |
+| 3 | P, Q, R | Q, R (P posible) | El 54.b no tiene equivalente en L1 ∪ L2 |
+| 4 | P, Q, R | Q, R | Control por capital (53.2.c) frente a solo votos (CCom 42.1.a) |
+| 5 | S2 (P posible) | S2 | Forma no regulada: vale 25 exacto, que en el AMLR alcanza el umbral |
+| 5b | P, A2, S2 | S2 | Umbral y lectura del «salvo» del 52.1 |
+| 6 | P, Q, R | Q, R (P posible) | Control por capital y mezcla de magnitudes |
+| 7 | Ana, Carlos | Ana, Carlos | Solo difiere el criterio: en España Ana controla S |
+
+---
+
+## 11. Decisiones propias
+
+| # | Decisión | Sección | Alternativa descartada | Motivo |
+|---|---|---|---|---|
+| C1 | Solo se calcula sobre los nodos con camino hasta S | §2.1 | Calcular sobre todo el grafo | Los nodos sin camino no pueden aportar nada a S; es coherente con D21 |
+| C2 | La arista `por_cuenta_de` se atribuye al principal en todos los cálculos; el titular formal no recibe nada | §2.2 | (a) Atribuirla al titular formal. (b) En el AMLR, tratarla solo como control por otros medios (53.4.c), fuera de v0.1 | (a) Da falsos positivos y negativos. (b) Dejaría sin atribuir una participación conocida. El CCom 42 y la Dir. 22.3–22.4 la atribuyen al principal |
+| C3 | Las aristas paralelas del mismo titular, tras C2, se suman | §2.3 | Tratarlas por separado | Sumarlas es lo que hace el CCom 42.1: «se añadirán» |
+| C4 | Los huecos son titulares virtuales que se propagan | §2.4 | Ignorar los huecos | Ignorarlos haría que la regla de los administradores (4.2.b bis) se aplicara sin tener en cuenta a quien puede estar en el hueco |
+| C5 | España: S cotizada se exceptúa; las intermedias cotizadas no se recorren. AMLR: la cotización no cambia el cálculo | §2.5 | Aplicar el 65.a del AMLR como excepción | El 65.a exime de obligaciones (arts. 63 y 64), no de la definición (51–55) |
+| C6 | Aritmética con fracciones exactas; solo se redondea al mostrar | §2.6 | Coma flotante binaria | Los umbrales > 25 y ≥ 25 se deciden en el valor exacto |
+| C7 | El AMLR se calcula aunque la fecha sea anterior a 2027-07-10, con aviso | §2.7 | No calcularlo | Comparar los dos regímenes es el objetivo del proyecto |
+| C8 | own_m se calcula resolviendo un sistema lineal (serie completa), con el titular como origen | §3.1 | Enumerar cadenas | Con ciclos hay infinitas cadenas; el sistema da su suma exacta |
+| C9 | Capital y votos se propagan por separado | §3.1 | Mezclarlos al multiplicar | Ningún texto lo autoriza (N6); la mezcla solo se usa para avisar (C21) |
+| C10 | Hay control si se supera el 50: en el AMLR en cualquier magnitud, en España solo en votos | §3.2 | ≥ 50 | «50 % más una» y «mayoría» exigen más de la mitad |
+| C11 | Control en el AMLR = cierre transitivo de own > 50 | §3.3 | Solo control directo en cada nivel | El 53.2.c incluye la «propiedad directa o indirecta» del 50 % más una |
+| C12 | Dominio en España: art. 42.1.a aplicado a personas físicas, con agregación, base de la Dir. 22.5 y recálculo hasta estabilizarse | §3.4 | Solo votos directos, sin agregación | La Ley remite al art. 42 y a la Dir. 22 (1 a 5), y el art. 42 manda agregar |
+| C13 | La lectura extensiva (transparencia del control) solo genera avisos | §3.5 | Contarla como titularidad real | No tiene apoyo literal fuera de las formas del art. 54 |
+| C14 | En el AMLR se unen las pruebas 52.1, 51.b, 54.a y 54.b | §4.2 | El 54 sustituye al 52.1 en las cadenas mixtas | Considerandos 106 y 108; la sustitución deja fuera a quien llega al 25 % por multiplicación (Ej. 5b) |
+| C15 | 54.a: se suman solo las entidades controladas, no la participación directa propia | §4.3 | Sumar también la directa | El texto dice «entidades jurídicas titulares»; el caso mixto se avisa (N5) |
+| C16 | 54.b: own(P, K) según el 52.1 | §4.3 | Exigir participación directa en K | El texto dice «directa o indirectamente» |
+| C17 | España, «posean»: multiplicación (L1) | §5.3 | Solo participaciones directas (L0) | La Ley dice «directa o indirectamente»; la multiplicación es la única que atribuye una parte proporcional sin exigir control |
+| C18 | España: el umbral de L2 se mide sobre la base ajustada por la Dir. 22.5 | §5.3 | Medirlo sobre 100 | Usar la misma medida para el dominio y para el umbral |
+| C19 | España: la lectura aplicada es L1 ∪ L2; L3 solo avisa | §5.3 | (a) L1 sola. (b) L3 | (a) Ignora la remisión al art. 42 para el control. (b) Solo tiene apoyo en el AMLR |
+| C20 | Ciclos: método B para multiplicar, C para agregar votos, A como prueba de sensibilidad | §6.2 | Rechazar las entradas con ciclos, o usar solo el método A | B suma todas las cadenas y reparte el 100 %; C es un texto al que la Ley remite; A pierde parte de la participación |
+| C21 | No se mezclan magnitudes al multiplicar; el producto mixto solo avisa | §7 | Usar el producto mixto como regla | N6: ningún texto lo autoriza |
+| C22 | Supletorio en España: administradores, siempre condicional; no determinable si hay huecos | §8.1 | Aplicarlo sin condiciones | v0.1 no evalúa el control por otros medios, y la Ley exige que «no exista» nadie por encima del umbral |
+| C23 | Supletorio en el AMLR: cargos ejecutivos que sean personas físicas, siempre provisional; nunca como titulares reales | §8.2 | Presentarlos como titulares reales | Considerando 125 |
+| C24 | Los avisos usan el umbral del régimen en el que se calculan | §9 | Un umbral único | Evitar avisos que el propio régimen no reconocería |
+
+## 12. Casos que la norma no resuelve
+
+| # | Caso | Dónde se nota | Qué hace v0.1 |
+|---|---|---|---|
+| N1 | España: método para la participación indirecta | §5.1 | C17 (multiplicación) |
+| N2 | España: si el art. 42 sirve para medir el porcentaje que alguien «controla» | §5.1 | C19; L3 solo como aviso (POS-T) |
+| N3 | AMLR: si el 54 sustituye al 52.1 o se añade a él | §4.2, Ej. 5b | C14 (se añade) |
+| N4 | AMLR: cadenas con varios tramos de control | §4.4, Ej. 5 | POS-T |
+| N5 | AMLR 54.a: si se suma la participación directa propia | §4.3 | C15 y POS-T |
+| N6 | Mezcla de magnitudes dentro de una cadena | §7, Ej. 6 | C21 y POS-MEZCLA |
+| N7 | Ciclos | §6 | C20 y CICLO-SENS |
+| N8 | AMLR: control conjunto a través de varias entidades controladas | §3.3 | No se considera control |
+| N9 | AMLR: si la participación de un nominatario cuenta como propiedad del nominador (52.1 frente a 53.4.c) | §2.2 | C2 |
+| N10 | España: qué es «mayoría» en el CCom 42.1.a | §3.2 | C10 (> 50) |
+| N11 | AMLR: dos personas que controlan a la vez, una por capital y otra por votos (53.2.c) | §3.3, Ej. 4 | Se acepta tal como sale del texto |
+| N12 | AMLR: si la autocartera se descuenta al decidir el control | §6.2 | La serie completa la descuenta de hecho; ninguna norma del AMLR lo dice |
