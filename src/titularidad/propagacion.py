@@ -379,10 +379,7 @@ def producto_mixto(grafo: Grafo) -> dict | None:
     claves = set(grafo.h["capital"]) | set(grafo.h["votos"])
     mixto = {a: max(grafo.h["capital"].get(a, 0), grafo.h["votos"].get(a, 0)) for a in claves}
     if grupos_sin_convergencia(mixto):
-        # AMBIGÜEDAD: el producto mixto puede sumar más del 100 % en una
-        # entidad y, en un ciclo, no converger. C21 no lo prevé; entonces no
-        # se calcula el aviso.
-        return None
+        return None  # MEZCLA-NO-CONVERGE (C21): el producto mixto puede sumar más del 100 %
     return serie_sobre(mixto)
 
 

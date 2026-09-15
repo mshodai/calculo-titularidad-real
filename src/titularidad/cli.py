@@ -4,7 +4,7 @@ import argparse
 import sys
 
 from titularidad.carga import cargar_fichero
-from titularidad.salida import AMLR, ESPANA, como_json, informe, regimenes, texto
+from titularidad.salida import AMLR, ESPANA, como_json, inestable_por, informe, regimenes, texto
 
 REGIMENES = {"espana": ESPANA, "amlr": AMLR}
 DETERMINADO = "determinado"
@@ -16,9 +16,9 @@ class _Formato(argparse.HelpFormatter):
 
 
 def main(argv=None) -> int:
-    """Devuelve 0 si los regímenes calculados quedan «determinados» y, si son
-    los dos, coinciden en quién es titular real; 1 si difieren o alguno queda
-    en otro estado; 2 si la entrada no se puede leer o no es válida."""
+    """Devuelve 0 si los regímenes calculados quedan «determinados», son
+    estables (C32) y, si son los dos, coinciden en quién es titular real; 1 si
+    no; 2 si la entrada no se puede leer o no es válida."""
     parser = argparse.ArgumentParser(
         prog="calcular-titularidad",
         description=(
@@ -27,10 +27,12 @@ def main(argv=None) -> int:
             "una determinación jurídica."
         ),
         epilog=(
-            "códigos de salida: 0 si los regímenes quedan «determinados» y coinciden en quién es "
-            "titular real; 1 si difieren o alguno queda en otro estado (supletorio, sin titular "
-            "identificado, no determinable, exceptuada, fuera de alcance); 2 si la entrada no se "
-            "puede leer o no es válida."
+            "códigos de salida: 0 si los regímenes quedan «determinados», el resultado es estable y "
+            "coinciden en quién es titular real; 1 si difieren, si alguno queda en otro estado "
+            "(supletorio, sin titular identificado, no determinable, exceptuada, fuera de alcance) "
+            "o si el resultado no es estable: cambiaría con otra lectura, por ejemplo con un valor "
+            "justo al otro lado de un umbral (UMBRAL-EXACTO), o una comprobación no se ha podido "
+            "hacer (C32); 2 si la entrada no se puede leer o no es válida."
         ),
         formatter_class=_Formato,
         add_help=False,
@@ -65,7 +67,7 @@ def main(argv=None) -> int:
 def codigo_de_salida(inf) -> int:
     if inf.errores:
         return 2
-    if any(r.estado != DETERMINADO for _, r in regimenes(inf)):
+    if any(r.estado != DETERMINADO or inestable_por(r) for _, r in regimenes(inf)):
         return 1
     if any(f.difiere for f in inf.filas):
         return 1

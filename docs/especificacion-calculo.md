@@ -521,6 +521,7 @@ python3 -m unittest discover -s verificacion -v
 **[C21 — decisión propia]** No se mezcla al multiplicar. Como aviso se calcula el **producto mixto**: en cada arista se toma el mayor de capital y votos. Si con él alguien alcanza el umbral y no es titular real por las reglas aplicadas, la salida indica «posible titular real: mezcla de magnitudes (N6)».
 - En el AMLR ese aviso casi nunca aparece, porque una arista con más del 50 % en cualquier magnitud ya es control y entra por el 54.a.
 - En España sí aparece (Ej. 6).
+- **Si la serie del producto mixto no converge,** no se puede calcular el aviso, y la salida da **MEZCLA-NO-CONVERGE**. Puede pasar porque el producto mixto de una entidad puede sumar más del 100 %: si A tiene el 100 % del capital de B y B el 100 % de los votos de A, cada magnitud por separado no tiene ciclo, pero el producto mixto sí.
 
 ---
 
@@ -588,12 +589,22 @@ python3 -m unittest discover -s verificacion -v
 | UMBRAL-EXACTO | Leer por encima o por debajo los valores que coinciden con un umbral cambia quién es titular real (§2.6). Es un límite de los datos (modelo, D23), no de la norma |
 | CICLO-CERRADO | Hay un ciclo cerrado (§6.4) |
 | T-NO-CONVERGE | La lectura extensiva no se puede calcular (§3.5) |
+| MEZCLA-NO-CONVERGE | El producto mixto no se puede calcular (§7, C21) |
 | DOMINIO-INESTABLE | El cálculo de dominio del §3.4 no se estabiliza; E2 queda como no determinable |
 | AMLR-NO-APLICABLE | La fecha de referencia es anterior al 10-07-2027 (C7) |
 | COTIZADA | Lo que llega a través de cotizadas con requisitos de información en España (C5), a título informativo |
 | EXENCION-SENS | S no es filial de una cotizada según C30, pero lo sería midiendo con los votos o con una cadena de mayorías directas de capital: la identificación podría no ser preceptiva (RD 9.4). Solo España. Cubre N14 |
 
 «Alcanza el umbral» significa **> 25 en España** y **≥ 25 en el AMLR**. **[C24 — decisión propia]** Todos los avisos usan el umbral del régimen en el que se calculan.
+
+**[C32 — decisión propia] Resultado estable.** La salida indica, para cada régimen, si el resultado es estable. No lo es si lleva alguno de estos avisos:
+- **El resultado cambiaría con otra lectura que el cálculo comprueba:** UMBRAL-EXACTO, CICLO-SENS, ART54-SENS, EXENCION-SENS, POS-T, POS-AGREGADO, POS-MEZCLA y POS-FORMAL. Es lo que señalan por definición: con esa lectura cambiaría quién es titular real, o si se calcula (C25).
+- **Una de esas comprobaciones no se ha podido hacer:** UMBRAL-EXACTO-NO-COMPROBADO, T-NO-CONVERGE, MEZCLA-NO-CONVERGE y DOMINIO-INESTABLE.
+
+Un «determinado» que no es estable no se presenta como un resultado cerrado. Los demás avisos no afectan a la estabilidad:
+- H1, H2 y POS-HUECO dicen que faltan datos, no que haya otra lectura;
+- CICLO-CERRADO ya está tratado (§6.4);
+- COTIZADA, AMLR-NO-APLICABLE y CARGO-EJECUTIVO-ENTIDAD son información.
 
 ---
 
@@ -772,6 +783,7 @@ Si la exención se aplicara también a la filial intermedia, los socios de X no 
 | C29 | Se repite el cálculo con las aristas `por_cuenta_de` en su titular formal: en el AMLR, en las dos magnitudes; en España, solo en capital. Si alguien pasa a cumplir alguna prueba, POS-FORMAL | §2.2 | (a) Dejar N9 y N13 señalados solo con la marca «por cuenta de». (b) En España, atribuir también los votos al titular formal | (a) La marca solo sale en el principal; no avisa si con la otra lectura el titular formal sería titular real. (b) Para los votos hay texto: CCom 42.1 y Dir. 22.4.a |
 | C30 | España: S es «exceptuada» si es filial participada mayoritariamente de una cotizada con requisitos de información: own_capital(L, S) > 50, por cada cotizada. No se aplica a las filiales intermedias. EXENCION-SENS si otra lectura la haría filial | §2.5 | (a) Medir con los votos, o con capital o votos. (b) Cadena de mayorías directas. (c) Aplicarlo también a las filiales intermedias | El RD 9.4 dispensa, no prohíbe: una lectura estrecha como mucho identifica de más, y una amplia puede dejar sin identificar a un titular real. (a) «Participada» habla de participación, no de control. (b) El 60 % del 60 % no es una participación mayoritaria. (c) Dejaría sin recorrer a los socios minoritarios de la filial, que la transparencia de la cotizada no cubre (Ej. 8b) |
 | C31 | Si S no es una sociedad, el resultado es «fuera de alcance» en los dos regímenes y no se calcula | §2.4 | (a) Tratar S como `OPACA(S)`. (b) Calcular como si fuera una sociedad | (a) Nadie sería titular y el supletorio acabaría en «no determinable», que sugiere que faltan datos cuando lo que falta son las reglas. (b) El RD 8 y el AMLR 52.4 tienen reglas propias para esas entidades, que v0.1 no tiene (modelo, D8) |
+| C32 | Un resultado no es estable si lleva un aviso de lectura alternativa que cambiaría el resultado, o de una comprobación que no se ha podido hacer | §9 | Tratar todo «determinado» como un resultado cerrado | Un resultado que cambiaría con el valor justo al otro lado del umbral, o con otra lectura calculable, no es un resultado cerrado |
 
 ## 12. Casos que la norma no resuelve
 

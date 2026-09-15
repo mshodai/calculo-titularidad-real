@@ -44,6 +44,7 @@ CASOS_NO_RESUELTOS = {
 CASOS_POR_AVISO = {
     "POS-T": {ESPANA: ("N1", "N2"), AMLR: ("N4", "N5")},
     "T-NO-CONVERGE": {ESPANA: ("N1", "N2"), AMLR: ("N4", "N5")},
+    "MEZCLA-NO-CONVERGE": {ESPANA: ("N6",), AMLR: ("N6",)},
     "POS-AGREGADO": {AMLR: ("N8",)},
     "POS-MEZCLA": {ESPANA: ("N6",), AMLR: ("N6",)},
     "POS-FORMAL": {ESPANA: ("N13",), AMLR: ("N9",)},
@@ -53,6 +54,20 @@ CASOS_POR_AVISO = {
     "ART54-SENS": {AMLR: ("N3",)},
     "EXENCION-SENS": {ESPANA: ("N14",)},
 }
+
+# C32: avisos que hacen que el resultado no sea estable.
+CAMBIARIA_CON_OTRA_LECTURA = frozenset({
+    "UMBRAL-EXACTO", "CICLO-SENS", "ART54-SENS", "EXENCION-SENS",
+    "POS-T", "POS-AGREGADO", "POS-MEZCLA", "POS-FORMAL",
+})
+SIN_COMPROBAR = frozenset({"UMBRAL-EXACTO-NO-COMPROBADO", "T-NO-CONVERGE", "MEZCLA-NO-CONVERGE", "DOMINIO-INESTABLE"})
+
+
+def inestable_por(resultado) -> tuple[str, ...]:
+    """Los avisos por los que el resultado de un régimen no es estable (C32); vacío si lo es."""
+    codigos = {i.codigo for i in resultado.posibles + resultado.avisos}
+    return tuple(sorted(codigos & (CAMBIARIA_CON_OTRA_LECTURA | SIN_COMPROBAR)))
+
 
 # Avisos que no corresponden a un caso de la norma: de qué vienen.
 ORIGEN_DE_OTROS_AVISOS = {
@@ -220,6 +235,10 @@ def texto(inf: Informe) -> str:
     lineas += ["ESTADO"] + [f"  {nombre:<7} {r.estado}" for nombre, r in regimenes(inf)]
     if inf.espana and inf.amlr and inf.espana.estado != inf.amlr.estado:
         lineas.append("  ≠ Los dos regímenes llegan a estados distintos.")
+    for nombre, r in regimenes(inf):
+        if inestable_por(r):
+            lineas.append(_envolver(f"~ {nombre}: el resultado no es estable. Cambiaría con otra lectura, o una "
+                                    f"comprobación no se ha podido hacer: {', '.join(inestable_por(r))} (C32).", 2))
     lineas.append("")
 
     if inf.espana and inf.amlr:
@@ -456,6 +475,8 @@ def _cadenas(cadenas):
 def _espana(r):
     return {
         "estado": r.estado,
+        "estable": not inestable_por(r),
+        "inestable_por": list(inestable_por(r)),
         "motivo": r.motivo,
         "titulares": [
             {"persona": t.persona, "pruebas": sorted(t.pruebas),
@@ -472,6 +493,8 @@ def _espana(r):
 def _amlr(r):
     return {
         "estado": r.estado,
+        "estable": not inestable_por(r),
+        "inestable_por": list(inestable_por(r)),
         "motivo": r.motivo,
         "titulares": [
             {"persona": t.persona, "pruebas": sorted(t.pruebas.cumplidas),

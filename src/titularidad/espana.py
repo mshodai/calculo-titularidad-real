@@ -12,7 +12,7 @@ Antes de calcular: «fuera de alcance» si S no es una sociedad (C31), y
 
 Los avisos son los del §9 que corresponden a España: POS-T, POS-MEZCLA,
 POS-FORMAL, POS-HUECO, H1, H2, CICLO-SENS, UMBRAL-EXACTO, CICLO-CERRADO,
-T-NO-CONVERGE, DOMINIO-INESTABLE, COTIZADA y EXENCION-SENS.
+T-NO-CONVERGE, MEZCLA-NO-CONVERGE, DOMINIO-INESTABLE, COTIZADA y EXENCION-SENS.
 
 Todo con fracciones exactas (C6). Los puntos que la especificación no decide
 están marcados con «AMBIGÜEDAD:».
@@ -126,7 +126,7 @@ def calcular_espana(entrada: Entrada) -> ResultadoEspana:
         avisos.append(Incidencia("H2", "Hay posibles titulares reales en los huecos de la estructura (POS-HUECO)"))
 
     posibles += _pos_t(grafo, ev, avisos)
-    posibles += _pos_mezcla(grafo, ev)
+    posibles += _pos_mezcla(grafo, ev, avisos)
     posibles += _pos_formal(entrada, cotizadas, ev)
 
     titulares = tuple(_titular(grafo, ev, p) for p in sorted(ev.titulares))
@@ -319,10 +319,12 @@ def _pos_t(grafo, ev, avisos):
             if any(eff[m].get(p, {}).get(grafo.objetivo, 0) > UMBRAL for m in MAGNITUDES)]
 
 
-def _pos_mezcla(grafo, ev):
+def _pos_mezcla(grafo, ev, avisos):
     """POS-MEZCLA (N6): en cada arista, el mayor de capital y votos (C21)."""
     own = producto_mixto(grafo)
     if own is None:
+        avisos.append(Incidencia("MEZCLA-NO-CONVERGE", "El producto mixto no se puede calcular: la serie no converge "
+                                 "(C21). No se ha comprobado la mezcla de magnitudes (N6)"))
         return []
     s = grafo.objetivo
     return [Incidencia("POS-MEZCLA", f"«{p}» pasaría del 25 % mezclando capital y votos en la cadena: "

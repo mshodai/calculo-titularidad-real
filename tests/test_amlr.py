@@ -294,3 +294,12 @@ def test_no_determinable_sin_cargos_ejecutivos():
     cargos = [{"persona": "G", "cargo": "miembro_organo_administracion", "ejecutivo": False}]
     r = calcular([(f"a{i}", f"P{i}", "S", 20, 20) for i in range(5)], cargos=cargos)
     assert r.estado == NO_DETERMINABLE
+
+
+def test_mezcla_no_converge():
+    """A tiene el 100 % del capital de B y B el 100 % de los votos de A: cada magnitud por
+    separado no tiene ciclo, pero el producto mixto sí, al 100 % (C21)."""
+    r = calcular([("a1", "B", "A", 100, 0), ("a2", "P", "A", 0, 100), ("a3", "A", "B", 0, 100),
+                  ("a4", "Q", "B", 100, 0), ("a5", "A", "S", 50, 50), ("a6", "R", "S", 50, 50)])
+    assert de(r, "MEZCLA-NO-CONVERGE")
+    assert not de(r, "POS-MEZCLA")

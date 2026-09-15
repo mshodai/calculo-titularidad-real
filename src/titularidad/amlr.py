@@ -14,7 +14,8 @@ es una sociedad (C31). La cotización no cambia el cálculo (C5).
 
 Los avisos son los del §9 que corresponden al AMLR: POS-T (N4/N5),
 POS-AGREGADO, POS-MEZCLA, POS-FORMAL, POS-HUECO, H1, H2, CICLO-SENS,
-ART54-SENS, UMBRAL-EXACTO, CICLO-CERRADO, T-NO-CONVERGE y AMLR-NO-APLICABLE.
+ART54-SENS, UMBRAL-EXACTO, CICLO-CERRADO, T-NO-CONVERGE, MEZCLA-NO-CONVERGE y
+AMLR-NO-APLICABLE.
 
 Todo con fracciones exactas (C6). Los puntos que la especificación no decide
 están marcados con «AMBIGÜEDAD:».
@@ -174,7 +175,7 @@ def calcular_amlr(entrada: Entrada) -> ResultadoAmlr:
 
     posibles += _pos_t(grafo, no_titulares, avisos)
     posibles += _pos_agregado(grafo, own, control, no_titulares)
-    posibles += _pos_mezcla(grafo, no_titulares)
+    posibles += _pos_mezcla(grafo, no_titulares, avisos)
     posibles += _pos_formal(entrada, no_titulares)
 
     if titulares:
@@ -248,10 +249,12 @@ def _pos_agregado(grafo, own, control, no_titulares):
             if pruebas(grafo, own, agregado, p).cumplidas & {"A2", "A3", "A4"}]
 
 
-def _pos_mezcla(grafo, no_titulares):
+def _pos_mezcla(grafo, no_titulares, avisos):
     """POS-MEZCLA (N6, C21)."""
     own = producto_mixto(grafo)
     if own is None:
+        avisos.append(Incidencia("MEZCLA-NO-CONVERGE", "El producto mixto no se puede calcular: la serie no converge "
+                                 "(C21). No se ha comprobado la mezcla de magnitudes (N6)"))
         return []
     s = grafo.objetivo
     return [Incidencia("POS-MEZCLA", f"«{p}» alcanzaría el 25 % mezclando capital y votos en la cadena: "

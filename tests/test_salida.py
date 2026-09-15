@@ -76,6 +76,8 @@ def test_modelo_texto(modelo):
     assert "→ N3: AMLR: si el art. 54 sustituye al 52.1 o se añade a él" in t
     assert "LECTURAS DE LAS QUE DEPENDE ESTE RESULTADO" in t
     assert "AVI-06" in t  # los avisos de la validación también salen
+    # C32: el AMLR no es estable por el ART54-SENS de P-CARLOS; España, sí
+    assert "~ AMLR: el resultado no es estable." in t and "~ España" not in t
 
 
 def test_modelo_json(modelo):
@@ -180,7 +182,7 @@ def test_la_correspondencia_sigue_el_12_de_la_especificacion():
     filas = re.findall(r"^\| (N\d+) \|.*\| ([^|]*) \|$", especificacion, re.MULTILINE)
     assert len(filas) == 14
     for n, senal in filas:
-        for codigo in re.findall(r"\b[A-Z]+(?:-[A-Z0-9]+)+\b", senal):
+        for codigo in re.findall(r"\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b", senal):
             regimenes = CASOS_POR_AVISO.get(codigo, {})
             assert any(n in casos for casos in regimenes.values()), (n, codigo)
     # Y al revés: cada caso que da la salida está en el §12 con ese código.
@@ -188,7 +190,7 @@ def test_la_correspondencia_sigue_el_12_de_la_especificacion():
     for codigo, regimenes in CASOS_POR_AVISO.items():
         for casos in regimenes.values():
             for n in casos:
-                if codigo != "T-NO-CONVERGE":  # acompaña a POS-T: si no converge, no hay POS-T
+                if codigo not in ("T-NO-CONVERGE", "MEZCLA-NO-CONVERGE"):  # acompañan a POS-T y POS-MEZCLA
                     assert codigo in por_caso[n], (codigo, n)
 
 
@@ -196,3 +198,28 @@ def test_ciclo_sens_en_espana_no_cita_n12():
     """N12 (autocartera y control) es del AMLR; en España CICLO-SENS solo afecta a E1 (N7)."""
     assert CASOS_POR_AVISO["CICLO-SENS"][ESPANA] == ("N7",)
     assert "N12" in CASOS_POR_AVISO["CICLO-SENS"][AMLR]
+
+
+def test_estabilidad_en_el_json(modelo):
+    datos = json.loads(como_json(modelo))
+    assert (datos["espana"]["estable"], datos["espana"]["inestable_por"]) == (True, [])
+    assert (datos["amlr"]["estable"], datos["amlr"]["inestable_por"]) == (False, ["ART54-SENS"])
+
+
+def test_los_avisos_de_c32_tienen_origen():
+    from titularidad.salida import CAMBIARIA_CON_OTRA_LECTURA, SIN_COMPROBAR
+    assert not (CAMBIARIA_CON_OTRA_LECTURA & SIN_COMPROBAR)
+    for codigo in CAMBIARIA_CON_OTRA_LECTURA | SIN_COMPROBAR:
+        assert codigo in CASOS_POR_AVISO or codigo in ORIGEN_DE_OTROS_AVISOS
+
+
+def test_c32_sigue_la_especificacion():
+    """Los dos grupos de C32 (§9) son los mismos que usa la salida."""
+    from titularidad.salida import CAMBIARIA_CON_OTRA_LECTURA, SIN_COMPROBAR
+    especificacion = (RAIZ / "docs" / "especificacion-calculo.md").read_text(encoding="utf-8")
+    c32 = especificacion[especificacion.index("**[C32"):]
+    grupo1 = c32[c32.index("otra lectura que el cálculo comprueba:**"):c32.index("Es lo que señalan")]
+    grupo2 = c32[c32.index("no se ha podido hacer:**"):c32.index("\n\nUn «determinado»")]
+    codigo = r"\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b"
+    assert set(re.findall(codigo, grupo1)) == CAMBIARIA_CON_OTRA_LECTURA
+    assert set(re.findall(codigo, grupo2)) == SIN_COMPROBAR
