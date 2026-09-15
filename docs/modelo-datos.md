@@ -8,7 +8,7 @@ Este documento define el JSON con el que se describe una estructura de propiedad
 
 - Las citas literales van entre comillas «…» con artículo, apartado y letra.
 - Todo lo que no viene de los textos y es elección de diseño va marcado como **[Dn — decisión propia]** y se recoge en la tabla del §8, junto con la alternativa descartada y el motivo.
-  - Los números (D1–D22) son identificadores estables: no siguen el orden de aparición y no se reutilizan.
+  - Los números (D1–D23) son identificadores estables: no siguen el orden de aparición y no se reutilizan.
 - Lo que los textos no resuelven y queda para la especificación del cálculo va marcado como **[Pendiente]** y se recoge en el §9.
 
 ### Fuentes (en `docs/fuentes/`)
@@ -63,7 +63,7 @@ Este documento define el JSON con el que se describe una estructura de propiedad
 - **Derechos económicos** como tercera magnitud (52.1).
 - **Relaciones familiares** (53.4.b).
 - **Nominatarios** con definición propia (53.4.c) y obligación de revelar al nominador (art. 66).
-- **Umbral de control del 50 % más una en cada nivel** (53.2.c). Hace falta para aplicar el art. 54. Se deduce de los mismos datos, no exige datos nuevos.
+- **Umbral de control del 50 % más una en cada nivel** (53.2.c). Hace falta para aplicar el art. 54. Se deduce de los mismos datos, no exige datos nuevos, salvo en el límite de precisión de D23.
 - **Distinguir cargos ejecutivos de no ejecutivos** para el supuesto supletorio (63.4).
 - **Fecha de inicio del interés** (62.1.b), lugar de nacimiento, domicilio y número de identificación personal (62.1.a).
 
@@ -140,6 +140,21 @@ Tras la tabla de cada objeto se indica de dónde sale cada campo. Se usará un J
 
 - **[D4 — decisión propia] Formato de los porcentajes.** Van en escala 0–100, como en los textos («25 por ciento», «25 %»), con un máximo de 4 decimales. Deben leerse como **decimales exactos, no como números en coma flotante binaria**.
   - Motivo: la diferencia entre «superior al 25» (Ley 4.2.b) y «25 % o más» (AMLR 52.1) se decide justo en el 25. Un error de redondeo binario en ese punto cambiaría quién es titular real.
+- **[D23 — decisión propia] Límite de precisión en los umbrales.** Un porcentaje con 4 decimales representa cualquier valor real que, redondeado, dé ese número: como mucho 0,00005 por encima o por debajo (D15). Eso solo importa cuando el valor registrado es exactamente un umbral (25 o 50), porque entonces no se sabe de qué lado está el real. No es un caso que la norma deje abierto: «50 % más una» y «mayoría» son claros. El límite está en la representación.
+  - **El «50 % más una» del AMLR 53.2.c.** La mayoría mínima es la primera cantidad de acciones que supera la mitad: así lee la especificación el «50 % más una» (C10).
+    - Con N acciones, la mayoría mínima está a 50/N puntos del 50 si N es impar y a 100/N si es par.
+    - Cuando esa distancia es menor que 0,00005, se registra como 50 y no se distingue de la mitad justa. Con N impar, a partir de 1.000.001 acciones. Con N par, a partir de 2.000.002.
+    - Con exactamente 2.000.000 de acciones, la distancia es justo 0,00005 y depende de cómo se redondee el empate.
+    - Vale lo mismo para los votos, con N = número de votos, y para la «mayoría» de los derechos de voto del CCom 42.1.a.
+  - **Los umbrales del 25.** Pasa lo mismo, y con sociedades más pequeñas, porque el 25 % de N acciones pocas veces es entero. La cantidad más próxima al 25 está a 25/N, 50/N, 75/N o 100/N puntos, según el resto de dividir N entre 4. Por eso ocurre con algunos tamaños a partir de 500.001 acciones, y con todos por encima de 2.000.000 (con 2.000.000 exactas hay empate):
+    - «superior al 25» (Ley 4.2.b): la participación mínima por encima del 25 % se registra como 25 y no alcanza el umbral. El primer tamaño afectado es 500.003;
+    - «25 % o más» (AMLR 52.1): la participación máxima por debajo del 25 % se registra como 25 y lo alcanza. El primer tamaño afectado es 500.001.
+  - **Qué hace el cálculo.**
+    - Lee el valor registrado como exacto (D4; especificación, C6). Un 50 es la mitad justa y no da control; un 25 es el 25 justo.
+    - La entrada no tiene el número de acciones, así que el cálculo no puede saber si ese valor esconde el otro lado. Por eso repite el cálculo leyendo los valores que coinciden con un umbral como si estuvieran justo por encima, y otra vez como si estuvieran justo por debajo.
+    - Si en alguna de las dos repeticiones cambia quién es titular real, la salida da el aviso UMBRAL-EXACTO (especificación, C28).
+  - **Lo que no cubre.** Solo el valor que coincide exactamente con el umbral. Un valor que se calcula con varias aristas acumula el error de cada una (en una suma de *n* aristas, hasta *n* × 0,00005). Por eso puede estar en realidad al otro lado del umbral aunque no dé exactamente el umbral. v0.1 no calcula esa banda.
+  - Las cifras de este punto se comprueban en [`verificacion/test_precision_umbrales.py`](../verificacion/test_precision_umbrales.py).
 - **[D5 — decisión propia] Las dos claves son obligatorias.** `null` significa «desconocido».
   - No se deduce `votos` a partir de `capital` ni al revés: presumir que coinciden ocultaría, por ejemplo, las participaciones sin voto.
   - Una arista con las dos a `null` es un error. Una con una sola a `null` genera un aviso.
@@ -324,6 +339,7 @@ Estas cifras se recalculan con fracciones exactas en [`verificacion/test_cifras_
 | Control potencial (opciones, convertibles) | CCom 42.1: «pueda ostentar»; Dir. 22.2.a: «puede ejercer» |
 | Fideicomisos e instrumentos jurídicos análogos | Ley 4.2.c y d; art. 4 ter; AMLR 55 y 57 |
 | Reglas propias de fundaciones y asociaciones | RD 8, párrafos finales; AMLR 52.4 |
+| Diferencias de menos de 0,00005 puntos con un umbral: por ejemplo, la mitad más una acción en una sociedad con más de un millón de acciones (D23) | AMLR 52.1 y 53.2.c; Ley 4.2.b; CCom 42.1.a |
 
 **Consecuencia importante.** El supuesto supletorio español exige que no haya nadie que «por otros medios ejerza el control» (Ley 4.2.b bis). Como v0.1 no evalúa ese control, cuando aplique ese supuesto tendrá que decir que es **condicional**.
 
@@ -359,6 +375,7 @@ La columna «Origen» indica cuándo se planteó la alternativa descartada:
 | D20 | Se rechazan los campos desconocidos | §6.2 | Ignorarlos | Una errata en un campo opcional pasaría inadvertida (p. ej., `por_cuenta` en lugar de `por_cuenta_de`) | diseño |
 | D21 | Los nodos no conectados con la entidad objetivo se ignoran con aviso | §6.2 | Rechazar la entrada | Es habitual pasar los datos de todo un grupo, y esos nodos no afectan al cálculo | revisión |
 | D22 | El «órgano de administración» español se trata como el «órgano de dirección» del AMLR 63.4 | §3.5 | (a) No suponer nada y dejar sin calcular el supuesto supletorio del AMLR. (b) Un campo que indique qué órgano es | (a) Dejaría sin resultado el supuesto del AMLR para cualquier entidad española. (b) Se podrá añadir si aparecen entidades con órganos separados, que los textos europeos distinguen (AMLR 53.3.b; Dir. 22.1.b) | revisión |
+| D23 | Un valor igual a un umbral (25 o 50) se lee como exacto; el cálculo avisa si leerlo al otro lado cambia quién es titular real | §3.4 | (a) Registrar el número de acciones y de votos, o fracciones exactas (D4, alternativa c). (b) Más decimales | (a) Cambia la base del modelo para un caso que solo aparece en el valor exacto del umbral y que el cálculo puede detectar. (b) Solo desplaza el límite: con cualquier número fijo de decimales hay un tamaño a partir del cual pasa lo mismo | revisión |
 
 ## 9. Pendiente para la especificación del cálculo
 

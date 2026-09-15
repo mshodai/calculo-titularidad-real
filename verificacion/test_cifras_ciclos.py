@@ -41,17 +41,18 @@ def leer_ejemplo_modelo():
     return json.loads(next(b for b in bloques if '"entidad_objetivo"' in b))
 
 
-def preparar(entrada):
+def preparar(entrada, con_c2=True):
     """Devuelve (tipos, h) con h[m][(titular, participada)] en porcentaje.
 
     Aplica C1 (solo ancestros del objetivo), C2 (por_cuenta_de se atribuye al
     principal), C3 (aristas paralelas se suman) y C4 (huecos como titulares
-    virtuales NO_IDENTIFICADO(X)).
+    virtuales NO_IDENTIFICADO(X)). Con con_c2=False, cada arista queda en su
+    titular formal: es la lectura contraria de N9 (C29).
     """
     tipos = {n["id"]: n["tipo"] for n in entrada["nodos"]}
     h = {m: {} for m in MAGNITUDES}
     for p in entrada["participaciones"]:
-        titular = p.get("por_cuenta_de") or p["titular"]
+        titular = (con_c2 and p.get("por_cuenta_de")) or p["titular"]
         for m in MAGNITUDES:
             clave = (titular, p["participada"])
             h[m][clave] = h[m].get(clave, 0) + Fraction(str(p[m]))
@@ -319,6 +320,14 @@ class EspecificacionSeccion63(ComprobacionDocumento):
 
     def test_metodo_a_no_cambia_el_control(self):
         self.assertEqual(control(self.h, metodo_a), control(self.h))
+
+    def test_sin_c2_bruno_no_llega(self):
+        _, h = preparar(leer_ejemplo_modelo(), con_c2=False)
+        valores = [metodo_b(h[m], "P-BRUNO", self.S) for m in MAGNITUDES]
+        self.assertEqual(valores, [Fraction(1800, 94), Fraction(2000, 93)])
+        self.assertTrue(all(v < 25 for v in valores))
+        self.assertFalse({y for x, y in control(h) if x == "P-BRUNO"})
+        self.assertEnDocumento(*valores)
 
 
 if __name__ == "__main__":
