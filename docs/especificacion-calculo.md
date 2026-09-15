@@ -16,6 +16,9 @@ No fija el formato de salida, solo su contenido mínimo (§9).
   - **[C25 — decisión propia]** La salida señala un caso N cuando otra lectura del texto se puede calcular con los datos de la entrada y cambiaría quién es titular real. Lo hace con los avisos del §9; en N9 y N13, además, con la marca «por cuenta de».
   - N10 y N11 no tienen señal propia, porque no hay otra lectura con la que comparar. El §12 explica por qué.
 - Los porcentajes van de 0 a 100, como en el modelo (D4).
+- **Patrón a vigilar: dar por supuesta una condición o un régimen.** Ha aparecido tres veces. La regla de las cotizadas intermedias (C5) trataba como cotizada a una entidad sin comprobar los requisitos de información. AVI-02 y AVI-03 se rebajaban o se omitían en los dos regímenes por una excepción que solo es española (modelo, D26). Al escribir o revisar una regla, hay que comprobar dos cosas:
+  - que se cumplen todas las condiciones del texto en que se basa, no solo la más visible;
+  - que se aplica solo en el régimen cuyo texto la justifica. Si vale para los dos, cada régimen necesita su propia base.
 
 **Notación** (m es una magnitud: `capital` o `votos`):
 
