@@ -573,7 +573,9 @@ python3 -m unittest discover -s verificacion -v
 | POS-AGREGADO | Con el control agregado C⁺, P cumpliría A2, A3 o A4 (§3.3). Solo AMLR | N8 |
 | POS-MEZCLA | El producto mixto alcanza el umbral (§7) | N6 |
 | POS-FORMAL | Con las aristas `por_cuenta_de` atribuidas al titular formal, P cumpliría A1, A2, A3 o A4 en el AMLR, o E1 en España, donde la atribución al titular formal es solo en capital (§2.2) | N9 en el AMLR; N13 en España |
-| POS-HUECO | own_m(P, S) + U_m alcanza el umbral, siendo U_m lo que llega a S desde los titulares `NO_IDENTIFICADO` y `OPACA` (C4) | Estructura incompleta |
+| POS-HUECO | P participa en S en la magnitud m (own_m(P, S) > 0) y own_m(P, S) + U_m alcanza el umbral, siendo U_m lo que llega a S desde los titulares `NO_IDENTIFICADO` y `OPACA` (C4). Quien no participa en S no se señala: que pudiera estar detrás del hueco vale para cualquiera, y eso ya lo dice H1 | Estructura incompleta |
+
+  La versión anterior de POS-HUECO no pedía own_m(P, S) > 0. En cuanto U_m alcanzaba por sí solo el umbral, marcaba a todas las personas de la entrada, también a administradores sin ninguna participación.
 
 - **Avisos:**
 
@@ -657,11 +659,13 @@ S: A 30 %, R 70 %. A: P tiene 60 % del capital y 40 % de los votos; Q tiene 40 %
 
 P —60 %→ A —50 %→ B —60 %→ C —50 %→ S. Los demás titulares: A2 tiene el 40 % de A, B2 el 50 % de B, C2 el 40 % de C y S2 el 50 % de S.
 
-| | P | S2 |
-|---|---|---|
-| AMLR literal (A1–A4) | No: 52.1 da 9 %; ni 54.a ni 54.b se aplican (§4.4) | Sí (50 %) |
-| AMLR, lectura extensiva | 1 × 0,5 × 1 × 0,5 = 25 ≥ 25 → **POS-T** | — |
-| España (L1, L2 y L3) | L1 = 9; L2 = 0, porque A no domina B con 50 %; L3 = 25, que no es > 25 → **ni titular ni aviso** | Sí (50 %) |
+| | P | B2 | S2 |
+|---|---|---|---|
+| AMLR literal (A1–A4) | No: 52.1 da 9 %; ni 54.a ni 54.b se aplican (§4.4) | No: 52.1 da 0,5 × 0,6 × 0,5 = 15 %; no controla B (50 %) y nadie controla S | Sí (50 %) |
+| AMLR, lectura extensiva | 1 × 0,5 × 1 × 0,5 = 25 ≥ 25 → **POS-T** | 0,5 × 1 × 0,5 = 25 ≥ 25 (B controla C) → **POS-T** | — |
+| España (L1, L2 y L3) | L1 = 9; L2 = 0, porque A no domina B con 50 %; L3 = 25, que no es > 25 → **ni titular ni aviso** | L1 = 15; L2 = 0, porque con el 50 % no domina B; L3 = 25, que no es > 25 → **ni titular ni aviso** | Sí (50 %) |
+
+La versión anterior de esta tabla solo analizaba a P, y el resumen daba a P como único posible titular en el AMLR. B2 tiene la misma forma de cadena no regulada, O C O, y también llega a 25.
 
 **UMBRAL-EXACTO (C28), en los dos regímenes.** Las aristas del 50 % (A→B, B2→B, C→S y S2→S), leídas justo por encima, darían control. Con eso, en el AMLR también serían titulares reales P, A2, B2 y C2, y en España, P y B2.
 
@@ -724,7 +728,7 @@ Si la exención se aplicara también a la filial intermedia, los socios de X no 
 | 2 | P, X | P, X | No difieren, pero en España P solo sale por L2 |
 | 3 | P, Q, R | Q, R (P posible) | El 54.b no tiene equivalente en L1 ∪ L2 |
 | 4 | P, Q, R | Q, R | Control por capital (53.2.c) frente a solo votos (CCom 42.1.a) |
-| 5 | S2 (P posible) | S2 | Forma no regulada: vale 25 exacto, que en el AMLR alcanza el umbral |
+| 5 | S2 (P y B2 posibles) | S2 | Forma no regulada: vale 25 exacto, que en el AMLR alcanza el umbral |
 | 5b | P, A2, S2 | S2 | Umbral y lectura del «salvo» del 52.1 |
 | 6 | P, Q, R | Q, R (P posible) | Control por capital y mezcla de magnitudes |
 | 7 | Ana, Carlos | Ana, Carlos | Solo difiere el criterio: en España Ana controla S |

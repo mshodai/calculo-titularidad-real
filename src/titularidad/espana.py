@@ -20,10 +20,11 @@ están marcados con «AMBIGÜEDAD:».
 
 import operator
 from dataclasses import dataclass
-from decimal import ROUND_HALF_UP, Decimal, localcontext
 from fractions import Fraction
 
 from titularidad.control import dominio_espana
+from titularidad.formato import por_magnitud as _por_magnitud
+from titularidad.formato import porcentaje as _texto
 from titularidad.modelo import MAGNITUDES, EntidadJuridica, Entrada, Incidencia
 from titularidad.propagacion import (
     NO_IDENTIFICADO,
@@ -31,10 +32,11 @@ from titularidad.propagacion import (
     Atribucion,
     cadenas_simples,
     enumerar_cadenas,
-    grupos_sin_convergencia,
+    marcas_por_cuenta_de,
     preparar,
+    producto_mixto,
     serie_completa,
-    serie_sobre,
+    transparencia,
 )
 
 UMBRAL = Fraction(25)  # Ley 4.2.b: «superior al 25 por ciento»
@@ -114,7 +116,9 @@ def calcular_espana(entrada: Entrada) -> ResultadoEspana:
         avisos.append(Incidencia("H1", "Lo que llega a S desde titulares sin identificar pasa del 25 %: "
                                  + _por_magnitud(huecos) + ". Puede haber un titular real sin identificar"))
     for p in ev.no_titulares():
-        con_hueco = {m: ev.en_s(m, p) + huecos[m] for m in MAGNITUDES}
+        # Solo en las magnitudes en que P participa en S (§9): si no, cualquiera
+        # podría estar detrás del hueco, y eso ya lo dice H1.
+        con_hueco = {m: ev.en_s(m, p) + huecos[m] for m in MAGNITUDES if ev.en_s(m, p) > 0}
         if any(v > UMBRAL for v in con_hueco.values()):
             posibles.append(Incidencia("POS-HUECO", f"«{p}» pasaría del 25 % si participara en lo que no está "
                                        f"identificado: {_por_magnitud(con_hueco)} (estructura incompleta)", (p,)))
@@ -191,11 +195,7 @@ def _titular(grafo, ev, p):
     if ev.dominio.estable and ev.dominio.base(s) > 0:
         agregado = ev.dominio.proporcion(p, s)
         controla = s in ev.dominio.dependientes.get(p, frozenset())
-    # AMBIGÜEDAD: el §9 pide la marca «por cuenta de» «si procede», sin decir
-    # cuándo. Se pone si la atribución es a P o a una entidad en la que P
-    # participa: en los dos casos, el resultado de P depende de C2.
-    marcas = tuple(a for a in grafo.atribuciones
-                   if a.principal == p or any(ev.own[m].get(p, {}).get(a.principal, 0) > 0 for m in MAGNITUDES))
+    marcas = marcas_por_cuenta_de(grafo, ev.own, p)
     cadenas = {m: enumerar_cadenas(grafo, m, p) for m in MAGNITUDES}
     return Titular(p, frozenset(pruebas), participacion, agregado, controla, marcas, cadenas)
 
@@ -307,12 +307,11 @@ def _pos_t(grafo, ev, avisos):
         neutralizado = titular == participada or titular in ev.dominio.dependientes.get(participada, frozenset())
         if base > 0 and not neutralizado and valor * CIEN / base > MAYORIA:
             control.add((titular, participada))
-    pesos = {m: {**grafo.h[m], **{a: CIEN for a in control}} for m in MAGNITUDES}
-    if any(grupos_sin_convergencia(pesos[m]) for m in MAGNITUDES):
+    eff = transparencia(grafo, control)
+    if eff is None:
         avisos.append(Incidencia("T-NO-CONVERGE", "La lectura extensiva no se puede calcular: hay un ciclo formado "
                                  "solo por aristas de control (§3.5)"))
         return []
-    eff = {m: serie_sobre(pesos[m]) for m in MAGNITUDES}
     return [Incidencia("POS-T", f"«{p}» sería titular real con la lectura extensiva L3: "
                        + _por_magnitud({m: eff[m].get(p, {}).get(grafo.objetivo, 0) for m in MAGNITUDES})
                        + " (N1/N2)", (p,))
@@ -322,14 +321,9 @@ def _pos_t(grafo, ev, avisos):
 
 def _pos_mezcla(grafo, ev):
     """POS-MEZCLA (N6): en cada arista, el mayor de capital y votos (C21)."""
-    claves = set(grafo.h["capital"]) | set(grafo.h["votos"])
-    mixto = {a: max(grafo.h["capital"].get(a, 0), grafo.h["votos"].get(a, 0)) for a in claves}
-    if grupos_sin_convergencia(mixto):
-        # AMBIGÜEDAD: el producto mixto puede sumar más del 100 % en una
-        # entidad, y en un ciclo la serie puede no converger. C21 no lo prevé;
-        # entonces no se calcula el aviso.
+    own = producto_mixto(grafo)
+    if own is None:
         return []
-    own = serie_sobre(mixto)
     s = grafo.objetivo
     return [Incidencia("POS-MEZCLA", f"«{p}» pasaría del 25 % mezclando capital y votos en la cadena: "
                        f"{_texto(own[p][s])} % (N6)", (p,))
@@ -401,16 +395,3 @@ def _supletorio(entrada, ev, posibles, avisos):
 
 def _sin_calculo(estado, motivo):
     return ResultadoEspana(estado, motivo, (), (), (), ())
-
-
-def _texto(valor):
-    """El valor exacto redondeado a 2 decimales, solo para mostrarlo (C6)."""
-    valor = Fraction(valor)
-    with localcontext() as contexto:
-        contexto.prec = 50
-        decimal = Decimal(valor.numerator) / Decimal(valor.denominator)
-    return f"{decimal.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)}".replace(".", ",")
-
-
-def _por_magnitud(valores):
-    return ", ".join(f"{m} {_texto(v)} %" for m, v in valores.items())

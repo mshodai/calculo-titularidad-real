@@ -355,6 +355,47 @@ def _resolver(h, incognitas, vectores):
     return [[filas[i][n + j] / filas[i][i] for i in range(n)] for j in range(k)]
 
 
+# --- Lecturas que solo avisan: transparencia (§3.5) y producto mixto (§7) --------
+
+
+def transparencia(grafo: Grafo, control) -> dict | None:
+    """eff_m(X, Y) (C13): own_m con peso 1 en las aristas de `control`.
+
+    Qué aristas son de control depende del régimen, así que las da quien
+    llama. Devuelve eff[m][X][Y], o None si la serie no converge (un ciclo
+    formado solo por aristas de control): es el aviso T-NO-CONVERGE.
+    """
+    pesos = {m: {**grafo.h[m], **{arista: CIEN for arista in control}} for m in MAGNITUDES}
+    if any(grupos_sin_convergencia(pesos[m]) for m in MAGNITUDES):
+        return None
+    return {m: serie_sobre(pesos[m]) for m in MAGNITUDES}
+
+
+def producto_mixto(grafo: Grafo) -> dict | None:
+    """El producto mixto de C21: en cada arista, el mayor de capital y votos.
+
+    Devuelve own[X][Y] sobre esos pesos, o None si la serie no converge.
+    """
+    claves = set(grafo.h["capital"]) | set(grafo.h["votos"])
+    mixto = {a: max(grafo.h["capital"].get(a, 0), grafo.h["votos"].get(a, 0)) for a in claves}
+    if grupos_sin_convergencia(mixto):
+        # AMBIGÜEDAD: el producto mixto puede sumar más del 100 % en una
+        # entidad y, en un ciclo, no converger. C21 no lo prevé; entonces no
+        # se calcula el aviso.
+        return None
+    return serie_sobre(mixto)
+
+
+def marcas_por_cuenta_de(grafo: Grafo, own: dict, persona) -> tuple[Atribucion, ...]:
+    """Las atribuciones de C2 de las que depende el resultado de `persona` (§9)."""
+    # AMBIGÜEDAD: el §9 pide la marca «por cuenta de» «si procede», sin decir
+    # cuándo. Se pone si la atribución es a la persona o a una entidad en la
+    # que participa: en los dos casos, su resultado depende de C2.
+    return tuple(a for a in grafo.atribuciones
+                 if a.principal == persona
+                 or any(own[m].get(persona, {}).get(a.principal, 0) > 0 for m in MAGNITUDES))
+
+
 # --- Método A: cadenas simples (§6.2, prueba de sensibilidad) ------------------
 
 

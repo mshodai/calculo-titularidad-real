@@ -22,7 +22,7 @@ def verificacion():
     return modulo
 
 
-def entrada(aristas, objetivo="S", entidades=(), clases=None, cargos=None, cotizadas=None):
+def entrada(aristas, objetivo="S", entidades=(), clases=None, cargos=None, cotizadas=None, fecha="2026-09-15"):
     """Entrada validada a partir de (id, titular, participada, capital, votos[, por_cuenta_de]).
 
     Son entidades el objetivo, las participadas y las de `entidades`; el resto,
@@ -60,7 +60,7 @@ def entrada(aristas, objetivo="S", entidades=(), clases=None, cargos=None, cotiz
         participaciones.append(p)
     texto = json.dumps({
         "version_modelo": "0.1",
-        "fecha_referencia": "2026-09-15",
+        "fecha_referencia": fecha,
         "entidad_objetivo": objetivo,
         "nodos": nodos,
         "participaciones": participaciones,

@@ -231,6 +231,7 @@ def test_supletorio_no_determinable_con_hueco():
     assert r.estado == NO_DETERMINABLE
     assert "Ley 4.4" in r.motivo
     assert {"H1", "H2"} <= {i.codigo for i in r.avisos}
+    assert [i.ids for i in de(r, "POS-HUECO")] == [("P",)]  # ADM no participa en S (§9)
 
 
 def test_supletorio_no_determinable_sin_cargos():
