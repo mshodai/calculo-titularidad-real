@@ -168,6 +168,10 @@ Los catorce casos, y cuatro más que vienen del formato del dato y no de la norm
 
 Los documentos se descargaron el 15 de septiembre de 2026. Las URL y las huellas SHA-256 de cada versión están en [docs/fuentes/FUENTES.md](docs/fuentes/FUENTES.md). Los PDF no se redistribuyen.
 
+## Licencia
+
+MIT; el texto completo está en [LICENSE](LICENSE). Cubre el código y la documentación de este repositorio, no los textos legales de `docs/fuentes/`, que no se incluyen.
+
 ---
 
 Es una implementación de referencia, probada sobre datos sintéticos. No es software de cumplimiento normativo y no constituye asesoramiento jurídico.

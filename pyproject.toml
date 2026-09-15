@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "calculo-titularidad-real"
 version = "0.1.0"
 description = "Calcula la titularidad real de una entidad jurídica según la Ley 10/2010 y el AMLR"
+license = "MIT"
 
 [project.scripts]
 calcular-titularidad = "titularidad.cli:main"
