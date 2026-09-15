@@ -78,6 +78,8 @@ def test_modelo_texto(modelo):
     assert "AVI-06" in t  # los avisos de la validación también salen
     # C32: el AMLR no es estable por el ART54-SENS de P-CARLOS; España, sí
     assert "~ AMLR: el resultado no es estable." in t and "~ España" not in t
+    # C33: los dos pueden no estar completos por el hueco de E-FONDO (POS-HUECO de P-DIEGO)
+    assert "? España: el resultado puede no estar completo." in t and "? AMLR" in t
 
 
 def test_modelo_json(modelo):
@@ -223,3 +225,40 @@ def test_c32_sigue_la_especificacion():
     codigo = r"\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b"
     assert set(re.findall(codigo, grupo1)) == CAMBIARIA_CON_OTRA_LECTURA
     assert set(re.findall(codigo, grupo2)) == SIN_COMPROBAR
+
+# X tiene el 30 % de S; el 60 % de X no está identificado y Q1 a Q4 tienen un 10 % cada uno.
+# Lo que llega a S sin identificar es un 18 % (sin H1) y nadie llega con el hueco (3 + 18, sin
+# POS-HUECO), pero quien tenga ese 60 % controla X: H3 (C33).
+HUECO_QUE_CONTROLA = [(f"q{i}", f"Q{i}", "X", 10, 10) for i in range(1, 5)] + [("a1", "X", "S", 30, 30)]
+
+
+def test_inestable_incompleto_o_las_dos_cosas(modelo):
+    """C32 y C33 son criterios separados, y la salida dice cuál se da."""
+    from titularidad.salida import incompleto_por, inestable_por
+    # Las dos: el AMLR del modelo (ART54-SENS; POS-HUECO y H2).
+    assert inestable_por(modelo.amlr) == ("ART54-SENS",)
+    assert incompleto_por(modelo.amlr) == ("H2", "POS-HUECO")
+    # Solo incompleto: España en el modelo, y el hueco que controla X.
+    assert inestable_por(modelo.espana) == () and incompleto_por(modelo.espana) == ("H2", "POS-HUECO")
+    hueco = informe_de(HUECO_QUE_CONTROLA + [("a2", "R", "S", 70, 70)])
+    for r in (hueco.espana, hueco.amlr):
+        assert (inestable_por(r), incompleto_por(r)) == ((), ("H3",))
+    # Solo inestable: el 25 % justo del Ej. 1 en el AMLR, sin huecos.
+    ej1 = informe_de([(f"a{i}", f"P{i}", "S", 25, 25) for i in range(1, 5)])
+    assert (inestable_por(ej1.amlr), incompleto_por(ej1.amlr)) == (("UMBRAL-EXACTO",), ())
+
+
+def test_completitud_en_el_json(modelo):
+    datos = json.loads(como_json(modelo))
+    for regimen in ("espana", "amlr"):
+        assert (datos[regimen]["completo"], datos[regimen]["incompleto_por"]) == (False, ["H2", "POS-HUECO"])
+
+
+def test_c33_sigue_la_especificacion():
+    """Los avisos de C33 (§9) son los mismos que usa la salida, y no se solapan con los de C32."""
+    from titularidad.salida import CAMBIARIA_CON_OTRA_LECTURA, FALTAN_DATOS, SIN_COMPROBAR
+    especificacion = (RAIZ / "docs" / "especificacion-calculo.md").read_text(encoding="utf-8")
+    c33 = especificacion[especificacion.index("**[C33"):]
+    lista = c33[c33.index("No lo es si lleva alguno de estos avisos:"):c33.index("Lo que llega por cotizadas")]
+    assert set(re.findall(r"\*\*([A-Z][A-Z0-9-]*)", lista)) | set(re.findall(r"\b(POS-HUECO)\b", lista)) == FALTAN_DATOS
+    assert not (FALTAN_DATOS & (CAMBIARIA_CON_OTRA_LECTURA | SIN_COMPROBAR))

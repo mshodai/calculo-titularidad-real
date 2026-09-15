@@ -69,11 +69,23 @@ def inestable_por(resultado) -> tuple[str, ...]:
     return tuple(sorted(codigos & (CAMBIARIA_CON_OTRA_LECTURA | SIN_COMPROBAR)))
 
 
+# C33: avisos que hacen que el resultado no sea completo. H2 y POS-HUECO son el
+# mismo caso (H2 dice que hay algún POS-HUECO); se miran los dos.
+FALTAN_DATOS = frozenset({"H1", "H2", "H3", "POS-HUECO"})
+
+
+def incompleto_por(resultado) -> tuple[str, ...]:
+    """Los avisos por los que el resultado de un régimen no es completo (C33); vacío si lo es."""
+    codigos = {i.codigo for i in resultado.posibles + resultado.avisos}
+    return tuple(sorted(codigos & FALTAN_DATOS))
+
+
 # Avisos que no corresponden a un caso de la norma: de qué vienen.
 ORIGEN_DE_OTROS_AVISOS = {
     "POS-HUECO": "estructura incompleta: faltan titulares en la entrada (C4)",
     "H1": "estructura incompleta: faltan titulares en la entrada (C4)",
     "H2": "estructura incompleta: faltan titulares en la entrada (C4)",
+    "H3": "estructura incompleta: lo que no está identificado controlaría una entidad (C4, C33)",
     "UMBRAL-EXACTO": "límite de los datos: porcentajes con 4 decimales (modelo, D23; C28)",
     "UMBRAL-EXACTO-NO-COMPROBADO": "límite de los datos: porcentajes con 4 decimales (modelo, D23; C28)",
     "DOMINIO-INESTABLE": "el dominio del art. 42 no se estabiliza con estos datos (§3.4)",
@@ -239,6 +251,10 @@ def texto(inf: Informe) -> str:
         if inestable_por(r):
             lineas.append(_envolver(f"~ {nombre}: el resultado no es estable. Cambiaría con otra lectura, o una "
                                     f"comprobación no se ha podido hacer: {', '.join(inestable_por(r))} (C32).", 2))
+        if incompleto_por(r):
+            lineas.append(_envolver(f"? {nombre}: el resultado puede no estar completo. Lo que no está "
+                                    "identificado podría cambiar quién es titular real: "
+                                    f"{', '.join(incompleto_por(r))} (C33).", 2))
     lineas.append("")
 
     if inf.espana and inf.amlr:
@@ -477,6 +493,8 @@ def _espana(r):
         "estado": r.estado,
         "estable": not inestable_por(r),
         "inestable_por": list(inestable_por(r)),
+        "completo": not incompleto_por(r),
+        "incompleto_por": list(incompleto_por(r)),
         "motivo": r.motivo,
         "titulares": [
             {"persona": t.persona, "pruebas": sorted(t.pruebas),
@@ -495,6 +513,8 @@ def _amlr(r):
         "estado": r.estado,
         "estable": not inestable_por(r),
         "inestable_por": list(inestable_por(r)),
+        "completo": not incompleto_por(r),
+        "incompleto_por": list(incompleto_por(r)),
         "motivo": r.motivo,
         "titulares": [
             {"persona": t.persona, "pruebas": sorted(t.pruebas.cumplidas),

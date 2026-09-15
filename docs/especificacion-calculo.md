@@ -536,7 +536,7 @@ python3 -m unittest discover -s verificacion -v
 **[C22 — decisión propia]** Si nadie es titular real por E1 ni por E2:
 - **Quiénes salen.** Todos los `cargos` de S con `cargo: "miembro_organo_administracion"`, sean o no ejecutivos. Si el cargo lo ocupa una entidad, sale su `representante` (modelo, D12).
 - **Estado «condicional».** Siempre en v0.1, porque la Ley exige que nadie ejerza el control «por otros medios» y v0.1 no lo evalúa (D19). Además, la presunción admite prueba en contrario.
-- **Estado «no determinable» en su lugar** si hay avisos de hueco (§9, H1 o H2): con parte del capital o de los votos sin identificar no se puede afirmar que «no exista» una persona por encima del umbral. La salida recuerda además la Ley 4.4, párr. 2: «no establecerán o mantendrán relaciones de negocio con personas jurídicas […] cuya estructura de propiedad y de control no haya podido determinarse».
+- **Estado «no determinable» en su lugar** si hay avisos de hueco (§9, H1, H2 o H3): con parte del capital o de los votos sin identificar no se puede afirmar que «no exista» una persona por encima del umbral. La salida recuerda además la Ley 4.4, párr. 2: «no establecerán o mantendrán relaciones de negocio con personas jurídicas […] cuya estructura de propiedad y de control no haya podido determinarse».
 - **Si S no tiene `cargos`,** se da el aviso AVI-07 y el estado es «no determinable».
 - **Si una entidad ocupa un cargo de S sin `representante`** (aviso AVI-09), ese cargo no se puede convertir en una persona física, como pide la Ley 4.2.b bis, y el estado también es «no determinable». La salida lista igualmente a los demás administradores. En el AMLR, este caso no importa: C23 excluye los cargos ocupados por entidades.
 - **Si hay avisos de lectura L3,** se mantiene el supuesto supletorio y se indica que, con la lectura extensiva, habría titulares reales.
@@ -584,6 +584,7 @@ python3 -m unittest discover -s verificacion -v
 |---|---|
 | H1 | U_m alcanza por sí solo el umbral: puede haber un titular real sin identificar |
 | H2 | Se da algún POS-HUECO |
+| H3 | Un titular virtual `NO_IDENTIFICADO` u `OPACA` cumpliría una prueba de control: A2, A3 o A4 en el AMLR, E2 en España. Quien esté detrás de lo que no está identificado podría ser titular real, aunque lo que llega a S sin identificar no alcance el umbral (H1) |
 | CICLO-SENS | El método A cambia quién es titular real (§6.2). Cubre N7 y N12 |
 | ART54-SENS | Un titular real lo es solo por A1 y dejaría de serlo si el 54 sustituyera al 52.1 (§4.2). Solo AMLR. Cubre N3 |
 | UMBRAL-EXACTO | Leer por encima o por debajo los valores que coinciden con un umbral cambia quién es titular real (§2.6). Es un límite de los datos (modelo, D23), no de la norma |
@@ -602,9 +603,16 @@ python3 -m unittest discover -s verificacion -v
 - **Una de esas comprobaciones no se ha podido hacer:** UMBRAL-EXACTO-NO-COMPROBADO, T-NO-CONVERGE, MEZCLA-NO-CONVERGE y DOMINIO-INESTABLE.
 
 Un «determinado» que no es estable no se presenta como un resultado cerrado. Los demás avisos no afectan a la estabilidad:
-- H1, H2 y POS-HUECO dicen que faltan datos, no que haya otra lectura;
+- H1, H2, H3 y POS-HUECO dicen que faltan datos, no que haya otra lectura: afectan a la completitud (C33);
 - CICLO-CERRADO ya está tratado (§6.4);
 - COTIZADA, AMLR-NO-APLICABLE y CARGO-EJECUTIVO-ENTIDAD son información.
+
+**[C33 — decisión propia] Resultado completo.** Es un criterio aparte de la estabilidad (C32). Un resultado es inestable si otra lectura lo cambiaría. Es incompleto si lo cambiarían datos que faltan. Puede ser las dos cosas. La salida indica, para cada régimen, si el resultado es completo. No lo es si lleva alguno de estos avisos:
+- **H1:** lo que llega a S sin identificar alcanza por sí solo el umbral, así que puede haber un titular real desconocido;
+- **H3:** lo que no está identificado cumpliría una prueba de control, con el mismo resultado;
+- **H2 y POS-HUECO:** una persona conocida sería titular si participara en lo que no está identificado. Son el mismo caso: H2 solo dice que hay algún POS-HUECO.
+
+Lo que llega por cotizadas (COTIZADA) no cuenta: el RD 9.4 dispensa de identificarlo (C5).
 
 ---
 
@@ -784,6 +792,7 @@ Si la exención se aplicara también a la filial intermedia, los socios de X no 
 | C30 | España: S es «exceptuada» si es filial participada mayoritariamente de una cotizada con requisitos de información: own_capital(L, S) > 50, por cada cotizada. No se aplica a las filiales intermedias. EXENCION-SENS si otra lectura la haría filial | §2.5 | (a) Medir con los votos, o con capital o votos. (b) Cadena de mayorías directas. (c) Aplicarlo también a las filiales intermedias | El RD 9.4 dispensa, no prohíbe: una lectura estrecha como mucho identifica de más, y una amplia puede dejar sin identificar a un titular real. (a) «Participada» habla de participación, no de control. (b) El 60 % del 60 % no es una participación mayoritaria. (c) Dejaría sin recorrer a los socios minoritarios de la filial, que la transparencia de la cotizada no cubre (Ej. 8b) |
 | C31 | Si S no es una sociedad, el resultado es «fuera de alcance» en los dos regímenes y no se calcula | §2.4 | (a) Tratar S como `OPACA(S)`. (b) Calcular como si fuera una sociedad | (a) Nadie sería titular y el supletorio acabaría en «no determinable», que sugiere que faltan datos cuando lo que falta son las reglas. (b) El RD 8 y el AMLR 52.4 tienen reglas propias para esas entidades, que v0.1 no tiene (modelo, D8) |
 | C32 | Un resultado no es estable si lleva un aviso de lectura alternativa que cambiaría el resultado, o de una comprobación que no se ha podido hacer | §9 | Tratar todo «determinado» como un resultado cerrado | Un resultado que cambiaría con el valor justo al otro lado del umbral, o con otra lectura calculable, no es un resultado cerrado |
+| C33 | Un resultado no es completo si lleva H1, H2, H3 o POS-HUECO. Es un criterio aparte de la estabilidad, y H3 es un aviso nuevo | §9 | (a) Contarlo como inestabilidad. (b) Solo H1 | (a) Faltar datos no es tener otra lectura: la salida debe decir cuál de las dos cosas pasa. (b) H1 solo mira la participación; lo no identificado también puede controlar una entidad intermedia sin que lo que llega a S alcance el umbral |
 
 ## 12. Casos que la norma no resuelve
 

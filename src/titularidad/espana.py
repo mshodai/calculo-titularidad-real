@@ -11,7 +11,7 @@ Antes de calcular: «fuera de alcance» si S no es una sociedad (C31), y
 «exceptuada» si cotiza (C5) o es filial de una cotizada (C30).
 
 Los avisos son los del §9 que corresponden a España: POS-T, POS-MEZCLA,
-POS-FORMAL, POS-HUECO, H1, H2, CICLO-SENS, UMBRAL-EXACTO, CICLO-CERRADO,
+POS-FORMAL, POS-HUECO, H1, H2, H3, CICLO-SENS, UMBRAL-EXACTO, CICLO-CERRADO,
 T-NO-CONVERGE, MEZCLA-NO-CONVERGE, DOMINIO-INESTABLE, COTIZADA y EXENCION-SENS.
 
 Todo con fracciones exactas (C6). Los puntos que la especificación no decide
@@ -124,6 +124,13 @@ def calcular_espana(entrada: Entrada) -> ResultadoEspana:
                                        f"identificado: {_por_magnitud(con_hueco)} (estructura incompleta)", (p,)))
     if any(i.codigo == "POS-HUECO" for i in posibles):
         avisos.append(Incidencia("H2", "Hay posibles titulares reales en los huecos de la estructura (POS-HUECO)"))
+    # H3 (C33): lo no identificado cumpliría E2, aunque lo que llega a S no alcance el umbral.
+    if ev.dominio.estable and ev.dominio.base(grafo.objetivo) > 0:
+        for v in sorted(grafo.virtuales(), key=str):
+            if v.clase in (NO_IDENTIFICADO, OPACA) and ev.dominio.proporcion(v, grafo.objetivo) > UMBRAL:
+                avisos.append(Incidencia("H3", f"«{v}» cumpliría E2: sus votos agregados son el "
+                                         f"{_texto(ev.dominio.proporcion(v, grafo.objetivo))} %. Quien esté detrás "
+                                         "de lo que no está identificado podría ser titular real", (str(v),)))
 
     posibles += _pos_t(grafo, ev, avisos)
     posibles += _pos_mezcla(grafo, ev, avisos)
@@ -368,8 +375,8 @@ def _supletorio(entrada, ev, posibles, avisos):
         # exista» nadie por encima del umbral, igual que con un hueco. La
         # especificación no lo dice; se trata como «no determinable».
         motivos.append("E2 no es determinable porque el dominio no se estabiliza (DOMINIO-INESTABLE)")
-    if codigos & {"H1", "H2"}:
-        motivos.append("hay participaciones sin identificar (H1/H2), así que no se puede afirmar que «no exista» "
+    if codigos & {"H1", "H2", "H3"}:
+        motivos.append("hay participaciones sin identificar (H1/H2/H3), así que no se puede afirmar que «no exista» "
                        "una persona por encima del umbral. Ley 4.4, párr. 2: «no establecerán o mantendrán "
                        "relaciones de negocio con personas jurídicas […] cuya estructura de propiedad y de control "
                        "no haya podido determinarse»")

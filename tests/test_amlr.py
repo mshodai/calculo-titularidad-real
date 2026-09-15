@@ -17,6 +17,11 @@ from titularidad.carga import cargar
 V = verificacion()
 DIRECTIVO = [{"persona": "DIR", "cargo": "directivo", "ejecutivo": True}]
 
+# X tiene el 30 % de S; el 60 % de X no está identificado y Q1 a Q4 tienen un 10 % cada uno.
+# Lo que llega a S sin identificar es un 18 % (sin H1) y nadie llega con el hueco (3 + 18, sin
+# POS-HUECO), pero quien tenga ese 60 % controla X: H3 (C33).
+HUECO_QUE_CONTROLA = [(f"q{i}", f"Q{i}", "X", 10, 10) for i in range(1, 5)] + [("a1", "X", "S", 30, 30)]
+
 
 def calcular(aristas, **opciones):
     opciones.setdefault("cargos", DIRECTIVO)
@@ -303,3 +308,16 @@ def test_mezcla_no_converge():
                   ("a4", "Q", "B", 100, 0), ("a5", "A", "S", 50, 50), ("a6", "R", "S", 50, 50)])
     assert de(r, "MEZCLA-NO-CONVERGE")
     assert not de(r, "POS-MEZCLA")
+
+
+def test_h3_lo_no_identificado_controlaria_una_intermedia():
+    r = calcular(HUECO_QUE_CONTROLA + [("a2", "R", "S", 70, 70)])
+    assert r.estado == DETERMINADO and set(titulares(r)) == {"R"}
+    assert not de(r, "H1") and not de(r, "POS-HUECO")
+    (h3,) = de(r, "H3")
+    assert h3.ids == ("NO_IDENTIFICADO(X)",) and "A3" in h3.mensaje
+
+
+def test_h3_deja_el_supuesto_supletorio_no_determinable():
+    r = calcular(HUECO_QUE_CONTROLA + [(f"s{i}", f"P{i}", "S", 10, 10) for i in range(7)])
+    assert r.estado == NO_DETERMINABLE and "H1/H2/H3" in r.motivo

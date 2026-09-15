@@ -13,7 +13,7 @@ de alto nivel, que no son titulares reales (C23). «Fuera de alcance» si S no
 es una sociedad (C31). La cotización no cambia el cálculo (C5).
 
 Los avisos son los del §9 que corresponden al AMLR: POS-T (N4/N5),
-POS-AGREGADO, POS-MEZCLA, POS-FORMAL, POS-HUECO, H1, H2, CICLO-SENS,
+POS-AGREGADO, POS-MEZCLA, POS-FORMAL, POS-HUECO, H1, H2, H3, CICLO-SENS,
 ART54-SENS, UMBRAL-EXACTO, CICLO-CERRADO, T-NO-CONVERGE, MEZCLA-NO-CONVERGE y
 AMLR-NO-APLICABLE.
 
@@ -172,6 +172,13 @@ def calcular_amlr(entrada: Entrada) -> ResultadoAmlr:
                                        f"identificado: {por_magnitud(con_hueco)} (estructura incompleta)", (p,)))
     if any(i.codigo == "POS-HUECO" for i in posibles):
         avisos.append(Incidencia("H2", "Hay posibles titulares reales en los huecos de la estructura (POS-HUECO)"))
+    # H3 (C33): lo no identificado cumpliría una prueba de control, aunque lo que llega a S no alcance el umbral.
+    for v in sorted(grafo.virtuales(), key=str):
+        if v.clase in (NO_IDENTIFICADO, OPACA):
+            de_control = sorted(pruebas(grafo, own, control, v).cumplidas & {"A2", "A3", "A4"})
+            if de_control:
+                avisos.append(Incidencia("H3", f"«{v}» cumpliría {', '.join(de_control)}. Quien esté detrás de lo "
+                                         "que no está identificado podría ser titular real", (str(v),)))
 
     posibles += _pos_t(grafo, no_titulares, avisos)
     posibles += _pos_agregado(grafo, own, control, no_titulares)
@@ -292,8 +299,8 @@ def _sin_titular(entrada, posibles, avisos, notas):
                                      (c.persona,)))
 
     motivos = []
-    if {"H1", "H2"} & {a.codigo for a in avisos}:
-        motivos.append("hay participaciones sin identificar (H1/H2): no se puede afirmar que se hayan «agotado "
+    if {"H1", "H2", "H3"} & {a.codigo for a in avisos}:
+        motivos.append("hay participaciones sin identificar (H1/H2/H3): no se puede afirmar que se hayan «agotado "
                        "todos los medios posibles de identificación» (22.2)")
     if not cargos_direccion:
         # AMBIGÜEDAD: C23 no dice qué pasa si S no tiene cargos ejecutivos

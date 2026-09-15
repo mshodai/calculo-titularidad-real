@@ -153,3 +153,14 @@ def test_opcion_json_con_entrada_no_valida(tmp_path, capsys):
 def test_punto_de_entrada_declarado():
     proyecto = tomllib.loads((RAIZ / "pyproject.toml").read_text(encoding="utf-8"))
     assert proyecto["project"]["scripts"]["calcular-titularidad"] == "titularidad.cli:main"
+
+
+def test_incompleto_devuelve_1(tmp_path, capsys):
+    """Los dos dan R, estables, pero lo no identificado controlaría X (H3): no es completo."""
+    datos = estructura([(f"q{i}", f"Q{i}", "X", 10) for i in range(1, 5)] + [("a1", "X", "S", 30), ("a2", "R", "S", 70)])
+    assert main(["--json", escribir(tmp_path, datos)]) == 1
+    emitido = json.loads(capsys.readouterr().out)
+    assert [f["difiere"] for f in emitido["comparacion"]] == [False]
+    for regimen in ("espana", "amlr"):
+        assert emitido[regimen]["estado"] == "determinado"
+        assert (emitido[regimen]["estable"], emitido[regimen]["incompleto_por"]) == (True, ["H3"])
