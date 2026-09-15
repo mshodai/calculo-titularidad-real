@@ -11,7 +11,8 @@ Además comprueba que cada cifra redondeada aparece en el documento que la
 cita, de modo que si alguien edita una cifra sin recalcularla, esto falla.
 
 Es provisional: implementa solo lo necesario para esas cifras (métodos A, B y
-C de la especificación §6.2, y C2 para `por_cuenta_de`). Cuando exista la
+C de la especificación §6.2, C2 para `por_cuenta_de`, y la relación de control
+del AMLR, C11, para el aviso ART54-SENS de C27). Cuando exista la
 implementación, estas comprobaciones deben pasar a ser tests de ella y este
 fichero debe borrarse.
 
@@ -179,6 +180,28 @@ def metodo_c(h_votos, origen, objetivo):
     return va(origen, objetivo) * 100 / base(objetivo)
 
 
+def control(h, metodo=metodo_b):
+    """Relación C del AMLR (especificación §3.3, C11).
+
+    X controla Y si own_m(X, Y) > 50 en alguna magnitud, cerrado por
+    transitividad. Con metodo=metodo_a es la prueba de sensibilidad de §6.2.
+    """
+    aristas = {a for m in MAGNITUDES for a in h[m]}
+    nodos = {n for a in aristas for n in a}
+    entidades = {y for _, y in aristas}
+    c = {(x, y) for x in nodos for y in entidades - {x} if any(metodo(h[m], x, y) > 50 for m in MAGNITUDES)}
+    while True:
+        nuevo = c | {(x, y) for x, z in c for z2, y in c if z == z2 and x != y}
+        if nuevo == c:
+            return c
+        c = nuevo
+
+
+def sin_control(h, c):
+    """El grafo sin las aristas Z → Y en las que C(Z, Y): base de own^O (C27)."""
+    return {m: {k: v for k, v in h[m].items() if k not in c} for m in MAGNITUDES}
+
+
 # --- Utilidades de comprobación ---------------------------------------------
 
 
@@ -277,6 +300,25 @@ class EspecificacionSeccion63(ComprobacionDocumento):
             for m in MAGNITUDES:
                 self.assertLessEqual(metodo_b(self.h[m], x, self.S), 50)
         self.assertLessEqual(self.h["votos"][("E-HOLDING", self.S)], 50)
+
+    def test_aviso_art54_de_carlos(self):
+        c = control(self.h)
+        self.assertFalse({x for x, y in c if y == self.S})  # ni A2 ni A4
+        directos = {z for z, y in self.h["capital"] if y == self.S and self.tipos[z] == "entidad_juridica"}
+        self.assertFalse({y for x, y in c if x == "P-CARLOS"} & directos)  # ni A3
+
+        self.assertIn(("P-CARLOS", "E-BETA"), c)
+        beta = [metodo_b(self.h[m], "P-CARLOS", "E-BETA") for m in MAGNITUDES]
+        self.assertEqual(beta, [Fraction(2950, 47), Fraction(2000, 31)])
+
+        sin = sin_control(self.h, c)
+        valores = [metodo_b(sin[m], "P-CARLOS", self.S) for m in MAGNITUDES]
+        self.assertEqual(valores, [Fraction(1800, 94), Fraction(2000, 93)])
+        self.assertTrue(all(v < 25 for v in valores))
+        self.assertEnDocumento(*beta, *valores)
+
+    def test_metodo_a_no_cambia_el_control(self):
+        self.assertEqual(control(self.h, metodo_a), control(self.h))
 
 
 if __name__ == "__main__":

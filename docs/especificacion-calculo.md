@@ -12,7 +12,9 @@ No fija el formato de salida, solo su contenido mínimo (§9).
 
 - Las citas literales van entre comillas «…» con artículo, apartado y letra. Las fuentes y sus versiones están en [`fuentes/FUENTES.md`](fuentes/FUENTES.md).
 - **[Cn — decisión propia]** marca una elección de este documento que no viene de los textos. El prefijo C evita confusiones con las decisiones D del modelo de datos. Todas están en el §11, con la alternativa descartada y el motivo.
-- **[Nn — no resuelto]** marca un caso que la norma no resuelve. Se documenta y la salida lo señala como aviso; no se resuelve en silencio. Todos están en el §12.
+- **[Nn — no resuelto]** marca un caso que la norma no resuelve. Nunca se resuelve en silencio: el §12 dice, para cada uno, qué hace el cálculo y cómo lo señala la salida.
+  - **[C25 — decisión propia]** La salida señala un caso N cuando otra lectura del texto se puede calcular con los datos de la entrada y cambiaría quién es titular real: con los avisos del §9 o, en N9, con la marca «por cuenta de».
+  - N10 y N11 no se señalan, porque no hay otra lectura con la que comparar. El §12 explica por qué.
 - Los porcentajes van de 0 a 100, como en el modelo (D4).
 
 **Notación** (m es una magnitud: `capital` o `votos`):
@@ -137,6 +139,10 @@ El volumen que llega a S a través de estos titulares virtuales se usa en los av
 
 El control por otros medios (53.3 y 53.4) queda fuera de v0.1 (modelo, D19).
 - **[N8 — no resuelto]** El AMLR no dice si X controla Y cuando varias entidades controladas por X suman juntas más del 50 % de Y, sin que ninguna lo tenga por sí sola. En v0.1 no se considera control.
+  - **[C26 — decisión propia]** Para avisar se calcula también **C⁺**, que añade a C11 una tercera condición: X controla Y si lo que tienen en Y X y las entidades Z con C⁺(X, Z), sumado entero, pasa de 50 en capital o en votos.
+    - Es la agregación del art. 42 (§3.4), sin ajuste de base y en cualquiera de las dos magnitudes. Incluye lo que X tiene directamente, como el art. 42: para avisar se toma la lectura más amplia.
+    - Se calcula por rondas desde C hasta que no cambia. Como cada ronda solo añade relaciones, termina.
+    - Si con C⁺ en lugar de C alguien cumple A2, A3 o A4 (§4.5) y no es titular real por las reglas aplicadas, la salida lo marca **POS-AGREGADO**. Nunca lo cuenta como titular real.
 - **[N11 — no resuelto]** Como el 53.2.c dice «acciones o los derechos de voto», dos personas pueden controlar a la vez la misma entidad: una con más del 50 % del capital y otra con más del 50 % de los votos (Ej. 4). El texto lleva a ese resultado y no dice nada sobre él.
 
 ### 3.4 Dominio y votos agregados en España: Dep(X) y va(X, Y)
@@ -210,7 +216,12 @@ Una cadena de P a S se puede partir en tramos de dos tipos:
   - el considerando 108 pide «evaluar simultáneamente» la participación y el control del accionista directo;
   - el considerando 106 dice que las pruebas «deben realizarse en paralelo»;
   - el art. 51 define al titular real con una disyunción («a) […], o b) […]»).
-- **Qué cambia con la lectura contraria** (el 54 sustituye al 52.1): puede dejar fuera a quien llega al 25 % por pura multiplicación a través de una cadena que tiene un tramo de control. Es el Ej. 5b del §10.
+- **Qué cambia con la lectura contraria** (el 54 sustituye al 52.1): puede dejar fuera a quien llega al 25 % por pura multiplicación a través de una cadena que tiene un tramo de control. Pasa en el Ej. 5b del §10 y con P-CARLOS en el ejemplo del modelo (§6.3).
+
+**[C27 — decisión propia]** La lectura contraria se comprueba en cada entrada:
+- Se calcula **own^O_m(P, S)** como own_m (§3.1), pero sin las aristas Z → Y en las que C(Z, Y). Es lo que dan las cadenas sin ningún tramo de control, las únicas a las que se aplicaría el 52.1 si el 54 lo sustituyera.
+- Si P es titular real solo por A1 y own^O_m(P, S) < 25 en las dos magnitudes, la salida da el aviso **ART54-SENS**: con la lectura contraria, P dejaría de serlo.
+- P sigue siendo titular real (C14).
 
 ### 4.3 Control a mitad de cadena
 
@@ -259,6 +270,8 @@ Hay dos formas que el art. 54 sí regula:
 5. **Condición de titular real:** P lo es si cumple alguna prueba en alguna magnitud (C14). La salida guarda qué pruebas y qué magnitudes cumple, con sus valores.
 6. **Avisos** (§9):
    - lectura extensiva (C13), si eff_m(P, S) ≥ 25 y P no es titular real;
+   - control agregado (C26);
+   - sensibilidad al art. 54 (C27);
    - mezcla de magnitudes (§7);
    - huecos (§9);
    - sensibilidad al método de ciclos (§6).
@@ -307,7 +320,9 @@ Dos observaciones:
   - L1 es la forma natural de medir «posean»;
   - L2 es la única lectura de «controlen» basada en un texto al que la Ley remite expresamente (art. 42);
   - L3 amplía más allá de lo que dicen los textos españoles.
-- **Qué se hace con L3.** Se calcula solo para avisar: quien sea titular real por L3 y no por L1 ∪ L2 sale como «posible titular real: lectura extensiva (N2)».
+- **Qué se hace con L3.** Se calcula solo para avisar: quien sea titular real por L3 y no por L1 ∪ L2 sale como «posible titular real: lectura extensiva (N1/N2)».
+  - El aviso cubre N1 y N2 a la vez. L3 es otra respuesta tanto a cómo se mide el porcentaje indirecto (N1) como a si el control sirve para medirlo (N2).
+  - De las respuestas a N1 que recoge el §5.2, L0 la descarta el texto, L2 ya se aplica y L3 queda señalada con este aviso.
 - **Alternativas descartadas** (§11):
   - **L1 sola:** deja fuera a quien controla una sociedad con el 30 %, a pesar de que la Ley remite al art. 42 para el control;
   - **L3:** convertiría en titular real a quien tiene el 30 % de una sociedad que controla S (Ej. 3), cosa que solo apoya el AMLR.
@@ -351,11 +366,11 @@ Dos observaciones:
   - es el único que suma *todas* las cadenas, como pide la letra del 52.1; el método A excluye unas cadenas con un criterio que no está en ningún texto;
   - reparte exactamente el 100 %: lo atribuido a titulares últimos más los huecos suma 100. El método A pierde una parte;
   - con autocartera (una arista reflexiva con x %), da p / (1 − x), que es lo mismo que sacar la autocartera de la base. Coincide con la lógica de la Dir. 22.5.
-    - **[N12 — no resuelto]** El AMLR no dice si la autocartera se descuenta al decidir el control (53.2.c). Como C11 usa own_m, con el método B se descuenta de hecho: con un 10 % de autocartera, quien tiene el 48 % pasa a tener 48 / 0,9 = 53,33 % y controla.
+    - **[N12 — no resuelto]** El AMLR no dice si la autocartera se descuenta al decidir el control (53.2.c). Como C11 usa own_m, con el método B se descuenta de hecho: con un 10 % de autocartera, quien tiene el 48 % pasa a tener 48 / 0,9 = 53,33 % y controla. Con el método A no se descuenta: la cadena que pasa por la arista reflexiva repite entidad, y se queda en 48 %. Por eso la prueba de sensibilidad de abajo cubre también N12.
 - **Para la agregación de votos (L2 en España): método C, la base de la Dir. 22.5** (§3.4). Por qué:
   - es un texto al que la Ley remite (Dir. 22, apartados 1 a 5);
   - encaja con la lógica del art. 42, que atribuye enteros los votos de las dependientes.
-- **Como prueba de sensibilidad se calcula también el método A** (solo cadenas que no repiten entidad) para E1 y A1. Si cambia quién es titular real, la salida lo avisa: «el resultado depende del método de ciclos (N7)».
+- **Como prueba de sensibilidad se calcula también el método A** (solo cadenas que no repiten entidad) para E1 y para las cuatro pruebas del AMLR. Con own_m del método A se recalcula también la relación de control C (§3.3) y, con ella, A2, A3 y A4. Si cambia quién es titular real, la salida lo avisa: «el resultado depende del método de ciclos (N7/N12)».
 
 ### 6.3 Aplicación al ejemplo del modelo de datos
 
@@ -386,9 +401,16 @@ Cómo se obtienen las cifras del método B: P-ANA tiene 20 % directo y 60 % × 3
 | P-ANA | Titular real: A1 (40,43 / 49,46) y A3 (controla E-HOLDING, que tiene 30 / 35 directo). No controla E-OBJETIVO: 49,46 no pasa de 50 | Titular real: E1 (40,43 / 49,46) y E2 (60 %). Además **controla** E-OBJETIVO (CCom 42.1.a) |
 | P-CARLOS | Titular real: A1 (25,53 en capital, 29,03 en votos), por cuenta de | Titular real: E1 (25,53 / 29,03), por cuenta de |
 | P-DIEGO | No es titular real (12,77 / 21,51). Aviso de hueco: 12,77 + 21,28 = 34,04 ≥ 25, así que **podría serlo si participa en E-FONDO** | Igual (34,04 > 25) |
-| Sensibilidad al método de ciclos | Con el método A, P-CARLOS se queda en 24 % de capital, pero sigue siéndolo por votos (27 %). **El conjunto de titulares no cambia** | Igual |
+| Sensibilidad al método de ciclos | Con el método A, P-CARLOS se queda en 24 % de capital, pero sigue siéndolo por votos (27 %). La relación de control tampoco cambia. **El conjunto de titulares no cambia** | Igual |
+| Sensibilidad al art. 54 (N3) | P-CARLOS lleva **ART54-SENS** (ver abajo) | No aplica |
 
 **Por qué no importa aquí el método:** P-CARLOS está cerca del umbral en capital (25,53 con B frente a 24 con A), pero los votos (29,03 y 27) lo mantienen en los dos métodos. Con otros datos, el mismo ciclo sí cambiaría el resultado. Por eso existe el aviso de sensibilidad.
+
+**Lo que sí depende de N3:**
+- **P-CARLOS controla E-BETA en el AMLR** (C11). Tiene el 50 % directo y, a través de E-OBJETIVO, la mitad de lo que tiene en ella: en total 62,77 % de capital y 64,52 % de votos.
+- **Su cadena por E-BETA es mixta.** Tiene un tramo de control seguido de dos sin control, una forma que el art. 54 no regula (§4.2).
+- **Sin esa cadena no llega al umbral:** se queda en 18/94 = 19,15 % de capital y 20/93 = 21,51 % de votos.
+- **Resultado.** Es titular real por la unión de pruebas (C14), pero dejaría de serlo si el 54 sustituyera al 52.1. Por eso la salida da ART54-SENS.
 
 **Los regímenes no discrepan en quién es titular real, pero sí en el criterio:** en España P-ANA controla E-OBJETIVO porque se suman sus votos y los de E-HOLDING, que domina; en el AMLR nadie la controla.
 
@@ -408,6 +430,7 @@ python3 -m unittest discover -s verificacion -v
 
 - **Qué comprueba.**
   - Los métodos A, B y C, la atribución «por cuenta de» (C2), el aviso de hueco de P-DIEGO y la agregación española.
+  - El aviso ART54-SENS de P-CARLOS, y que el método A no cambia la relación de control del AMLR.
   - Que cada cifra redondeada aparece en el documento que la cita. Si alguien cambia una cifra sin recalcularla, la comprobación falla.
 - **De dónde sale el ejemplo.** Se lee del bloque JSON del modelo de datos, así que no hay una segunda copia que pueda quedar desactualizada.
 - **Es provisional.** Implementa solo lo necesario para estas cifras. Cuando exista la implementación, estas comprobaciones pasarán a ser tests de ella.
@@ -480,7 +503,8 @@ python3 -m unittest discover -s verificacion -v
 
 | Código | Condición | Norma no resuelta |
 |---|---|---|
-| POS-T | eff_m(P, S) alcanza el umbral del régimen (§3.5) | N2 en España; N4 y N5 en el AMLR |
+| POS-T | eff_m(P, S) alcanza el umbral del régimen (§3.5) | N1 y N2 en España; N4 y N5 en el AMLR |
+| POS-AGREGADO | Con el control agregado C⁺, P cumpliría A2, A3 o A4 (§3.3). Solo AMLR | N8 |
 | POS-MEZCLA | El producto mixto alcanza el umbral (§7) | N6 |
 | POS-HUECO | own_m(P, S) + U_m alcanza el umbral, siendo U_m lo que llega a S desde los titulares `NO_IDENTIFICADO` y `OPACA` (C4) | Estructura incompleta |
 
@@ -490,7 +514,8 @@ python3 -m unittest discover -s verificacion -v
 |---|---|
 | H1 | U_m alcanza por sí solo el umbral: puede haber un titular real sin identificar |
 | H2 | Se da algún POS-HUECO |
-| CICLO-SENS | El método A cambia quién es titular real (§6.2) |
+| CICLO-SENS | El método A cambia quién es titular real (§6.2). Cubre N7 y N12 |
+| ART54-SENS | Un titular real lo es solo por A1 y dejaría de serlo si el 54 sustituyera al 52.1 (§4.2). Solo AMLR. Cubre N3 |
 | CICLO-CERRADO | Hay un ciclo cerrado (§6.4) |
 | T-NO-CONVERGE | La lectura extensiva no se puede calcular (§3.5) |
 | DOMINIO-INESTABLE | El cálculo de dominio del §3.4 no se estabiliza; E2 queda como no determinable |
@@ -543,7 +568,7 @@ S: C 60 %, R 40 %. C: P 30 %, Q 70 %.
 | España, L1 ∪ L2 | **No**: L1 = 18; L2 = 0, porque no domina C | Sí: L1 = 42; L2 = 60, controla S | Sí (40 %) |
 | España, L3 | 0,3 × 1 = 30 > 25 → **POS-T** | — | — |
 
-**Diferencia entre regímenes:** P es titular real en el AMLR y en España solo figura como posible (lectura extensiva, N2).
+**Diferencia entre regímenes:** P es titular real en el AMLR y en España solo figura como posible (lectura extensiva, N1/N2).
 
 ### Ej. 4: mayoría de capital sin mayoría de votos
 
@@ -555,7 +580,7 @@ S: A 30 %, R 70 %. A: P tiene 60 % del capital y 40 % de los votos; Q tiene 40 %
 | España | **No**: L1 da 18 de capital y 12 de votos; L2, 0, porque con 40 % de votos no domina A | Sí, por L2: domina A → va = 30 | Sí |
 
 **Diferencias:**
-- en el AMLR dos personas controlan A a la vez (N11);
+- en el AMLR dos personas controlan A a la vez (N11). No hay aviso (§12);
 - el art. 42 solo reconoce el control por votos.
 
 ### Ej. 5: varios tramos de control (N4)
@@ -574,7 +599,7 @@ P y A2 tienen el 50 % de A cada uno. A tiene el 100 % de D. D tiene el 50 % de S
 
 | | P (y A2, simétrico) | S2 |
 |---|---|---|
-| AMLR con unión de pruebas (C14) | **Sí**, por A1: 0,5 × 1 × 0,5 = 25 ≥ 25 | Sí |
+| AMLR con unión de pruebas (C14) | **Sí**, por A1: 0,5 × 1 × 0,5 = 25 ≥ 25. Aviso **ART54-SENS**: la única cadena tiene un tramo de control (A→D) y sin ella queda 0 | Sí |
 | AMLR si el 54 sustituye al 52.1 | **No**: la cadena mezcla control (A→D) y participación, así que solo valdría el 54; y P no controla A (50 %) ni D controla S (50 %) | Sí |
 | España | No: 25 no es > 25 | Sí |
 
@@ -589,7 +614,7 @@ A: P tiene 60 % del capital y 10 % de los votos; Q, 40 % del capital y 90 % de l
 
 ### Ej. 7: el ejemplo del modelo de datos
 
-Ver §6.3. Los dos regímenes identifican a P-ANA y P-CARLOS. P-DIEGO lleva aviso de hueco (POS-HUECO). El resultado no depende del método de ciclos. En España, P-ANA además controla E-OBJETIVO.
+Ver §6.3. Los dos regímenes identifican a P-ANA y P-CARLOS. P-DIEGO lleva aviso de hueco (POS-HUECO). El resultado no depende del método de ciclos. En el AMLR, P-CARLOS lleva ART54-SENS (N3). En España, P-ANA además controla E-OBJETIVO.
 
 ### Resumen de diferencias
 
@@ -629,25 +654,36 @@ Ver §6.3. Los dos regímenes identifican a P-ANA y P-CARLOS. P-DIEGO lleva avis
 | C17 | España, «posean»: multiplicación (L1) | §5.3 | Solo participaciones directas (L0) | La Ley dice «directa o indirectamente»; la multiplicación es la única que atribuye una parte proporcional sin exigir control |
 | C18 | España: el umbral de L2 se mide sobre la base ajustada por la Dir. 22.5 | §5.3 | Medirlo sobre 100 | Usar la misma medida para el dominio y para el umbral |
 | C19 | España: la lectura aplicada es L1 ∪ L2; L3 solo avisa | §5.3 | (a) L1 sola. (b) L3 | (a) Ignora la remisión al art. 42 para el control. (b) Solo tiene apoyo en el AMLR |
-| C20 | Ciclos: método B para multiplicar, C para agregar votos, A como prueba de sensibilidad | §6.2 | Rechazar las entradas con ciclos, o usar solo el método A | B suma todas las cadenas y reparte el 100 %; C es un texto al que la Ley remite; A pierde parte de la participación |
+| C20 | Ciclos: método B para multiplicar, C para agregar votos, A como prueba de sensibilidad, también para el control del AMLR | §6.2 | Rechazar las entradas con ciclos, o usar solo el método A | B suma todas las cadenas y reparte el 100 %; C es un texto al que la Ley remite; A pierde parte de la participación |
 | C21 | No se mezclan magnitudes al multiplicar; el producto mixto solo avisa | §7 | Usar el producto mixto como regla | N6: ningún texto lo autoriza |
 | C22 | Supletorio en España: administradores, siempre condicional; no determinable si hay huecos | §8.1 | Aplicarlo sin condiciones | v0.1 no evalúa el control por otros medios, y la Ley exige que «no exista» nadie por encima del umbral |
 | C23 | Supletorio en el AMLR: cargos ejecutivos que sean personas físicas, siempre provisional; nunca como titulares reales | §8.2 | Presentarlos como titulares reales | Considerando 125 |
 | C24 | Los avisos usan el umbral del régimen en el que se calculan | §9 | Un umbral único | Evitar avisos que el propio régimen no reconocería |
+| C25 | Un caso N se señala en la salida cuando otra lectura se puede calcular con la entrada y cambiaría quién es titular real. N10 y N11 solo se documentan | §0 | Un aviso por cada caso N | Un aviso que no compara con nada no dice nada del caso concreto: o salta siempre, o compara con una regla que no está en ningún texto (§12) |
+| C26 | AMLR: control agregado C⁺ (C11 más la suma de lo que tienen X y sus controladas), solo para avisar (POS-AGREGADO) | §3.3 | Contar C⁺ como control | N8: el AMLR no lo dice; en v0.1 no se considera control |
+| C27 | AMLR: se comprueba si el titular lo sería sin las cadenas con tramos de control (own^O); si no, aviso ART54-SENS | §4.2 | No avisar, porque C14 ya es la lectura más amplia | La lectura contraria quita titulares, y quien lo es solo por C14 debe saberse |
 
 ## 12. Casos que la norma no resuelve
 
-| # | Caso | Dónde se nota | Qué hace v0.1 |
-|---|---|---|---|
-| N1 | España: método para la participación indirecta | §5.1 | C17 (multiplicación) |
-| N2 | España: si el art. 42 sirve para medir el porcentaje que alguien «controla» | §5.1 | C19; L3 solo como aviso (POS-T) |
-| N3 | AMLR: si el 54 sustituye al 52.1 o se añade a él | §4.2, Ej. 5b | C14 (se añade) |
-| N4 | AMLR: cadenas con varios tramos de control | §4.4, Ej. 5 | POS-T |
-| N5 | AMLR 54.a: si se suma la participación directa propia | §4.3 | C15 y POS-T |
-| N6 | Mezcla de magnitudes dentro de una cadena | §7, Ej. 6 | C21 y POS-MEZCLA |
-| N7 | Ciclos | §6 | C20 y CICLO-SENS |
-| N8 | AMLR: control conjunto a través de varias entidades controladas | §3.3 | No se considera control |
-| N9 | AMLR: si la participación de un nominatario cuenta como propiedad del nominador (52.1 frente a 53.4.c) | §2.2 | C2 |
-| N10 | España: qué es «mayoría» en el CCom 42.1.a | §3.2 | C10 (> 50) |
-| N11 | AMLR: dos personas que controlan a la vez, una por capital y otra por votos (53.2.c) | §3.3, Ej. 4 | Se acepta tal como sale del texto |
-| N12 | AMLR: si la autocartera se descuenta al decidir el control | §6.2 | La serie completa la descuenta de hecho; ninguna norma del AMLR lo dice |
+| # | Caso | Dónde se nota | Qué hace v0.1 | Señal en la salida (C25) |
+|---|---|---|---|---|
+| N1 | España: método para la participación indirecta | §5.1 | C17 (multiplicación) | POS-T (§5.3) |
+| N2 | España: si el art. 42 sirve para medir el porcentaje que alguien «controla» | §5.1 | C19; L3 solo como aviso | POS-T |
+| N3 | AMLR: si el 54 sustituye al 52.1 o se añade a él | §4.2, §6.3, Ej. 5b | C14 (se añade) | ART54-SENS (C27) |
+| N4 | AMLR: cadenas con varios tramos de control | §4.4, Ej. 5 | Reglas literales | POS-T |
+| N5 | AMLR 54.a: si se suma la participación directa propia | §4.3 | C15 | POS-T |
+| N6 | Mezcla de magnitudes dentro de una cadena | §7, Ej. 6 | C21 | POS-MEZCLA |
+| N7 | Ciclos | §6 | C20 | CICLO-SENS y CICLO-CERRADO |
+| N8 | AMLR: control conjunto a través de varias entidades controladas | §3.3 | No se considera control | POS-AGREGADO (C26) |
+| N9 | AMLR: si la participación de un nominatario cuenta como propiedad del nominador (52.1 frente a 53.4.c) | §2.2 | C2 | Marca «por cuenta de» |
+| N10 | España: qué es «mayoría» en el CCom 42.1.a | §3.2 | C10 (> 50) | Ninguna (ver abajo) |
+| N11 | AMLR: dos personas que controlan a la vez, una por capital y otra por votos (53.2.c) | §3.3, Ej. 4 | Se acepta tal como sale del texto | Ninguna (ver abajo) |
+| N12 | AMLR: si la autocartera se descuenta al decidir el control | §6.2 | La serie completa la descuenta de hecho; ninguna norma del AMLR lo dice | CICLO-SENS: el método A no la descuenta (§6.2) |
+
+**Por qué N10 y N11 no tienen señal.** En los dos casos no hay otra lectura con la que comparar la entrada (C25).
+- **N10.** La única alternativa a «> 50» sería «≥ 50», y el 50 % no es mayoría: con esa lectura, dos socios al 50 % dominarían a la vez la misma sociedad (C10).
+  - Lo que queda abierto no es el texto sino el dato. La entrada tiene porcentajes, no número de acciones. En una sociedad con más de dos millones de acciones, la mitad más una acción, redondeada a 4 decimales (D4), se registra como 50.
+  - Es un límite del modelo de datos y afecta igual al «50 % más una» del AMLR, que no es un caso N.
+- **N11.** El texto sí da el resultado: con «acciones o los derechos de voto» (53.2.c), las dos personas controlan. Lo único que falta es que el AMLR comente esa consecuencia.
+  - El 53.2.a define el control en general como poder «imponer decisiones pertinentes», pero el 53.2.c no condiciona a eso el control a través de participación.
+  - Una regla que eligiera a una de las dos personas (que prevalezcan los votos, o el capital) no está en ningún texto. Comparar con ella sería inventar la alternativa.
