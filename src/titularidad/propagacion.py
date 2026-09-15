@@ -24,7 +24,7 @@ from dataclasses import dataclass
 from fractions import Fraction
 
 from titularidad.grafo import componentes_fuertes
-from titularidad.modelo import MAGNITUDES, EntidadJuridica, Entrada, Incidencia, tolerancia_redondeo
+from titularidad.modelo import MAGNITUDES, EntidadJuridica, Entrada, Incidencia, PersonaFisica, tolerancia_redondeo
 
 CIEN = Fraction(100)
 NO_IDENTIFICADO = "NO_IDENTIFICADO"
@@ -84,6 +84,7 @@ class Grafo:
 
     objetivo: str
     nodos: tuple[str, ...]  # todos los nodos de la entrada
+    personas: frozenset[str]  # las personas físicas: las únicas que pueden ser titulares reales
     h: dict[str, dict[tuple, Fraction]]
     atribuciones: tuple[Atribucion, ...]
     ciclos_cerrados: tuple[CicloCerrado, ...]
@@ -147,6 +148,7 @@ def preparar(entrada: Entrada, c2_en=MAGNITUDES, detener=None) -> Grafo:
     return Grafo(
         objetivo=objetivo,
         nodos=tuple(entrada.nodos),
+        personas=frozenset(n for n, nodo in entrada.nodos.items() if isinstance(nodo, PersonaFisica)),
         h=h,
         atribuciones=tuple(atribuciones),
         ciclos_cerrados=tuple(cerrados),
@@ -453,6 +455,10 @@ class Propagacion:
     Incluye todos los nodos de la entrada (0 si no llegan al objetivo) y los
     titulares virtuales. `directiva` es None si el dominio no se estabiliza o
     si la base del objetivo es 0.
+
+    Los avisos son solo los comunes a los dos regímenes (CICLO-CERRADO). El
+    método C solo lo usa España (L2), así que DOMINIO-INESTABLE lo da el
+    módulo de control, entre los avisos españoles.
     """
 
     serie: dict[str, dict]  # método B: own_m(X, S)
@@ -478,16 +484,9 @@ def propagar(grafo: Grafo) -> Propagacion:
         a = cadenas_simples(grafo, magnitud)
         simples[magnitud] = {x: a.get(x, Fraction(0)) for x in todos}
 
-    avisos = list(grafo.avisos)
     dominio = base_directiva(grafo)
     directiva = None
-    if not dominio.estable:
-        avisos.append(Incidencia(
-            "DOMINIO-INESTABLE",
-            "El cálculo de dominio del §3.4 no se estabiliza: el método C no se puede calcular "
-            "y E2 queda como no determinable",
-        ))
-    elif dominio.base(objetivo) > 0:
+    if dominio.estable and dominio.base(objetivo) > 0:
         directiva = {x: dominio.proporcion(x, objetivo) for x in todos}
 
-    return Propagacion(serie, simples, directiva, dominio, tuple(avisos))
+    return Propagacion(serie, simples, directiva, dominio, grafo.avisos)
