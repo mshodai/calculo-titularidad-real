@@ -74,7 +74,7 @@ Estos pasos transforman la entrada validada en el grafo sobre el que se calcula.
 
 ### 2.3 Aristas paralelas
 
-**[C3 — decisión propia]** Si, tras C2, un mismo titular tiene varias aristas hacia la misma entidad (por ejemplo, una propia y otra a través de un testaferro), sus valores se suman en cada magnitud para obtener h_m.
+**[C3 — decisión propia]** Si, tras C2, un mismo titular tiene varias aristas hacia la misma entidad (por ejemplo, una propia y otra a través de un testaferro), sus valores se suman en cada magnitud para obtener h_m. Base en España: CCom 42.1, «se añadirán». Base en el AMLR: 52.1, «sumando los resultados de esas distintas cadenas»; cada arista es una cadena de un tramo.
 
 ### 2.4 Huecos: participaciones sin titular identificado
 
@@ -405,6 +405,7 @@ Dos observaciones:
   - es el único que suma *todas* las cadenas, como pide la letra del 52.1; el método A excluye unas cadenas con un criterio que no está en ningún texto;
   - reparte exactamente el 100 %: lo atribuido a titulares últimos más los huecos suma 100. El método A pierde una parte;
   - con autocartera (una arista reflexiva con x %), da p / (1 − x), que es lo mismo que sacar la autocartera de la base. Coincide con la lógica de la Dir. 22.5.
+  - **Qué motivo vale en cada régimen.** El primero solo vale en el AMLR: en España no hay un texto que mande sumar las cadenas. En España, el método B se apoya en el tercero, porque la Ley remite a la Dir. 22 (apartados 1 a 5). El segundo vale en los dos.
     - **[N12 — no resuelto]** El AMLR no dice si la autocartera se descuenta al decidir el control (53.2.c). Como C11 usa own_m, con el método B se descuenta de hecho: con un 10 % de autocartera, quien tiene el 48 % pasa a tener 48 / 0,9 = 53,33 % y controla. Con el método A no se descuenta: la cadena que pasa por la arista reflexiva repite entidad, y se queda en 48 %. Por eso la prueba de sensibilidad de abajo cubre también N12.
 - **Para la agregación de votos (L2 en España): método C, la base de la Dir. 22.5** (§3.4). Por qué:
   - es un texto al que la Ley remite (Dir. 22, apartados 1 a 5);
@@ -519,6 +520,7 @@ python3 -m unittest discover -s verificacion -v
 - **Estado «condicional».** Siempre en v0.1, porque la Ley exige que nadie ejerza el control «por otros medios» y v0.1 no lo evalúa (D19). Además, la presunción admite prueba en contrario.
 - **Estado «no determinable» en su lugar** si hay avisos de hueco (§9, H1 o H2): con parte del capital o de los votos sin identificar no se puede afirmar que «no exista» una persona por encima del umbral. La salida recuerda además la Ley 4.4, párr. 2: «no establecerán o mantendrán relaciones de negocio con personas jurídicas […] cuya estructura de propiedad y de control no haya podido determinarse».
 - **Si S no tiene `cargos`,** se da el aviso AVI-07 y el estado es «no determinable».
+- **Si una entidad ocupa un cargo de S sin `representante`** (aviso AVI-09), ese cargo no se puede convertir en una persona física, como pide la Ley 4.2.b bis, y el estado también es «no determinable». La salida lista igualmente a los demás administradores. En el AMLR, este caso no importa: C23 excluye los cargos ocupados por entidades.
 - **Si hay avisos de lectura L3,** se mantiene el supuesto supletorio y se indica que, con la lectura extensiva, habría titulares reales.
 
 ### 8.2 AMLR: cargos de dirección de alto nivel
@@ -532,7 +534,7 @@ python3 -m unittest discover -s verificacion -v
 - **Qué sale.** «No se ha identificado titular real» y la lista de los `cargos` de S con `ejecutivo: true` ocupados por personas físicas (modelo, D12 y D22). **No se presentan como titulares reales.**
 - **Cargos ejecutivos ocupados por una entidad:** se excluyen, con un aviso. El 63.4 habla solo de personas físicas y el AMLR no tiene una regla como la del representante de la Ley 4.2.b bis.
 - **Estado «provisional».** Siempre en v0.1, porque no se han «agotado todos los medios»: el control por otros medios no se evalúa.
-- **Estado «no determinable»** si hay avisos de hueco, como en el §8.1.
+- **Estado «no determinable»** si hay avisos de hueco. Con parte del capital o de los votos sin identificar no se puede afirmar que se hayan «agotado todos los medios posibles de identificación» (22.2).
 
 ---
 
@@ -719,8 +721,8 @@ Si la exención se aplicara también a la filial intermedia, los socios de X no 
 |---|---|---|---|---|
 | C1 | Solo se calcula sobre los nodos con camino hasta S | §2.1 | Calcular sobre todo el grafo | Los nodos sin camino no pueden aportar nada a S; es coherente con D21 |
 | C2 | La arista `por_cuenta_de` se atribuye al principal en todos los cálculos; el titular formal no recibe nada | §2.2 | (a) Atribuirla al titular formal. (b) En el AMLR, tratarla solo como control por otros medios (53.4.c), fuera de v0.1 | (a) Da falsos positivos y negativos. (b) Dejaría sin atribuir una participación conocida. El CCom 42 y la Dir. 22.3–22.4 la atribuyen al principal |
-| C3 | Las aristas paralelas del mismo titular, tras C2, se suman | §2.3 | Tratarlas por separado | Sumarlas es lo que hace el CCom 42.1: «se añadirán» |
-| C4 | Los huecos son titulares virtuales que se propagan | §2.4 | Ignorar los huecos | Ignorarlos haría que la regla de los administradores (4.2.b bis) se aplicara sin tener en cuenta a quien puede estar en el hueco |
+| C3 | Las aristas paralelas del mismo titular, tras C2, se suman | §2.3 | Tratarlas por separado | Sumarlas es lo que hace el CCom 42.1 («se añadirán») y el AMLR 52.1 («sumando los resultados de esas distintas cadenas») |
+| C4 | Los huecos son titulares virtuales que se propagan | §2.4 | Ignorar los huecos | En España, ignorarlos haría que la regla de los administradores (4.2.b bis) se aplicara sin tener en cuenta a quien puede estar en el hueco. En el AMLR, se declararía que no hay titular real sin poder afirmar que se han «agotado todos los medios posibles de identificación» (22.2) |
 | C5 | España: S cotizada con requisitos de información se exceptúa, y las intermedias en ese caso no se recorren; sin esos requisitos, se tratan como cualquier otra entidad. AMLR: la cotización no cambia el cálculo | §2.5 | (a) Aplicar el 65.a del AMLR como excepción. (b) Que baste con cotizar en las intermedias (versión anterior) | (a) El 65.a exime de obligaciones (arts. 63 y 64), no de la definición (51–55). (b) El RD 9.4 condiciona la excepción a las obligaciones de información; bastar con cotizar las daría por cumplidas, contra D13 |
 | C6 | Aritmética con fracciones exactas; solo se redondea al mostrar | §2.6 | Coma flotante binaria | Los umbrales > 25 y ≥ 25 se deciden en el valor exacto |
 | C7 | El AMLR se calcula aunque la fecha sea anterior a 2027-07-10, con aviso | §2.7 | No calcularlo | Comparar los dos regímenes es el objetivo del proyecto |
@@ -736,7 +738,7 @@ Si la exención se aplicara también a la filial intermedia, los socios de X no 
 | C17 | España, «posean»: multiplicación (L1) | §5.3 | Solo participaciones directas (L0) | La Ley dice «directa o indirectamente»; la multiplicación es la única que atribuye una parte proporcional sin exigir control |
 | C18 | España: el umbral de L2 se mide sobre la base ajustada por la Dir. 22.5 | §5.3 | Medirlo sobre 100 | Usar la misma medida para el dominio y para el umbral |
 | C19 | España: la lectura aplicada es L1 ∪ L2; L3 solo avisa | §5.3 | (a) L1 sola. (b) L3 | (a) Ignora la remisión al art. 42 para el control. (b) Solo tiene apoyo en el AMLR |
-| C20 | Ciclos: método B para multiplicar, C para agregar votos, A como prueba de sensibilidad, también para el control del AMLR | §6.2 | Rechazar las entradas con ciclos, o usar solo el método A | B suma todas las cadenas y reparte el 100 %; C es un texto al que la Ley remite; A pierde parte de la participación |
+| C20 | Ciclos: método B para multiplicar, C para agregar votos, A como prueba de sensibilidad, también para el control del AMLR | §6.2 | Rechazar las entradas con ciclos, o usar solo el método A | B suma todas las cadenas, como pide el 52.1 en el AMLR; en España coincide con la Dir. 22.5, a la que remite la Ley; en los dos reparte el 100 %. C es un texto al que la Ley remite; A pierde parte de la participación |
 | C21 | No se mezclan magnitudes al multiplicar; el producto mixto solo avisa | §7 | Usar el producto mixto como regla | N6: ningún texto lo autoriza |
 | C22 | Supletorio en España: administradores, siempre condicional; no determinable si hay huecos | §8.1 | Aplicarlo sin condiciones | v0.1 no evalúa el control por otros medios, y la Ley exige que «no exista» nadie por encima del umbral |
 | C23 | Supletorio en el AMLR: cargos ejecutivos que sean personas físicas, siempre provisional; nunca como titulares reales | §8.2 | Presentarlos como titulares reales | Considerando 125 |

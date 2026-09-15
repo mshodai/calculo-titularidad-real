@@ -17,6 +17,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from titularidad.modelo import (
+    AMLR,
     CLASES,
     ESPANA,
     MAGNITUDES,
@@ -531,19 +532,13 @@ class _Carga:
                 )
 
     def _comprobar_cargos(self):
-        """ERR-12: un cargo ocupado por una entidad necesita representante persona física."""
+        """ERR-12: el representante de un cargo ocupado por una entidad no es
+        persona física. Si falta, no es un error sino AVI-09 (D27)."""
         for entidad in self._entidades():
             for cargo in entidad.cargos:
                 ocupante = self.nodos.get(cargo.persona)
                 if isinstance(ocupante, EntidadJuridica):
-                    if cargo.representante is None:
-                        self.error(
-                            "ERR-12",
-                            f"Nodo «{entidad.id}»: el cargo lo ocupa la entidad "
-                            f"«{cargo.persona}» y no tiene «representante»",
-                            entidad.id,
-                        )
-                    elif isinstance(self.nodos.get(cargo.representante), EntidadJuridica):
+                    if isinstance(self.nodos.get(cargo.representante), EntidadJuridica):
                         self.error(
                             "ERR-12",
                             f"Nodo «{entidad.id}»: el representante «{cargo.representante}» "
@@ -601,7 +596,7 @@ class _Carga:
                 )
 
     def _avisos_cadena(self, objetivo, aristas):
-        """AVI-02, AVI-03, AVI-05, AVI-07 y AVI-08."""
+        """AVI-02, AVI-03, AVI-05, AVI-07, AVI-08 y AVI-09."""
         cadena = _cadena(objetivo, [a for a, _ in aristas], self.nodos)
 
         # AMBIGÜEDAD: «en la cadena» es «tiene un camino de aristas que llega
@@ -665,6 +660,17 @@ class _Carga:
                 "el supuesto supletorio",
                 objetivo,
             )
+        for cargo in destino.cargos:
+            # D27: el representante solo lo pide la Ley 4.2.b bis. En el AMLR,
+            # los cargos ocupados por entidades no cuentan (especificación, C23).
+            if isinstance(self.nodos.get(cargo.persona), EntidadJuridica) and cargo.representante is None:
+                self.aviso(
+                    "AVI-09",
+                    f"El cargo de «{objetivo}» lo ocupa la entidad «{cargo.persona}» sin "
+                    "«representante»: en España no se puede convertir en una persona física",
+                    objetivo,
+                    informativo_en=(AMLR,),
+                )
 
         conectados = set(cadena)
         for cargo in destino.cargos:

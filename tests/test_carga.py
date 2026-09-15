@@ -11,7 +11,7 @@ from decimal import Decimal
 import pytest
 
 from titularidad.carga import cargar, cargar_fichero
-from titularidad.modelo import ESPANA, EntidadJuridica, PersonaFisica
+from titularidad.modelo import AMLR, ESPANA, EntidadJuridica, PersonaFisica
 
 
 def base():
@@ -337,11 +337,27 @@ def test_err11_por_cuenta_de_en_arista_reflexiva():
     assert codigos(cargar_dict(datos).errores) == ["ERR-11"]
 
 
-def test_err12_entidad_administradora_sin_representante():
+def test_avi09_entidad_administradora_sin_representante():
+    """D27: un requisito español no impide cargar la entrada; en el AMLR es informativo."""
     datos = base()
     datos["nodos"].append(entidad("G"))
     datos["nodos"][0]["cargos"][0]["persona"] = "G"
-    assert codigos(cargar_dict(datos).errores) == ["ERR-12"]
+    resultado = cargar_dict(datos)
+    assert resultado.valida
+    (aviso,) = [a for a in resultado.avisos if a.codigo == "AVI-09"]
+    assert aviso.ids == ("S",)
+    assert aviso.informativo_en == (AMLR,)
+
+
+def test_avi09_solo_en_los_cargos_de_la_entidad_objetivo():
+    """D27: los cargos de las demás entidades no se usan (§3.3)."""
+    datos = base()
+    datos["nodos"] += [entidad("G"), entidad("H", cargos=[
+        {"persona": "G", "cargo": "miembro_organo_administracion", "ejecutivo": False}
+    ])]
+    resultado = cargar_dict(datos)
+    assert resultado.valida
+    assert "AVI-09" not in codigos(resultado.avisos)
 
 
 def test_err12_representante_que_no_es_persona_fisica():

@@ -8,7 +8,7 @@ Este documento define el JSON con el que se describe una estructura de propiedad
 
 - Las citas literales van entre comillas «…» con artículo, apartado y letra.
 - Todo lo que no viene de los textos y es elección de diseño va marcado como **[Dn — decisión propia]** y se recoge en la tabla del §8, junto con la alternativa descartada y el motivo.
-  - Los números (D1–D26) son identificadores estables: no siguen el orden de aparición y no se reutilizan.
+  - Los números (D1–D27) son identificadores estables: no siguen el orden de aparición y no se reutilizan.
 - Lo que los textos no resuelven y queda para la especificación del cálculo va marcado como **[Pendiente]** y se recoge en el §9.
 
 ### Fuentes (en `docs/fuentes/`)
@@ -171,7 +171,7 @@ Tras la tabla de cada objeto se indica de dónde sale cada campo. Se usará un J
 | `persona` | id de nodo | sí | Persona física o jurídica que ocupa el cargo |
 | `cargo` | `"miembro_organo_administracion"` \| `"directivo"` | sí | |
 | `ejecutivo` | boolean | sí | Si ejerce funciones ejecutivas (AMLR 63.4) |
-| `representante` | id de nodo `persona_fisica` | si `persona` es una entidad jurídica | Ley 4.2.b bis: «la persona física nombrada por el administrador persona jurídica» |
+| `representante` | id de nodo `persona_fisica` | no; si `persona` es una entidad jurídica y falta, aviso AVI-09 (D27) | Ley 4.2.b bis: «la persona física nombrada por el administrador persona jurídica» |
 
 **[D12 — decisión propia]** Una sola lista de cargos sirve para los dos supuestos supletorios:
 - **España:** todos los `miembro_organo_administracion`, sean o no ejecutivos, ya que la Ley dice «el administrador o administradores» sin distinguir. Si el cargo lo ocupa una persona jurídica, cuenta su `representante`.
@@ -288,7 +288,8 @@ Estas cifras se recalculan con fracciones exactas en [`verificacion/test_cifras_
 - **Sumar menos del 100 % sí puede ser legítimo.** Puede haber titulares no identificados, capital flotante en una cotizada o acciones al portador (la Ley 4.4 las menciona). Pero tiene consecuencias legales:
   - Ley 4.4, párr. 2: «no establecerán o mantendrán relaciones de negocio con personas jurídicas […] cuya estructura de propiedad y de control no haya podido determinarse»;
   - lo mismo en el RD 9.3;
-  - además, el supuesto supletorio (Ley 4.2.b bis) solo se aplica cuando «no exista» una persona que alcance el umbral. Con parte del capital sin identificar no se puede afirmar eso.
+  - además, el supuesto supletorio (Ley 4.2.b bis) solo se aplica cuando «no exista» una persona que alcance el umbral. Con parte del capital sin identificar no se puede afirmar eso;
+  - en el AMLR, el supuesto supletorio solo se aplica «una vez agotados todos los medios posibles de identificación» (22.2), y con parte del accionariado sin identificar tampoco se puede afirmar eso.
   - Por eso sumar menos del 100 %, más allá del redondeo (D15), genera un **aviso**, no un error.
 
 ### 6.2 Lista de validaciones
@@ -308,7 +309,7 @@ Estas cifras se recalculan con fracciones exactas en [`verificacion/test_cifras_
 | ERR-09 | La suma de `capital` en una entidad supera 100 + ⌊n/2⌋ × 0,0001, siendo *n* el número de aristas con `capital` no nulo | D15 |
 | ERR-10 | La suma de `votos` en una entidad supera 100 + ⌊n/2⌋ × 0,0001, siendo *n* el número de aristas con `votos` no nulo | D15 |
 | ERR-11 | `por_cuenta_de` es igual a `titular`, o es no nulo en una arista reflexiva | D9, D11 |
-| ERR-12 | Un cargo lo ocupa una entidad jurídica sin `representante`, o el `representante` no es una persona física | Ley 4.2.b bis |
+| ERR-12 | El `representante` de un cargo no es una persona física | Ley 4.2.b bis; D27 |
 
 - **[D14 — decisión propia]** Solo puede haber una arista por combinación de titular, participada y `por_cuenta_de`. Si alguien tiene varias clases de participaciones, se suman en una sola arista.
 - **[D20 — decisión propia]** Se rechazan los campos desconocidos para detectar erratas. Importa sobre todo en los campos opcionales: si se escribe `por_cuenta` en lugar de `por_cuenta_de`, la arista se trataría como una participación normal sin avisar.
@@ -318,13 +319,14 @@ Estas cifras se recalculan con fracciones exactas en [`verificacion/test_cifras_
 | Código | Regla | Origen |
 |---|---|---|
 | AVI-01 | Hay un ciclo, incluida la arista reflexiva. Se indican los nodos | §4 |
-| AVI-02 | En una entidad de la cadena, la suma de `capital` o de `votos` es menor que 100 − ⌊n/2⌋ × 0,0001, siendo *n* el número de aristas con esa magnitud no nula. Se indica el porcentaje sin identificar. Si la entidad cotiza en el sentido de D26, es solo informativo en España | Ley 4.4; RD 9.3; D15, D26 |
-| AVI-03 | Una entidad de la cadena no tiene titulares: la cadena termina sin llegar a una persona física. Si la entidad cotiza en el sentido de D26, es solo informativo en España | Ley 4.4; RD 9.3; D26 |
+| AVI-02 | En una entidad de la cadena, la suma de `capital` o de `votos` es menor que 100 − ⌊n/2⌋ × 0,0001, siendo *n* el número de aristas con esa magnitud no nula. Se indica el porcentaje sin identificar. Si la entidad cotiza en el sentido de D26, es solo informativo en España | Ley 4.4; RD 9.3; AMLR 22.2; D15, D26 |
+| AVI-03 | Una entidad de la cadena no tiene titulares: la cadena termina sin llegar a una persona física. Si la entidad cotiza en el sentido de D26, es solo informativo en España | Ley 4.4; RD 9.3; AMLR 22.2; D26 |
 | AVI-04 | Una arista tiene `capital` o `votos` a `null` | D5 |
 | AVI-05 | Hay en la cadena una entidad cuya `clase` no es `sociedad` | D8; RD 8; AMLR 52.4 |
 | AVI-06 | Hay aristas con `por_cuenta_de`: su tratamiento depende del régimen | §5 |
 | AVI-07 | La entidad objetivo no tiene `cargos`: no se puede aplicar el supuesto supletorio | Ley 4.2.b bis; AMLR 22.2 y 63.4 |
 | AVI-08 | Hay nodos que no están conectados con la entidad objetivo ni por aristas ni por cargos: se ignoran | D21 |
+| AVI-09 | Un cargo de la entidad objetivo lo ocupa una entidad jurídica sin `representante`: en España no se puede convertir en una persona física. En el AMLR es solo informativo | Ley 4.2.b bis; D27 |
 
 «En la cadena» significa que la entidad tiene un camino de aristas que llega hasta la entidad objetivo.
 
@@ -337,7 +339,12 @@ Estas cifras se recalculan con fracciones exactas en [`verificacion/test_cifras_
   - En España se rebajan porque, en una cotizada, lo que queda sin identificar no hace falta identificarlo. Así lo dicen la Ley 4.2.b, párr. 3, y el RD 9.4, y los dos lo condicionan a la segunda condición. El RD 9.4 dice «cuando aquéllas estén sometidas a obligaciones de información que aseguren la adecuada transparencia de su titularidad real».
   - Bastar con que coticen daría por cumplida esa condición, que es una valoración. Es justo lo que D13 evita al separar las dos.
   - En el AMLR la cotización no cambia el cálculo (especificación, C5): lo que falta en una cotizada es un hueco como cualquier otro.
-  - Las filiales de cotizadas del RD 9.4 no se tienen en cuenta aquí. Saber si una entidad es filial participada mayoritariamente exige calcular participaciones indirectas, y eso es cosa del cálculo (especificación, C30).
+  - Las filiales de cotizadas del RD 9.4 no se tienen en cuenta aquí.
+- **[D27 — decisión propia]** Una entidad que ocupa un cargo de la entidad objetivo sin `representante` genera un aviso (AVI-09), no un error.
+  - El representante solo lo pide la Ley 4.2.b bis. Rechazar la entrada impedía calcular también el AMLR, que no usa ese dato. Además, era más grave que no tener ningún cargo, que es un aviso (AVI-07).
+  - En España ese cargo no se puede convertir en una persona física y el supuesto supletorio queda «no determinable» (especificación, §8.1). En el AMLR el aviso es solo informativo.
+  - Solo se mira en la entidad objetivo, porque los cargos de las demás no se usan (§3.3).
+  - Un `representante` que no es persona física sigue siendo un error (ERR-12). No es un dato que falta, sino un dato equivocado: el campo es de persona física. Como en ERR-01 y D20, un dato mal formado rechaza la entrada aunque el cálculo no lo use. Saber si una entidad es filial participada mayoritariamente exige calcular participaciones indirectas, y eso es cosa del cálculo (especificación, C30).
 
 ---
 
@@ -394,6 +401,7 @@ La columna «Origen» indica cuándo se planteó la alternativa descartada:
 | D24 | Las validaciones se aplican a toda la entrada, también a lo que AVI-08 ignora | §6.2 | Validar solo la parte conectada con la entidad objetivo | Qué está conectado depende de las aristas, que hay que validar antes; y un error en otra parte suele tener una causa que afecta a todo el documento | revisión |
 | D25 | AVI-01 se busca con la arista del titular formal y la del principal, con todas las aristas, en todo el grafo, y con un aviso por componente fuertemente conexa | §4.3 | (a) Solo aristas formales (versión anterior de la implementación). (b) Un aviso por ciclo elemental | (a) No detectaría un ciclo que aparece al atribuir al principal, como la autocartera a través de otra persona (Dir. 22.5). (b) Puede haber una cantidad exponencial de ciclos | revisión |
 | D26 | AVI-02 y AVI-03 son solo informativos en España, y solo si la entidad tiene `cotizacion` con `requisitos_informacion_ue_o_equivalentes: true`; en el AMLR, son avisos normales | §6.2 | (a) Basta con tener `cotizacion` (versión anterior de la implementación). (b) Informativos en los dos regímenes (versión anterior de la implementación) | (a) Contradice D13: da por cumplida la condición de los requisitos de información, a la que la Ley 4.2.b, párr. 3, y el RD 9.4 atan la excepción. (b) La excepción es española; en el AMLR la cotización no cambia el cálculo | revisión |
+| D27 | Una entidad que ocupa un cargo de la entidad objetivo sin `representante` es un aviso (AVI-09), no un error. Un `representante` que no es persona física sigue siendo error (ERR-12) | §6.2 | (a) Error en los dos casos (versión anterior). (b) Aviso también si el representante no es persona física | (a) Un requisito español impedía calcular el AMLR, que no usa ese dato, y era más grave que no tener cargos (AVI-07). (b) No es un dato que falta, sino un dato equivocado: el campo es de persona física, y como ERR-01 y D20, un dato mal formado rechaza la entrada aunque no se use | revisión |
 
 ## 9. Pendiente para la especificación del cálculo
 
