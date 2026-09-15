@@ -79,7 +79,7 @@ Estos pasos transforman la entrada validada en el grafo sobre el que se calcula.
 
 | Caso | Titular virtual |
 |---|---|
-| Entidad en la cadena cuya suma en la magnitud m es menor que 100 | `NO_IDENTIFICADO(X)`, con 100 − suma en m. Si la suma pasa de 100 por el redondeo que admite D15, no hay hueco |
+| Entidad en la cadena cuya suma en la magnitud m es menor que 100 | `NO_IDENTIFICADO(X)`, con 100 − suma en m. Si la suma se aparta de 100 por el redondeo que admite D15, por encima o por debajo, no hay hueco |
 | Entidad en la cadena sin titulares | `NO_IDENTIFICADO(X)`, con 100 en capital y en votos |
 | Entidad cuya `clase` no es `sociedad` (modelo, D8) | `OPACA(X)`: sus titulares no se recorren y ella recibe todo lo que le llegue |
 

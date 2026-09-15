@@ -8,7 +8,7 @@ Este documento define el JSON con el que se describe una estructura de propiedad
 
 - Las citas literales van entre comillas «…» con artículo, apartado y letra.
 - Todo lo que no viene de los textos y es elección de diseño va marcado como **[Dn — decisión propia]** y se recoge en la tabla del §8, junto con la alternativa descartada y el motivo.
-  - Los números (D1–D23) son identificadores estables: no siguen el orden de aparición y no se reutilizan.
+  - Los números (D1–D26) son identificadores estables: no siguen el orden de aparición y no se reutilizan.
 - Lo que los textos no resuelven y queda para la especificación del cálculo va marcado como **[Pendiente]** y se recoge en el §9.
 
 ### Fuentes (en `docs/fuentes/`)
@@ -217,6 +217,11 @@ Estas cifras se recalculan con fracciones exactas en [`verificacion/test_cifras_
 ### 4.3 Qué hace el modelo
 
 - **[D10 — decisión propia]** Los ciclos se **admiten** en la entrada, porque existen en estructuras reales y porque el art. 22.5 necesita verlos. La validación los detecta y avisa (AVI-01), pero no los rechaza.
+- **[D25 — decisión propia] Cómo se buscan los ciclos (AVI-01).**
+  - **Sobre qué aristas.** Cada arista va de su titular formal a la participada y, si tiene `por_cuenta_de`, también del principal a la participada. Así el aviso sale haya ciclo con cualquiera de las dos atribuciones: la del cálculo (especificación, C2) y la contraria (N9 y N13). También detecta la autocartera que se tiene a través de otra persona, que el art. 22.5 trata como la propia: X tiene acciones de S por cuenta de S.
+  - **Todas las aristas, valgan lo que valgan.** Una con `null` puede no valer 0. Separar las que valen 0 en las dos magnitudes añadiría una regla para un caso que no cambia nada.
+  - **En todo el grafo.** AVI-02, AVI-03 y AVI-05 se limitan a «la cadena»; AVI-01 no, y se sigue su letra.
+  - **Un aviso por cada grupo de nodos en ciclo** (componente fuertemente conexa), con sus nodos. Un grupo puede contener muchísimos ciclos elementales, así que no se da uno por ciclo.
 - **[D9 — decisión propia] La autocartera se representa como una arista reflexiva** (`titular` = `participada`). Así los tres casos del art. 22.5 (la propia entidad, sus filiales y las personas que actúan por su cuenta) se representan todos con aristas, sin campos especiales.
 - **[Pendiente]** El método para tratar los ciclos (A, B, C u otro) se decidirá en la especificación del cálculo, para cada régimen.
   - Propuesta: calcular con los tres métodos. Si coinciden en quién es titular real, dar el resultado. Si no coinciden, indicarlo en lugar de elegir uno sin decirlo.
@@ -273,17 +278,18 @@ Estas cifras se recalculan con fracciones exactas en [`verificacion/test_cifras_
   - redondeos;
   - que se haya anotado a la vez al testaferro y a la persona por cuya cuenta actúa, o al acreedor pignoraticio y al deudor. Estos son justo los casos que la Dir. 22.4 separa.
 - **Derechos repartidos sobre las mismas acciones.** Como capital y votos son magnitudes independientes, el modelo puede expresar que el capital de unas acciones sea de uno y los votos de otro. Se hacen dos aristas: una con el capital y `votos: 0`, y otra con `capital: 0` y los votos. Así la suma de cada magnitud no pasa del 100 %.
-- **[D15 — decisión propia]** Por eso, que una magnitud sume más del 100 % es un **error**, salvo el exceso que se explica por redondeo. La tolerancia sale de D4:
-  - cada porcentaje, redondeado al valor más próximo con 4 decimales, se desvía como mucho 0,00005 de su valor real;
-  - con *n* aristas con valor (no `null`) en esa entidad y esa magnitud, la suma puede pasar de 100 como mucho en *n* × 0,00005;
-  - como la suma de valores con 4 decimales es múltiplo de 0,0001, eso equivale a admitir hasta **100 + ⌊n/2⌋ × 0,0001**: nada con 1 arista, 0,0001 con 2 o 3, 0,0003 con 6;
-  - ejemplo: seis socios con un sexto cada uno, redondeado a 16,6667, suman 100,0002 y se admite. En cambio, 100,01 no puede salir de redondear y se rechaza;
-  - el cálculo usa los valores tal cual, sin reescalarlos a 100. Admitir ese exceso no cambia ningún porcentaje individual: solo evita rechazar entradas bien redondeadas.
+- **[D15 — decisión propia]** Por eso, que una magnitud sume más del 100 % es un **error**, salvo el exceso que se explica por redondeo. Por la misma razón, sumar menos del 100 % solo cuenta como hueco (AVI-02) si el defecto no se explica por redondeo. La tolerancia sale de D4 y es la misma en los dos sentidos:
+  - cada porcentaje, redondeado al valor más próximo con 4 decimales, se desvía como mucho 0,00005 de su valor real, por encima o por debajo;
+  - con *n* aristas con valor (no `null`) en esa entidad y esa magnitud, la suma puede apartarse de 100 como mucho *n* × 0,00005, en cualquiera de los dos sentidos;
+  - como la suma de valores con 4 decimales es múltiplo de 0,0001, eso equivale a admitir sumas **entre 100 − ⌊n/2⌋ × 0,0001 y 100 + ⌊n/2⌋ × 0,0001**: nada con 1 arista, 0,0001 con 2 o 3, 0,0003 con 6;
+  - ejemplos: seis socios con un sexto cada uno, redondeado a 16,6667, suman 100,0002 y no es un error. Tres socios con un tercio cada uno, redondeado a 33,3333, suman 99,9999: es un accionariado completo y no da AVI-02. Con pocas aristas, 100,01 o 99,99 no pueden salir de redondear;
+  - el cálculo usa los valores tal cual, sin reescalarlos a 100. Admitir ese exceso o ese defecto no cambia ningún porcentaje individual: solo evita rechazar entradas bien redondeadas y avisar de huecos que no existen;
+  - un defecto dentro de la tolerancia podría ser, en rigor, un titular sin identificar de una fracción de punto tan pequeña. Se trata como redondeo: con ese tamaño solo cambiaría algo en el valor exacto de un umbral, que es el caso de D23.
 - **Sumar menos del 100 % sí puede ser legítimo.** Puede haber titulares no identificados, capital flotante en una cotizada o acciones al portador (la Ley 4.4 las menciona). Pero tiene consecuencias legales:
   - Ley 4.4, párr. 2: «no establecerán o mantendrán relaciones de negocio con personas jurídicas […] cuya estructura de propiedad y de control no haya podido determinarse»;
   - lo mismo en el RD 9.3;
   - además, el supuesto supletorio (Ley 4.2.b bis) solo se aplica cuando «no exista» una persona que alcance el umbral. Con parte del capital sin identificar no se puede afirmar eso.
-  - Por eso sumar menos del 100 % genera un **aviso**, no un error.
+  - Por eso sumar menos del 100 %, más allá del redondeo (D15), genera un **aviso**, no un error.
 
 ### 6.2 Lista de validaciones
 
@@ -312,8 +318,8 @@ Estas cifras se recalculan con fracciones exactas en [`verificacion/test_cifras_
 | Código | Regla | Origen |
 |---|---|---|
 | AVI-01 | Hay un ciclo, incluida la arista reflexiva. Se indican los nodos | §4 |
-| AVI-02 | En una entidad de la cadena, la suma de `capital` o de `votos` es menor que 100. Se indica el porcentaje sin identificar. Si la entidad cotiza, es solo informativo | Ley 4.4; RD 9.3 |
-| AVI-03 | Una entidad de la cadena no tiene titulares y no cotiza: la cadena termina sin llegar a una persona física | Ley 4.4; RD 9.3 |
+| AVI-02 | En una entidad de la cadena, la suma de `capital` o de `votos` es menor que 100 − ⌊n/2⌋ × 0,0001, siendo *n* el número de aristas con esa magnitud no nula. Se indica el porcentaje sin identificar. Si la entidad cotiza en el sentido de D26, es solo informativo | Ley 4.4; RD 9.3; D15, D26 |
+| AVI-03 | Una entidad de la cadena no tiene titulares y no cotiza en el sentido de D26: la cadena termina sin llegar a una persona física | Ley 4.4; RD 9.3; D26 |
 | AVI-04 | Una arista tiene `capital` o `votos` a `null` | D5 |
 | AVI-05 | Hay en la cadena una entidad cuya `clase` no es `sociedad` | D8; RD 8; AMLR 52.4 |
 | AVI-06 | Hay aristas con `por_cuenta_de`: su tratamiento depende del régimen | §5 |
@@ -323,6 +329,13 @@ Estas cifras se recalculan con fracciones exactas en [`verificacion/test_cifras_
 «En la cadena» significa que la entidad tiene un camino de aristas que llega hasta la entidad objetivo.
 
 - **[D21 — decisión propia]** Los nodos no conectados se ignoran con un aviso en lugar de rechazar la entrada. Es habitual pasar los datos de todo un grupo, y esos nodos no afectan al cálculo.
+- **[D24 — decisión propia]** Las validaciones se aplican a toda la entrada, también a los nodos y aristas que AVI-08 ignora: un error en ellos rechaza la entrada. Lo que D21 ignora es para el cálculo, no para la validación.
+  - Para saber qué está conectado hay que fiarse antes de las aristas. Una referencia rota (ERR-04) o un titular equivocado cambian qué nodos llegan a la entidad objetivo.
+  - Un error en otra parte del documento suele tener una causa que también puede afectar a la parte que se usa: fechas mezcladas o datos duplicados (§6.1).
+  - Coste: quien pase los datos de todo un grupo tendrá que corregir también los errores de las partes que no usa.
+- **[D26 — decisión propia]** Para AVI-02 y AVI-03, una entidad «cotiza» si tiene `cotizacion` con `requisitos_informacion_ue_o_equivalentes: true`. Con `false`, tiene los mismos avisos que cualquier otra entidad.
+  - Esos avisos se rebajan o se omiten porque, en una cotizada, lo que queda sin identificar no hace falta identificarlo. Así lo dicen la Ley 4.2.b, párr. 3, y el RD 9.4, y los dos lo condicionan a la segunda condición. El RD 9.4 dice «cuando aquéllas estén sometidas a obligaciones de información que aseguren la adecuada transparencia de su titularidad real».
+  - Bastar con que coticen daría por cumplida esa condición, que es una valoración. Es justo lo que D13 evita al separar las dos.
 
 ---
 
@@ -367,7 +380,7 @@ La columna «Origen» indica cuándo se planteó la alternativa descartada:
 | D12 | Una sola lista de `cargos`, con `ejecutivo` y `representante` | §3.5 | Dos listas: administradores (España) y cargos de dirección de alto nivel (AMLR) | La misma persona aparecería en las dos; separarlas duplicaría datos | revisión |
 | D13 | `cotizacion` con dos condiciones separadas | §3.3 | Un simple `cotizada: true` | La Ley 4.2.b, párr. 3 exige dos condiciones y la segunda es una valoración. Con un booleano se daría por hecha | diseño |
 | D14 | Una arista por (titular, participada, `por_cuenta_de`) | §6.2 | Admitir aristas repetidas y sumarlas | Una arista repetida suele ser un dato duplicado por error, y sumarla lo taparía | diseño |
-| D15 | Más del 100 % en una magnitud es un error, salvo el exceso de redondeo: hasta 100 + ⌊n/2⌋ × 0,0001. Menos del 100 % es un aviso | §6.1 | (a) Tolerancia fija de 0,01 (versión anterior). (b) Sin tolerancia. (c) Un campo `accionariado_completo` | (a) Es 100 veces la resolución de D4 y deja pasar errores que no son de redondeo. (b) Rechaza entradas bien redondeadas: seis sextos suman 100,0002. (c) Sobra: el aviso ya da el porcentaje sin identificar | revisión (a); diseño (b, c) |
+| D15 | Una magnitud que se aparta de 100 más de lo que explica el redondeo (⌊n/2⌋ × 0,0001): por encima es un error; por debajo, un aviso | §6.1 | (a) Tolerancia fija de 0,01 (versión anterior). (b) Sin tolerancia. (c) Un campo `accionariado_completo`. (d) Tolerancia solo por encima del 100 (versión anterior) | (a) Es 100 veces la resolución de D4 y deja pasar errores que no son de redondeo. (b) Rechaza entradas bien redondeadas: seis sextos suman 100,0002. (c) Sobra: el aviso ya da el porcentaje sin identificar. (d) El redondeo se desvía igual en los dos sentidos: tres tercios suman 99,9999 y darían un hueco que no existe | revisión (a, d); diseño (b, c) |
 | D16 | `id` obligatorio en las aristas | §3.4 | `id` opcional | El cálculo tiene que poder explicar cada resultado indicando la cadena exacta | diseño |
 | D17 | `fuente` y `desde` opcionales | §3.4 | Dejarlos fuera | `desde` lo pide el AMLR 62.1.b; `fuente` sirve para documentar las comprobaciones (RD 8.b, Ley 4.2.b bis) | diseño |
 | D18 | `identificacion` opcional y sin validar en v0.1 | §3.2 | (a) Omitirla. (b) Validar su contenido (DNI, fechas…) | (a) La necesitará la salida. (b) El cálculo no la usa, y validar documentos de identidad es trabajo aparte | diseño |
@@ -376,6 +389,9 @@ La columna «Origen» indica cuándo se planteó la alternativa descartada:
 | D21 | Los nodos no conectados con la entidad objetivo se ignoran con aviso | §6.2 | Rechazar la entrada | Es habitual pasar los datos de todo un grupo, y esos nodos no afectan al cálculo | revisión |
 | D22 | El «órgano de administración» español se trata como el «órgano de dirección» del AMLR 63.4 | §3.5 | (a) No suponer nada y dejar sin calcular el supuesto supletorio del AMLR. (b) Un campo que indique qué órgano es | (a) Dejaría sin resultado el supuesto del AMLR para cualquier entidad española. (b) Se podrá añadir si aparecen entidades con órganos separados, que los textos europeos distinguen (AMLR 53.3.b; Dir. 22.1.b) | revisión |
 | D23 | Un valor igual a un umbral (25 o 50) se lee como exacto; el cálculo avisa si leerlo al otro lado cambia quién es titular real | §3.4 | (a) Registrar el número de acciones y de votos, o fracciones exactas (D4, alternativa c). (b) Más decimales | (a) Cambia la base del modelo para un caso que solo aparece en el valor exacto del umbral y que el cálculo puede detectar. (b) Solo desplaza el límite: con cualquier número fijo de decimales hay un tamaño a partir del cual pasa lo mismo | revisión |
+| D24 | Las validaciones se aplican a toda la entrada, también a lo que AVI-08 ignora | §6.2 | Validar solo la parte conectada con la entidad objetivo | Qué está conectado depende de las aristas, que hay que validar antes; y un error en otra parte suele tener una causa que afecta a todo el documento | revisión |
+| D25 | AVI-01 se busca con la arista del titular formal y la del principal, con todas las aristas, en todo el grafo, y con un aviso por componente fuertemente conexa | §4.3 | (a) Solo aristas formales (versión anterior de la implementación). (b) Un aviso por ciclo elemental | (a) No detectaría un ciclo que aparece al atribuir al principal, como la autocartera a través de otra persona (Dir. 22.5). (b) Puede haber una cantidad exponencial de ciclos | revisión |
+| D26 | Para AVI-02 y AVI-03, «cotiza» exige `cotizacion` con `requisitos_informacion_ue_o_equivalentes: true` | §6.2 | Basta con tener `cotizacion` (versión anterior de la implementación) | Contradice D13: da por cumplida la condición de los requisitos de información, a la que la Ley 4.2.b, párr. 3, y el RD 9.4 atan la excepción | revisión |
 
 ## 9. Pendiente para la especificación del cálculo
 

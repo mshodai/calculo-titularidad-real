@@ -150,9 +150,7 @@ class _Carga:
         self.nodos = self._leer_nodos(lista_nodos)
         aristas = self._leer_aristas(lista_aristas)
 
-        # AMBIGÜEDAD: D21 dice que los nodos sin conexión con el objetivo «se
-        # ignoran», pero no si se validan. Se validan todos: un error en uno de
-        # ellos (p. ej., una suma de más del 100 %) también rechaza la entrada.
+        # D24: se valida toda la entrada, también lo que AVI-08 ignora (D21).
         objetivo_valido = self._comprobar_objetivo(objetivo)
         self._comprobar_referencias(aristas)
         self._comprobar_aristas(aristas)
@@ -261,6 +259,9 @@ class _Carga:
                 self.error(
                     "ERR-01", f"{donde}: «tipo» debe ser \"persona_fisica\" o \"entidad_juridica\""
                 )
+                # AMBIGÜEDAD: el modelo no dice qué pasa con las referencias a
+                # un nodo con `tipo` no válido. Su id cuenta como declarado,
+                # para que las aristas que lo usan no den además ERR-04.
                 if isinstance(dato.get("id"), str):
                     self.declarados.add(dato["id"])
                 continue
@@ -518,7 +519,7 @@ class _Carga:
                     valores[(arista.participada, magnitud)].append(valor)
         for (entidad, magnitud), lista in valores.items():
             suma = sum(lista, Decimal(0))
-            limite = CIEN + (len(lista) // 2) * RESOLUCION
+            limite = CIEN + _tolerancia(len(lista))
             if suma > limite:
                 codigo = "ERR-09" if magnitud == "capital" else "ERR-10"
                 self.error(
@@ -558,20 +559,24 @@ class _Carga:
     # --- Avisos --------------------------------------------------------------
 
     def _aviso_ciclos(self, aristas):
-        """AVI-01: un aviso por cada grupo de nodos en ciclo, incluida la arista reflexiva."""
-        # AMBIGÜEDAD: el modelo no dice sobre qué aristas se buscan los ciclos
-        # ni cómo se agrupan. Se usan las aristas tal como vienen, con su
-        # titular formal (sin atribuir las `por_cuenta_de` al principal), todas
-        # aunque valgan 0, y también en la parte del grafo no conectada con el
-        # objetivo. Se da un aviso por componente fuertemente conexa, con sus
-        # nodos, y no uno por cada ciclo elemental, que pueden ser muchísimos.
+        """AVI-01, según D25.
+
+        Cada arista va de su titular formal a la participada y, si tiene
+        `por_cuenta_de`, también del principal a la participada. Cuentan todas
+        las aristas, valgan lo que valgan, en todo el grafo. Hay un aviso por
+        cada componente fuertemente conexa en ciclo, incluida la de un solo
+        nodo con arista hacia sí mismo.
+        """
         sucesores = defaultdict(list)
         reflexivos = set()
         for arista, _ in aristas:
-            if arista.titular in self.nodos and arista.participada in self.nodos:
-                sucesores[arista.titular].append(arista.participada)
-                if arista.titular == arista.participada:
-                    reflexivos.add(arista.titular)
+            if arista.participada not in self.nodos:
+                continue
+            for origen in (arista.titular, arista.por_cuenta_de):
+                if origen in self.nodos:
+                    sucesores[origen].append(arista.participada)
+                    if origen == arista.participada:
+                        reflexivos.add(origen)
         orden = {id_nodo: i for i, id_nodo in enumerate(self.nodos)}
         for componente in _componentes_fuertes(list(self.nodos), sucesores):
             if len(componente) > 1 or componente[0] in reflexivos:
@@ -603,6 +608,7 @@ class _Carga:
         # objetivo (camino vacío), porque también puede tener un hueco, no tener
         # titulares o no ser una sociedad.
         sumas = defaultdict(lambda: Decimal(0))
+        con_valor = defaultdict(int)
         titulares = defaultdict(int)
         for arista, _ in aristas:
             titulares[arista.participada] += 1
@@ -610,21 +616,22 @@ class _Carga:
                 valor = getattr(arista, magnitud)
                 if valor is not None:
                     sumas[(arista.participada, magnitud)] += valor
+                    con_valor[(arista.participada, magnitud)] += 1
 
         for entidad in self._entidades():
             if entidad.id not in cadena:
                 continue
-            # AMBIGÜEDAD: «cotiza» se lee como «tiene `cotizacion`», sin mirar
-            # `requisitos_informacion_ue_o_equivalentes`, que solo importa para
-            # la excepción de la Ley 4.2.b, párr. 3.
-            cotiza = entidad.cotizacion is not None
+            # D26: para estos avisos, cotizar exige también los requisitos de
+            # información (D13); sin ellos, la entidad es como cualquier otra.
+            cotiza = (
+                entidad.cotizacion is not None
+                and entidad.cotizacion.requisitos_informacion_ue_o_equivalentes is True
+            )
             for magnitud in MAGNITUDES:
                 suma = sumas[(entidad.id, magnitud)]
-                # AMBIGÜEDAD: D15 da tolerancia de redondeo solo por encima del
-                # 100. Por debajo no dice nada, así que tres tercios redondeados
-                # (99,9999) dan aviso. Las aristas con la magnitud a null no
-                # suman: su parte cuenta como sin identificar, y ya tienen AVI-04.
-                if suma < CIEN:
+                # AMBIGÜEDAD: las aristas con la magnitud a null no suman: su
+                # parte cuenta como sin identificar, y ya tienen AVI-04.
+                if suma < CIEN - _tolerancia(con_valor[(entidad.id, magnitud)]):  # D15
                     self.aviso(
                         "AVI-02",
                         f"«{entidad.id}»: la suma de «{magnitud}» es {suma:f}; "
@@ -667,6 +674,12 @@ class _Carga:
                     f"«{id_nodo}» no está conectado con la entidad objetivo: se ignora",
                     id_nodo,
                 )
+
+
+def _tolerancia(n):
+    """D15: lo que n porcentajes redondeados pueden apartar su suma de 100, en
+    cualquiera de los dos sentidos."""
+    return (n // 2) * RESOLUCION
 
 
 def _cadena(objetivo, aristas, nodos):

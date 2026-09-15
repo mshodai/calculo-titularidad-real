@@ -372,6 +372,34 @@ def test_avi01_autocartera_es_un_ciclo():
     assert [a.ids for a in ciclos] == [("S",)]
 
 
+def test_avi01_ciclo_entre_entidades():
+    datos = base()
+    datos["nodos"].append(entidad("H"))
+    datos["participaciones"][0].update(capital=70, votos=70)
+    datos["participaciones"] += [arista("a2", "H", "S", 30, 30), arista("a3", "S", "H", 100, 100)]
+    ciclos = [a.ids for a in cargar_dict(datos).avisos if a.codigo == "AVI-01"]
+    assert ciclos == [("S", "H")]
+
+
+def test_avi01_autocartera_a_traves_de_otra_persona():
+    """D25: X tiene acciones de S por cuenta de S (Dir. 22.5). Solo aparece con la arista del principal."""
+    datos = base()
+    datos["nodos"].append(persona("X"))
+    datos["participaciones"][0].update(capital=90, votos=90)
+    datos["participaciones"].append(arista("a2", "X", "S", 10, 10, por_cuenta_de="S"))
+    resultado = cargar_dict(datos)
+    assert resultado.valida
+    assert [a.ids for a in resultado.avisos if a.codigo == "AVI-01"] == [("S",)]
+
+
+def test_avi01_tambien_fuera_de_la_cadena():
+    """D25: AVI-01 no se limita a la cadena, a diferencia de AVI-02, AVI-03 y AVI-05."""
+    datos = base()
+    datos["nodos"] += [entidad("X"), entidad("Y")]
+    datos["participaciones"] += [arista("a2", "X", "Y", 100, 100), arista("a3", "Y", "X", 100, 100)]
+    assert [a.ids for a in cargar_dict(datos).avisos if a.codigo == "AVI-01"] == [("X", "Y")]
+
+
 def test_avi02_suma_por_debajo_de_100():
     datos = base()
     datos["participaciones"][0].update(capital=80, votos=100)
@@ -382,10 +410,20 @@ def test_avi02_suma_por_debajo_de_100():
     assert not resultado.avisos[0].informativo
 
 
-def test_avi02_no_tiene_tolerancia_por_debajo():
-    """Tres tercios redondeados hacia abajo suman 99,9999: hay aviso."""
-    avisos = cargar(_socios(["33.3333"] * 3, "capital")).avisos
-    assert "quedan 0.0001 sin identificar" in [a for a in avisos if a.codigo == "AVI-02"][0].mensaje
+@pytest.mark.parametrize(
+    "valores, aviso",
+    [
+        (["33.3333"] * 3, False),  # tres tercios: 99,9999, accionariado completo (D15)
+        (["50", "49.9999"], False),  # 2 aristas: desde 99,9999
+        (["33.3333", "33.3333", "33.3332"], True),  # 99,9998: fuera de la tolerancia
+        (["16.6666"] * 6, True),  # 99,9996: con 6 aristas, desde 99,9997
+        (["16.6666"] * 3 + ["16.6667"] * 3, False),  # 99,9999
+    ],
+)
+def test_avi02_tolerancia_de_redondeo_por_debajo(valores, aviso):
+    avisos = cargar(_socios(valores, "capital")).avisos
+    de_capital = [a for a in avisos if a.codigo == "AVI-02" and "«capital»" in a.mensaje]
+    assert bool(de_capital) == aviso
 
 
 def test_avi02_informativo_si_la_entidad_cotiza():
@@ -394,6 +432,15 @@ def test_avi02_informativo_si_la_entidad_cotiza():
     datos["participaciones"][0].update(capital=30, votos=30)
     avisos = [a for a in cargar_dict(datos).avisos if a.codigo == "AVI-02"]
     assert len(avisos) == 2 and all(a.informativo for a in avisos)
+
+
+def test_avi02_normal_si_cotiza_sin_requisitos_de_informacion():
+    """D26: sin la segunda condición de D13, la cotizada es como cualquier otra."""
+    datos = base()
+    datos["nodos"][0]["cotizacion"] = {"mercado": "X", "requisitos_informacion_ue_o_equivalentes": False}
+    datos["participaciones"][0].update(capital=30, votos=30)
+    avisos = [a for a in cargar_dict(datos).avisos if a.codigo == "AVI-02"]
+    assert len(avisos) == 2 and not any(a.informativo for a in avisos)
 
 
 def test_avi03_entidad_sin_titulares_en_la_cadena():
@@ -405,14 +452,15 @@ def test_avi03_entidad_sin_titulares_en_la_cadena():
     assert [a.ids for a in resultado.avisos if a.codigo == "AVI-03"] == [("F",)]
 
 
-def test_avi03_no_si_la_entidad_cotiza():
+@pytest.mark.parametrize("requisitos, aviso", [(True, False), (False, True)])
+def test_avi03_segun_cotice_con_requisitos_de_informacion(requisitos, aviso):
+    """D26: AVI-03 solo se omite si la entidad cumple las dos condiciones de D13."""
+    cotizacion = {"mercado": "XMAD", "requisitos_informacion_ue_o_equivalentes": requisitos}
     datos = base()
-    datos["nodos"].append(
-        entidad("F", cotizacion={"mercado": "XMAD", "requisitos_informacion_ue_o_equivalentes": True})
-    )
+    datos["nodos"].append(entidad("F", cotizacion=cotizacion))
     datos["participaciones"][0].update(capital=80, votos=80)
     datos["participaciones"].append(arista("a2", "F", "S", 20, 20))
-    assert "AVI-03" not in codigos(cargar_dict(datos).avisos)
+    assert ("AVI-03" in codigos(cargar_dict(datos).avisos)) == aviso
 
 
 def test_avi05_entidad_que_no_es_sociedad():
