@@ -15,6 +15,13 @@ AMLR = "amlr"
 MAGNITUDES = ("capital", "votos")
 CLASES = ("sociedad", "fundacion", "asociacion", "otra")
 TIPOS_CARGO = ("miembro_organo_administracion", "directivo")
+RESOLUCION = Decimal("0.0001")  # D4: 4 decimales
+
+
+def tolerancia_redondeo(n: int) -> Decimal:
+    """D15: cuánto pueden apartar su suma de 100 n porcentajes redondeados a
+    4 decimales, en cualquiera de los dos sentidos."""
+    return (n // 2) * RESOLUCION
 
 
 @dataclass(frozen=True)

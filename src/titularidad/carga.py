@@ -16,6 +16,7 @@ from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
+from titularidad.grafo import componentes_fuertes
 from titularidad.modelo import (
     AMLR,
     CLASES,
@@ -33,10 +34,10 @@ from titularidad.modelo import (
     Participacion,
     PersonaFisica,
     ResultadoCarga,
+    tolerancia_redondeo,
 )
 
 CIEN = Decimal(100)
-RESOLUCION = Decimal("0.0001")  # D4: 4 decimales
 MAX_DECIMALES = 4
 
 _FECHA = re.compile(r"\d{4}-\d{2}-\d{2}")
@@ -521,7 +522,7 @@ class _Carga:
                     valores[(arista.participada, magnitud)].append(valor)
         for (entidad, magnitud), lista in valores.items():
             suma = sum(lista, Decimal(0))
-            limite = CIEN + _tolerancia(len(lista))
+            limite = CIEN + tolerancia_redondeo(len(lista))
             if suma > limite:
                 codigo = "ERR-09" if magnitud == "capital" else "ERR-10"
                 self.error(
@@ -574,7 +575,7 @@ class _Carga:
                     if origen == arista.participada:
                         reflexivos.add(origen)
         orden = {id_nodo: i for i, id_nodo in enumerate(self.nodos)}
-        for componente in _componentes_fuertes(list(self.nodos), sucesores):
+        for componente in componentes_fuertes(list(self.nodos), sucesores):
             if len(componente) > 1 or componente[0] in reflexivos:
                 ids = tuple(sorted(componente, key=orden.get))
                 self.aviso("AVI-01", f"Hay un ciclo entre: {', '.join(ids)}", *ids)
@@ -629,7 +630,7 @@ class _Carga:
                 suma = sumas[(entidad.id, magnitud)]
                 # AMBIGÜEDAD: las aristas con la magnitud a null no suman: su
                 # parte cuenta como sin identificar, y ya tienen AVI-04.
-                if suma < CIEN - _tolerancia(con_valor[(entidad.id, magnitud)]):  # D15
+                if suma < CIEN - tolerancia_redondeo(con_valor[(entidad.id, magnitud)]):  # D15
                     self.aviso(
                         "AVI-02",
                         f"«{entidad.id}»: la suma de «{magnitud}» es {suma:f}; "
@@ -686,12 +687,6 @@ class _Carga:
                 )
 
 
-def _tolerancia(n):
-    """D15: lo que n porcentajes redondeados pueden apartar su suma de 100, en
-    cualquiera de los dos sentidos."""
-    return (n // 2) * RESOLUCION
-
-
 def _cadena(objetivo, aristas, nodos):
     """Nodos con un camino de aristas hasta el objetivo, este incluido."""
     # AMBIGÜEDAD: el §6.2 define la conexión con «un camino de aristas», pero
@@ -713,41 +708,3 @@ def _cadena(objetivo, aristas, nodos):
                 cadena.add(titular)
                 pendientes.append(titular)
     return cadena
-
-
-def _componentes_fuertes(nodos, sucesores):
-    """Componentes fuertemente conexas (Tarjan, sin recursión)."""
-    indice, bajo, en_pila, pila, componentes = {}, {}, set(), [], []
-    for raiz in nodos:
-        if raiz in indice:
-            continue
-        indice[raiz] = bajo[raiz] = len(indice)
-        pila.append(raiz)
-        en_pila.add(raiz)
-        trabajo = [(raiz, iter(sucesores[raiz]))]
-        while trabajo:
-            nodo, hijos = trabajo[-1]
-            for hijo in hijos:
-                if hijo not in indice:
-                    indice[hijo] = bajo[hijo] = len(indice)
-                    pila.append(hijo)
-                    en_pila.add(hijo)
-                    trabajo.append((hijo, iter(sucesores[hijo])))
-                    break
-                if hijo in en_pila:
-                    bajo[nodo] = min(bajo[nodo], indice[hijo])
-            else:
-                trabajo.pop()
-                if trabajo:
-                    padre = trabajo[-1][0]
-                    bajo[padre] = min(bajo[padre], bajo[nodo])
-                if bajo[nodo] == indice[nodo]:
-                    componente = []
-                    while True:
-                        miembro = pila.pop()
-                        en_pila.discard(miembro)
-                        componente.append(miembro)
-                        if miembro == nodo:
-                            break
-                    componentes.append(componente)
-    return componentes
