@@ -227,8 +227,8 @@ def test_c32_sigue_la_especificacion():
     assert set(re.findall(codigo, grupo2)) == SIN_COMPROBAR
 
 # X tiene el 30 % de S; el 60 % de X no está identificado y Q1 a Q4 tienen un 10 % cada uno.
-# Lo que llega a S sin identificar es un 18 % (sin H1) y nadie llega con el hueco (3 + 18, sin
-# POS-HUECO), pero quien tenga ese 60 % controla X: H3 (C33).
+# Lo que llega a S sin identificar es un 18 % (sin H1), pero quien tenga ese 60 % controla X (H3),
+# y Q1 a Q4 lo controlarían con el hueco (POS-HUECO y H2, C34).
 HUECO_QUE_CONTROLA = [(f"q{i}", f"Q{i}", "X", 10, 10) for i in range(1, 5)] + [("a1", "X", "S", 30, 30)]
 
 
@@ -242,7 +242,7 @@ def test_inestable_incompleto_o_las_dos_cosas(modelo):
     assert inestable_por(modelo.espana) == () and incompleto_por(modelo.espana) == ("H2", "POS-HUECO")
     hueco = informe_de(HUECO_QUE_CONTROLA + [("a2", "R", "S", 70, 70)])
     for r in (hueco.espana, hueco.amlr):
-        assert (inestable_por(r), incompleto_por(r)) == ((), ("H3",))
+        assert (inestable_por(r), incompleto_por(r)) == ((), ("H2", "H3", "POS-HUECO"))
     # Solo inestable: el 25 % justo del Ej. 1 en el AMLR, sin huecos.
     ej1 = informe_de([(f"a{i}", f"P{i}", "S", 25, 25) for i in range(1, 5)])
     assert (inestable_por(ej1.amlr), incompleto_por(ej1.amlr)) == (("UMBRAL-EXACTO",), ())

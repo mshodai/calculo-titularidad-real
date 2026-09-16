@@ -14,13 +14,15 @@ titularidad ni decide quién es titular real. Para capital y votos por separado
 - `base_directiva`: método C, votos agregados sobre la base de la Dir. 22.5
   (§3.4).
 - `propagar`: los tres métodos sobre la entidad objetivo, con sus avisos.
+- `atribuir_huecos`: el grafo con lo no identificado atribuido a un titular,
+  para las comprobaciones de hueco (C34).
 
 Todo se calcula con fracciones exactas (C6). Los puntos que la especificación
 no decide están marcados con «AMBIGÜEDAD:».
 """
 
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from fractions import Fraction
 
 from titularidad.grafo import componentes_fuertes
@@ -29,6 +31,7 @@ from titularidad.modelo import MAGNITUDES, EntidadJuridica, Entrada, Incidencia,
 CIEN = Fraction(100)
 NO_IDENTIFICADO = "NO_IDENTIFICADO"
 OPACA = "OPACA"
+HUECOS = (NO_IDENTIFICADO, OPACA)  # los titulares virtuales que son lo no identificado (§9)
 
 
 class FueraDeAlcance(ValueError):
@@ -100,6 +103,31 @@ class Grafo:
 
     def virtuales(self):
         return {z for m in MAGNITUDES for z in self.titulares(m) if isinstance(z, Virtual)}
+
+    def huecos(self):
+        """Los titulares virtuales `NO_IDENTIFICADO` y `OPACA`, ordenados. `COTIZADA` no es un hueco (C5)."""
+        return sorted((v for v in self.virtuales() if v.clase in HUECOS), key=str)
+
+
+def atribuir_huecos(grafo: Grafo, destinatario) -> Grafo:
+    """El grafo con todo lo que tienen los huecos atribuido a `destinatario` (C34).
+
+    Cada arista de un `NO_IDENTIFICADO` o `OPACA` pasa a `destinatario` y se
+    suma a la que ya tenga en la misma entidad (C3). Es la hipótesis «lo no
+    identificado es suyo», con todos los huecos a la vez: si con parte de ellos
+    cumpliera una prueba, con todos también, porque las participaciones de un
+    titular sin aristas de entrada solo crecen al añadirle aristas, y el
+    control y el dominio de las entidades no dependen de ellas.
+    """
+    h = {}
+    for m in MAGNITUDES:
+        aristas = defaultdict(Fraction)
+        for (titular, participada), v in grafo.h[m].items():
+            if isinstance(titular, Virtual) and titular.clase in HUECOS:
+                titular = destinatario
+            aristas[(titular, participada)] += v
+        h[m] = dict(aristas)
+    return replace(grafo, h=h)
 
 
 # --- Preparación (§2) ----------------------------------------------------------

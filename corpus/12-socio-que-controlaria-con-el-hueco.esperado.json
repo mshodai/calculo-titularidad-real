@@ -1,6 +1,6 @@
 {
-  "caso": "08-hueco-que-controla",
-  "demuestra": "H3 (C33): el 60 % de X no está identificado y X tiene el 30 % de S. A S llega un 18 % sin identificar, que no da H1, y ninguno de los socios conocidos de X llega al umbral multiplicando con el hueco (3 + 18). Pero quien tenga ese 60 % controla X y sería titular (A3; E2): H3. Q1 a Q4 también lo serían si el hueco fuera suyo (10 + 60): POS-HUECO (C34). El resultado es estable pero no completo.",
+  "caso": "12-socio-que-controlaria-con-el-hueco",
+  "demuestra": "POS-HUECO por control (C34): X tiene el 30 % de S y el 30 % de X no está identificado. El hueco solo no controla X (sin H3), a S llega un 9 % sin identificar (sin H1) y Q1, con el 30 % de X, llega al 9 + 9 = 18 % multiplicando. Pero si el hueco fuera de Q1, tendría el 60 % de X, la controlaría y sería titular (A3; E2). Q2, Q3 y Q4 se quedan en el 45 % o menos. Sin C34 el resultado saldría completo.",
   "resultado": {
     "codigo_salida": 1,
     "avisos_entrada": [
@@ -27,20 +27,10 @@
       "posibles": {
         "Q1": [
           "POS-HUECO"
-        ],
-        "Q2": [
-          "POS-HUECO"
-        ],
-        "Q3": [
-          "POS-HUECO"
-        ],
-        "Q4": [
-          "POS-HUECO"
         ]
       },
       "avisos": [
-        "H2",
-        "H3"
+        "H2"
       ],
       "estable": true,
       "completo": false,
@@ -67,20 +57,10 @@
       "posibles": {
         "Q1": [
           "POS-HUECO"
-        ],
-        "Q2": [
-          "POS-HUECO"
-        ],
-        "Q3": [
-          "POS-HUECO"
-        ],
-        "Q4": [
-          "POS-HUECO"
         ]
       },
       "avisos": [
-        "H2",
-        "H3"
+        "H2"
       ],
       "estable": true,
       "completo": false,

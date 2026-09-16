@@ -136,6 +136,9 @@ class Caso:
 
 # X tiene el 30 % de S. El 60 % de X no está identificado y Q1 a Q4 tienen un 10 % cada uno.
 HUECO_QUE_CONTROLA = [(f"q{i}", f"Q{i}", "X", 10, 10) for i in range(1, 5)] + [("a1", "X", "S", 30, 30)]
+# X tiene el 30 % de S. El 30 % de X no está identificado; Q1 tiene el 30 %, Q2 y Q3 el 15 % y Q4 el 10 %.
+SOCIO_QUE_CONTROLARIA = [("q1", "Q1", "X", 30, 30), ("q2", "Q2", "X", 15, 15), ("q3", "Q3", "X", 15, 15),
+                         ("q4", "Q4", "X", 10, 10), ("a1", "X", "S", 30, 30)]
 
 CASOS = [
     Caso(
@@ -252,13 +255,18 @@ CASOS = [
     Caso(
         "08-hueco-que-controla",
         "H3 (C33): el 60 % de X no está identificado y X tiene el 30 % de S. A S llega un 18 % sin "
-        "identificar, que no da H1, y ninguno de los socios conocidos de X llega con el hueco (3 + 18). Pero "
-        "quien tenga ese 60 % controla X y sería titular (A3; E2). El resultado es estable pero no completo.",
+        "identificar, que no da H1, y ninguno de los socios conocidos de X llega al umbral multiplicando con el "
+        "hueco (3 + 18). Pero quien tenga ese 60 % controla X y sería titular (A3; E2): H3. Q1 a Q4 también lo "
+        "serían si el hueco fuera suyo (10 + 60): POS-HUECO (C34). El resultado es estable pero no completo.",
         estructura(HUECO_QUE_CONTROLA + [("a2", "R", "S", 70, 70)]),
         {
             "codigo_salida": 1, "avisos_entrada": ["AVI-02", "AVI-02"],
-            "espana": regimen(titulares={"R": es(["E1", "E2"], m(70), 70, True)}, avisos=["H3"], completo=False),
-            "amlr": regimen(titulares={"R": am(["A1", "A2"], m(70), True)}, avisos=["H3"], completo=False),
+            "espana": regimen(titulares={"R": es(["E1", "E2"], m(70), 70, True)},
+                              posibles={f"Q{i}": ["POS-HUECO"] for i in range(1, 5)}, avisos=["H2", "H3"],
+                              completo=False),
+            "amlr": regimen(titulares={"R": am(["A1", "A2"], m(70), True)},
+                            posibles={f"Q{i}": ["POS-HUECO"] for i in range(1, 5)}, avisos=["H2", "H3"],
+                            completo=False),
             "difieren": [],
         },
     ),
@@ -302,6 +310,22 @@ CASOS = [
             "codigo_salida": 1, "avisos_entrada": ["AVI-02", "AVI-02"],
             "espana": regimen(titulares={"R": es(["E1", "E2"], m(60), 60, True)}, avisos=["H1", "H3"], completo=False),
             "amlr": regimen(titulares={"R": am(["A1", "A2"], m(60), True)}, avisos=["H1"], completo=False),
+            "difieren": [],
+        },
+    ),
+    Caso(
+        "12-socio-que-controlaria-con-el-hueco",
+        "POS-HUECO por control (C34): X tiene el 30 % de S y el 30 % de X no está identificado. El hueco solo no "
+        "controla X (sin H3), a S llega un 9 % sin identificar (sin H1) y Q1, con el 30 % de X, llega al 9 + 9 = "
+        "18 % multiplicando. Pero si el hueco fuera de Q1, tendría el 60 % de X, la controlaría y sería titular "
+        "(A3; E2). Q2, Q3 y Q4 se quedan en el 45 % o menos. Sin C34 el resultado saldría completo.",
+        estructura(SOCIO_QUE_CONTROLARIA + [("a2", "R", "S", 70, 70)]),
+        {
+            "codigo_salida": 1, "avisos_entrada": ["AVI-02", "AVI-02"],
+            "espana": regimen(titulares={"R": es(["E1", "E2"], m(70), 70, True)}, posibles={"Q1": ["POS-HUECO"]},
+                              avisos=["H2"], completo=False),
+            "amlr": regimen(titulares={"R": am(["A1", "A2"], m(70), True)}, posibles={"Q1": ["POS-HUECO"]},
+                            avisos=["H2"], completo=False),
             "difieren": [],
         },
     ),

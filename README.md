@@ -8,7 +8,7 @@ Esta herramienta calcula los dos regímenes sobre la misma estructura, los compa
 
 ## Ejecútalo en 60 segundos
 
-El repositorio incluye un corpus de once estructuras sintéticas en `corpus/`, cada una con su resultado esperado. Esto es lo que produce la herramienta con la del ejemplo de arriba:
+El repositorio incluye un corpus de doce estructuras sintéticas en `corpus/`, cada una con su resultado esperado. Esto es lo que produce la herramienta con la del ejemplo de arriba:
 
 ```
 $ calcular-titularidad corpus/03-art54b-participacion-arriba.json

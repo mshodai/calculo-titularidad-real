@@ -156,11 +156,12 @@ def test_punto_de_entrada_declarado():
 
 
 def test_incompleto_devuelve_1(tmp_path, capsys):
-    """Los dos dan R, estables, pero lo no identificado controlaría X (H3): no es completo."""
+    """Los dos dan R, estables, pero lo no identificado controlaría X (H3), también con Q1 a Q4 (POS-HUECO): no es completo."""
     datos = estructura([(f"q{i}", f"Q{i}", "X", 10) for i in range(1, 5)] + [("a1", "X", "S", 30), ("a2", "R", "S", 70)])
     assert main(["--json", escribir(tmp_path, datos)]) == 1
     emitido = json.loads(capsys.readouterr().out)
-    assert [f["difiere"] for f in emitido["comparacion"]] == [False]
+    assert [(f["persona"], f["difiere"]) for f in emitido["comparacion"]] == [
+        ("Q1", False), ("Q2", False), ("Q3", False), ("Q4", False), ("R", False)]
     for regimen in ("espana", "amlr"):
         assert emitido[regimen]["estado"] == "determinado"
-        assert (emitido[regimen]["estable"], emitido[regimen]["incompleto_por"]) == (True, ["H3"])
+        assert (emitido[regimen]["estable"], emitido[regimen]["incompleto_por"]) == (True, ["H2", "H3", "POS-HUECO"])

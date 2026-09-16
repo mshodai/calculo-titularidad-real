@@ -34,6 +34,7 @@ from titularidad.propagacion import (
     OPACA,
     Atribucion,
     Grafo,
+    atribuir_huecos,
     enumerar_cadenas,
     marcas_por_cuenta_de,
     preparar,
@@ -158,18 +159,12 @@ def calcular_amlr(entrada: Entrada) -> ResultadoAmlr:
     avisos += _umbral_exacto(grafo, own, control, titulares)
 
     # Huecos (§9): H1, POS-HUECO y H2. Solo cuentan NO_IDENTIFICADO y OPACA.
-    huecos = {m: sum((valor(own, m, v, s) for v in grafo.virtuales() if v.clase in (NO_IDENTIFICADO, OPACA)),
-                     Fraction(0)) for m in MAGNITUDES}
+    huecos = {m: sum((valor(own, m, v, s) for v in grafo.huecos()), Fraction(0)) for m in MAGNITUDES}
     if any(u >= UMBRAL for u in huecos.values()):
         avisos.append(Incidencia("H1", "Lo que llega a S desde titulares sin identificar alcanza el 25 %: "
                                  f"{por_magnitud(huecos)}. Puede haber un titular real sin identificar"))
-    for p in no_titulares:
-        # Solo en las magnitudes en que P participa en S (§9): si no, cualquiera
-        # podría estar detrás del hueco, y eso ya lo dice H1.
-        con_hueco = {m: valor(own, m, p, s) + huecos[m] for m in MAGNITUDES if valor(own, m, p, s) > 0}
-        if any(v >= UMBRAL for v in con_hueco.values()):
-            posibles.append(Incidencia("POS-HUECO", f"«{p}» alcanzaría el 25 % si participara en lo que no está "
-                                       f"identificado: {por_magnitud(con_hueco)} (estructura incompleta)", (p,)))
+    if grafo.huecos():
+        posibles += _pos_hueco(grafo, own, huecos, no_titulares)
     if any(i.codigo == "POS-HUECO" for i in posibles):
         avisos.append(Incidencia("H2", "Hay posibles titulares reales en los huecos de la estructura (POS-HUECO)"))
     # H3 (C33): lo no identificado cumpliría una prueba de control, aunque lo que llega a S no alcance el umbral.
@@ -225,6 +220,41 @@ def _umbral_exacto(grafo, own, control, titulares):
         return []
     return [Incidencia("UMBRAL-EXACTO", "Leyendo justo por encima o por debajo los valores que coinciden con un "
                        f"umbral, cambia quién es titular real: {', '.join(cambian)} (C28, modelo D23)", cambian)]
+
+
+def _pruebas_con_huecos(grafo, destinatario):
+    """A1 a A4 para `destinatario` si fuera suyo todo lo que no está identificado (C34)."""
+    con = atribuir_huecos(grafo, destinatario)
+    own = participaciones(con, "B")
+    return pruebas(con, own, control_amlr(con, own), destinatario)
+
+
+def _pos_hueco(grafo, own, huecos, no_titulares):
+    """POS-HUECO (C33, C34): P cumpliría alguna prueba si participara en lo que no está identificado.
+
+    Todas las pruebas, no solo A1: con el hueco, P puede controlar una entidad
+    de la cadena sin que lo que llega a S alcance el 25 %. Solo se mira a
+    quien participa en S (§9): que cualquiera pudiera estar detrás del hueco ya
+    lo dicen H1 y H3. A1 cuenta solo en las magnitudes en que P participa en S.
+    """
+    s = grafo.objetivo
+    posibles = []
+    for p in no_titulares:
+        participa = [m for m in MAGNITUDES if valor(own, m, p, s) > 0]
+        if not participa:
+            continue
+        con = _pruebas_con_huecos(grafo, p)
+        cumplidas = sorted(con.cumplidas & {"A2", "A3", "A4"} | ({"A1"} if con.a1.keys() & set(participa) else set()))
+        if not cumplidas:
+            continue
+        mensaje = f"«{p}» cumpliría {', '.join(cumplidas)} si participara en lo que no está identificado"
+        if "A1" in cumplidas:
+            con_hueco = {m: valor(own, m, p, s) + huecos[m] for m in participa}
+            mensaje += f": alcanzaría el 25 % con {por_magnitud(con_hueco)}"
+        if cumplidas != ["A1"]:
+            mensaje += ". Con lo no identificado controlaría una entidad de la cadena"
+        posibles.append(Incidencia("POS-HUECO", mensaje + " (estructura incompleta)", (p,)))
+    return posibles
 
 
 def _pos_t(grafo, no_titulares, avisos):

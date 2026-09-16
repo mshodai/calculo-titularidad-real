@@ -25,9 +25,16 @@ V = verificacion()
 ADMIN = [{"persona": "ADM", "cargo": "miembro_organo_administracion", "ejecutivo": False}]
 
 # X tiene el 30 % de S; el 60 % de X no está identificado y Q1 a Q4 tienen un 10 % cada uno.
-# Lo que llega a S sin identificar es un 18 % (sin H1) y nadie llega con el hueco (3 + 18, sin
-# POS-HUECO), pero quien tenga ese 60 % controla X: H3 (C33).
+# Lo que llega a S sin identificar es un 18 % (sin H1) y nadie llega multiplicando con el hueco
+# (3 + 18), pero quien tenga ese 60 % controla X: H3 (C33). Q1 a Q4 también lo controlarían con
+# el hueco (10 + 60): POS-HUECO (C34).
 HUECO_QUE_CONTROLA = [(f"q{i}", f"Q{i}", "X", 10, 10) for i in range(1, 5)] + [("a1", "X", "S", 30, 30)]
+
+# X tiene el 30 % de S; el 30 % de X no está identificado, Q1 tiene el 30 %, Q2 y Q3 el 15 % y Q4
+# el 10 %. El hueco solo no controla X (sin H3) y nadie llega multiplicando (9 + 9), pero Q1 con el
+# hueco tendría el 60 % de X: POS-HUECO por control (C34). Los demás se quedan en el 45 % o menos.
+SOCIO_QUE_CONTROLARIA = ([("q1", "Q1", "X", 30, 30), ("q2", "Q2", "X", 15, 15), ("q3", "Q3", "X", 15, 15),
+                          ("q4", "Q4", "X", 10, 10), ("a1", "X", "S", 30, 30)])
 
 
 def calcular(aristas, **opciones):
@@ -320,9 +327,21 @@ def test_mezcla_no_converge():
 def test_h3_lo_no_identificado_dominaria_una_intermedia():
     r = calcular(HUECO_QUE_CONTROLA + [("a2", "R", "S", 70, 70)])
     assert r.estado == DETERMINADO and set(titulares(r)) == {"R"}
-    assert not de(r, "H1") and not de(r, "POS-HUECO")
+    assert not de(r, "H1")
     (h3,) = de(r, "H3")
     assert h3.ids == ("NO_IDENTIFICADO(X)",) and "E2" in h3.mensaje and "30,00 %" in h3.mensaje
+    assert [i.ids for i in de(r, "POS-HUECO")] == [("Q1",), ("Q2",), ("Q3",), ("Q4",)]
+
+
+def test_pos_hueco_por_control():
+    """C34: Q1 dominaría X con el hueco (30 + 30 de los votos), aunque ni el hueco solo (H3) ni E1 lo digan."""
+    r = calcular(SOCIO_QUE_CONTROLARIA + [("a2", "R", "S", 70, 70)])
+    assert r.estado == DETERMINADO and set(titulares(r)) == {"R"}
+    assert not de(r, "H1") and not de(r, "H3")
+    (hueco,) = de(r, "POS-HUECO")
+    assert hueco.ids == ("Q1",)
+    assert "cumpliría E2 si participara" in hueco.mensaje and "votos agregados serían el 30,00 %" in hueco.mensaje
+    assert codigos(r.avisos) == ["H2"]
 
 
 def test_h3_deja_el_supletorio_no_determinable():

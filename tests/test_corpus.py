@@ -32,7 +32,7 @@ ESPERADOS = sorted(CORPUS.glob("*.esperado.json"))
 
 def test_estan_todos_los_casos():
     assert [p.name.removesuffix(".esperado.json") for p in ESPERADOS] == [c.nombre for c in G.CASOS]
-    assert len(ESPERADOS) == 11
+    assert len(ESPERADOS) == 12
 
 
 @pytest.mark.parametrize("esperado", ESPERADOS, ids=lambda p: p.name.removesuffix(".esperado.json"))

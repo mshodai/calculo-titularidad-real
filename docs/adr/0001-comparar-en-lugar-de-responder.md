@@ -31,7 +31,7 @@ Hay tres razones.
 
 **Catorce casos que la norma no resuelve.** Cualquier respuesta única resuelve cada uno de ellos en un sentido. Algunos cambian quién es titular real en estructuras corrientes. En el ejemplo del modelo de datos, que una de las personas sea titular en el AMLR depende de cómo se lea el «salvo que» del art. 52.1. A esos catorce casos se suman cuatro que no vienen de la norma, sino del formato del dato (F1 a F4). El más visible: con porcentajes a 4 decimales, un 50 % registrado no distingue la mitad justa de la mitad más una acción en una sociedad de más de un millón de acciones.
 
-**Más de treinta decisiones propias.** La especificación del cálculo declara 33 (C1 a C33) y el modelo de datos otras 27 (D1 a D27). Cada una tiene su alternativa descartada y su motivo, y ninguna es la ley. Una salida del tipo «X es titular real» las incorpora todas sin nombrar ninguna.
+**Más de treinta decisiones propias.** La especificación del cálculo declara 34 (C1 a C34) y el modelo de datos otras 27 (D1 a D27). Cada una tiene su alternativa descartada y su motivo, y ninguna es la ley. Una salida del tipo «X es titular real» las incorpora todas sin nombrar ninguna.
 
 **Una salida que afirma más de lo que sabe sería indefendible ante quien la discuta.** Un supervisor, un auditor o la otra parte de una operación pueden leer la norma de otra forma en cualquiera de esos puntos. Si la salida declara la lectura aplicada, la discusión es sobre la lectura, que es donde tiene que estar. Si no la declara, la discusión es sobre por qué la herramienta afirmó algo que la norma no dice, y esa discusión la herramienta la pierde.
 
@@ -47,9 +47,9 @@ Comparar, además de calcular, es lo que tiene sentido durante la transición. A
 
 **Dos estados además del resultado: estabilidad y completitud.**
 - **Inestable (C32):** otra lectura que la herramienta comprueba lo cambiaría. Por ejemplo, un valor justo en el umbral o una cadena que depende de cómo se lea el art. 54.
-- **Incompleto (C33):** lo podrían cambiar datos que faltan, porque parte del capital no está identificado o lo no identificado controlaría una sociedad intermedia.
+- **Incompleto (C33):** lo podrían cambiar datos que faltan, porque parte del capital no está identificado o lo no identificado, solo o sumado a lo que tiene una persona conocida, controlaría una sociedad intermedia.
 
-Un resultado puede ser las dos cosas. La línea de órdenes devuelve 0 solo si los dos regímenes quedan determinados, estables, completos y con los mismos titulares. En el [corpus](../../corpus/README.md) pasa en uno de once casos, y es lo esperado: 0 no significa que la herramienta esté segura, sino que nada de lo que comprueba cambiaría el resultado.
+Un resultado puede ser las dos cosas. La línea de órdenes devuelve 0 solo si los dos regímenes quedan determinados, estables, completos y con los mismos titulares. En el [corpus](../../corpus/README.md) pasa en uno de doce casos, y es lo esperado: 0 no significa que la herramienta esté segura, sino que nada de lo que comprueba cambiaría el resultado.
 
 **Un resultado «determinado» no es una determinación jurídica.** Significa que, con los datos de la entrada y las lecturas declaradas, las pruebas dan esos titulares. Los supuestos supletorios van más lejos en esa dirección:
 - el español es siempre «condicional», porque la Ley exige que nadie ejerza el control «por otros medios» y la presunción admite «prueba en contrario» (RD 304/2014, art. 8.b);

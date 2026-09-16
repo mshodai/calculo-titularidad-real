@@ -82,7 +82,7 @@ def incompleto_por(resultado) -> tuple[str, ...]:
 
 # Avisos que no corresponden a un caso de la norma: de qué vienen.
 ORIGEN_DE_OTROS_AVISOS = {
-    "POS-HUECO": "estructura incompleta: faltan titulares en la entrada (C4)",
+    "POS-HUECO": "estructura incompleta: faltan titulares en la entrada (C4, C34)",
     "H1": "estructura incompleta: faltan titulares en la entrada (C4)",
     "H2": "estructura incompleta: faltan titulares en la entrada (C4)",
     "H3": "estructura incompleta: lo que no está identificado controlaría una entidad (C4, C33)",

@@ -30,6 +30,7 @@ from titularidad.propagacion import (
     NO_IDENTIFICADO,
     OPACA,
     Atribucion,
+    atribuir_huecos,
     cadenas_simples,
     enumerar_cadenas,
     marcas_por_cuenta_de,
@@ -110,18 +111,12 @@ def calcular_espana(entrada: Entrada) -> ResultadoEspana:
     avisos += _umbral_exacto(grafo, base, cotizadas, ev)
 
     # Huecos (§9): H1, POS-HUECO y H2. Solo cuentan NO_IDENTIFICADO y OPACA.
-    huecos = {m: sum((ev.en_s(m, v) for v in grafo.virtuales() if v.clase in (NO_IDENTIFICADO, OPACA)), Fraction(0))
-              for m in MAGNITUDES}
+    huecos = {m: sum((ev.en_s(m, v) for v in grafo.huecos()), Fraction(0)) for m in MAGNITUDES}
     if any(u > UMBRAL for u in huecos.values()):
         avisos.append(Incidencia("H1", "Lo que llega a S desde titulares sin identificar pasa del 25 %: "
                                  + _por_magnitud(huecos) + ". Puede haber un titular real sin identificar"))
-    for p in ev.no_titulares():
-        # Solo en las magnitudes en que P participa en S (§9): si no, cualquiera
-        # podría estar detrás del hueco, y eso ya lo dice H1.
-        con_hueco = {m: ev.en_s(m, p) + huecos[m] for m in MAGNITUDES if ev.en_s(m, p) > 0}
-        if any(v > UMBRAL for v in con_hueco.values()):
-            posibles.append(Incidencia("POS-HUECO", f"«{p}» pasaría del 25 % si participara en lo que no está "
-                                       f"identificado: {_por_magnitud(con_hueco)} (estructura incompleta)", (p,)))
+    if grafo.huecos():
+        posibles += _pos_hueco(grafo, ev, huecos)
     if any(i.codigo == "POS-HUECO" for i in posibles):
         avisos.append(Incidencia("H2", "Hay posibles titulares reales en los huecos de la estructura (POS-HUECO)"))
     # H3 (C33): lo no identificado cumpliría E2, aunque lo que llega a S no alcance el umbral.
@@ -292,6 +287,50 @@ def _umbral_exacto(grafo, base, cotizadas, ev):
 
 
 # --- Posibles titulares reales -------------------------------------------------------
+
+
+def _e2_con_huecos(grafo, destinatario):
+    """va · 100 / base de `destinatario` en S si fuera suyo todo lo que no está identificado (C34).
+
+    None si no se puede calcular: base(S) = 0 o el dominio no se estabiliza.
+    """
+    con = atribuir_huecos(grafo, destinatario)
+    dominio, _ = dominio_espana(con)
+    if not dominio.estable or dominio.base(con.objetivo) == 0:
+        # AMBIGÜEDAD: C34 no dice qué pasa si, con lo no identificado atribuido,
+        # el dominio no se estabiliza. No se señala: sin dominio no hay E2 con
+        # el que comparar, y la inestabilidad del cálculo real ya tiene aviso.
+        return None
+    return dominio.proporcion(destinatario, con.objetivo)
+
+
+def _pos_hueco(grafo, ev, huecos):
+    """POS-HUECO (C33, C34): P cumpliría E1 o E2 si participara en lo que no está identificado.
+
+    E2 también, no solo E1: con el hueco, P puede dominar una sociedad de la
+    cadena sin que lo que llega a S pase del 25 %. Solo se mira a quien
+    participa en S (§9): que cualquiera pudiera estar detrás del hueco ya lo
+    dicen H1 y H3. E1 cuenta solo en las magnitudes en que P participa en S.
+    """
+    posibles = []
+    for p in ev.no_titulares():
+        participa = [m for m in MAGNITUDES if ev.en_s(m, p) > 0]
+        if not participa:
+            continue
+        con_hueco = {m: ev.en_s(m, p) + huecos[m] for m in participa}
+        cumplidas, detalle = [], []
+        if any(v > UMBRAL for v in con_hueco.values()):
+            cumplidas.append("E1")
+            detalle.append(f"pasaría del 25 % con {_por_magnitud(con_hueco)}")
+        if ev.dominio.estable:
+            agregado = _e2_con_huecos(grafo, p)
+            if agregado is not None and agregado > UMBRAL:
+                cumplidas.append("E2")
+                detalle.append(f"sus votos agregados serían el {_texto(agregado)} %")
+        if cumplidas:
+            posibles.append(Incidencia("POS-HUECO", f"«{p}» cumpliría {', '.join(cumplidas)} si participara en lo que "
+                                       f"no está identificado: {'; '.join(detalle)} (estructura incompleta)", (p,)))
+    return posibles
 
 
 def _pos_t(grafo, ev, avisos):

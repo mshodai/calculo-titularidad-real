@@ -574,9 +574,11 @@ python3 -m unittest discover -s verificacion -v
 | POS-AGREGADO | Con el control agregado C⁺, P cumpliría A2, A3 o A4 (§3.3). Solo AMLR | N8 |
 | POS-MEZCLA | El producto mixto alcanza el umbral (§7) | N6 |
 | POS-FORMAL | Con las aristas `por_cuenta_de` atribuidas al titular formal, P cumpliría A1, A2, A3 o A4 en el AMLR, o E1 en España, donde la atribución al titular formal es solo en capital (§2.2) | N9 en el AMLR; N13 en España |
-| POS-HUECO | P participa en S en la magnitud m (own_m(P, S) > 0) y own_m(P, S) + U_m alcanza el umbral, siendo U_m lo que llega a S desde los titulares `NO_IDENTIFICADO` y `OPACA` (C4). Quien no participa en S no se señala: que pudiera estar detrás del hueco vale para cualquiera, y eso ya lo dice H1 | Estructura incompleta |
+| POS-HUECO | P participa en S (own_m(P, S) > 0 en alguna magnitud) y cumpliría alguna prueba del régimen si fuera suyo todo lo que tienen los titulares `NO_IDENTIFICADO` y `OPACA` (C4, C34). Para la prueba de participación (A1, E1) solo cuentan las magnitudes en que P participa en S: es own_m(P, S) + U_m, siendo U_m lo que llega a S desde esos titulares. Las pruebas de control (A2 a A4, E2) se recalculan con las aristas de los huecos atribuidas a P. Quien no participa en S no se señala: que pudiera estar detrás del hueco vale para cualquiera, y eso ya lo dicen H1 y H3 | Estructura incompleta |
 
   La versión anterior de POS-HUECO no pedía own_m(P, S) > 0. En cuanto U_m alcanzaba por sí solo el umbral, marcaba a todas las personas de la entrada, también a administradores sin ninguna participación.
+
+  Hasta C34, POS-HUECO solo miraba la participación (own_m(P, S) + U_m). No señalaba a quien, con el hueco, controlaría una entidad de la cadena: con el 30 % de una intermedia que tiene el 30 % de S y otro 30 % sin identificar, P llega al 9 + 9 = 18 %, pero con el hueco tendría el 60 % de la intermedia (corpus, caso 12).
 
 - **Avisos:**
 
@@ -610,7 +612,7 @@ Un «determinado» que no es estable no se presenta como un resultado cerrado. L
 **[C33 — decisión propia] Resultado completo.** Es un criterio aparte de la estabilidad (C32). Un resultado es inestable si otra lectura lo cambiaría. Es incompleto si lo cambiarían datos que faltan. Puede ser las dos cosas. La salida indica, para cada régimen, si el resultado es completo. No lo es si lleva alguno de estos avisos:
 - **H1:** lo que llega a S sin identificar alcanza por sí solo el umbral, así que puede haber un titular real desconocido;
 - **H3:** lo que no está identificado cumpliría una prueba de control, con el mismo resultado;
-- **H2 y POS-HUECO:** una persona conocida sería titular si participara en lo que no está identificado. Son el mismo caso: H2 solo dice que hay algún POS-HUECO.
+- **H2 y POS-HUECO:** una persona conocida sería titular si participara en lo que no está identificado, por cualquiera de las pruebas del régimen (C34). Son el mismo caso: H2 solo dice que hay algún POS-HUECO.
 
 Lo que llega por cotizadas (COTIZADA) no cuenta: el RD 9.4 dispensa de identificarlo (C5).
 
@@ -793,6 +795,7 @@ Si la exención se aplicara también a la filial intermedia, los socios de X no 
 | C31 | Si S no es una sociedad, el resultado es «fuera de alcance» en los dos regímenes y no se calcula | §2.4 | (a) Tratar S como `OPACA(S)`. (b) Calcular como si fuera una sociedad | (a) Nadie sería titular y el supletorio acabaría en «no determinable», que sugiere que faltan datos cuando lo que falta son las reglas. (b) El RD 8 y el AMLR 52.4 tienen reglas propias para esas entidades, que v0.1 no tiene (modelo, D8) |
 | C32 | Un resultado no es estable si lleva un aviso de lectura alternativa que cambiaría el resultado, o de una comprobación que no se ha podido hacer | §9 | Tratar todo «determinado» como un resultado cerrado | Un resultado que cambiaría con el valor justo al otro lado del umbral, o con otra lectura calculable, no es un resultado cerrado |
 | C33 | Un resultado no es completo si lleva H1, H2, H3 o POS-HUECO. Es un criterio aparte de la estabilidad, y H3 es un aviso nuevo | §9 | (a) Contarlo como inestabilidad. (b) Solo H1 | (a) Faltar datos no es tener otra lectura: la salida debe decir cuál de las dos cosas pasa. (b) H1 solo mira la participación; lo no identificado también puede controlar una entidad intermedia sin que lo que llega a S alcance el umbral |
+| C34 | POS-HUECO aplica todas las pruebas del régimen (A1 a A4, E1 y E2), con todo lo no identificado atribuido a P a la vez | §9 | (a) Solo la participación: own_m(P, S) + U_m. (b) Un aviso aparte para el control. (c) Atribuir cada hueco por separado | (a) Deja fuera a quien controlaría una entidad de la cadena con el hueco, aunque lo que llega a S no alcance el umbral (caso 12). (b) La pregunta es la misma, si P sería titular real con lo que falta, como en POS-FORMAL, que también recalcula todas las pruebas. (c) Con todos a la vez basta: las participaciones y el control de P solo crecen al añadirle aristas, así que si P cumple una prueba con parte de los huecos, también con todos |
 
 ## 12. Casos que la norma no resuelve
 
