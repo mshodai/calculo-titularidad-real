@@ -33,7 +33,7 @@ Los casos N1 a N14 proceden de la norma. Los casos F1 a F4 no: surgen del format
 | N13 | España: a quién se atribuye el capital de una participación por cuenta de otro | §2.2, §6.3 | C2 (al principal) | Marca «por cuenta de» y POS-FORMAL (C29) |
 | N14 | España: cómo se mide la «filial participada mayoritariamente» del RD 9.4 | §2.5, Ej. 8 | C30 (más del 50 % del capital, multiplicando) | EXENCION-SENS (C30) |
 
-Las secciones (§…) y los ejemplos (Ej. …) de la tabla remiten a la [especificación del cálculo](especificacion-calculo.md). El [corpus](../corpus/README.md) tiene un caso sintético para varios de ellos.
+Las secciones (§…) y los ejemplos (Ej. …) de la tabla remiten a la [especificación del cálculo](especificacion-calculo.md). El [corpus](https://github.com/mshodai/calculo-titularidad-real/blob/main/corpus/README.md) tiene un caso sintético para varios de ellos.
 
 ---
 

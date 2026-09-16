@@ -49,7 +49,7 @@ Comparar, además de calcular, es lo que tiene sentido durante la transición. A
 - **Inestable (C32):** otra lectura que la herramienta comprueba lo cambiaría. Por ejemplo, un valor justo en el umbral o una cadena que depende de cómo se lea el art. 54.
 - **Incompleto (C33):** lo podrían cambiar datos que faltan, porque parte del capital no está identificado o lo no identificado, solo o sumado a lo que tiene una persona conocida, controlaría una sociedad intermedia.
 
-Un resultado puede ser las dos cosas. La línea de órdenes devuelve 0 solo si los dos regímenes quedan determinados, estables, completos y con los mismos titulares. En el [corpus](../../corpus/README.md) pasa en uno de doce casos, y es lo esperado: 0 no significa que la herramienta esté segura, sino que nada de lo que comprueba cambiaría el resultado.
+Un resultado puede ser las dos cosas. La línea de órdenes devuelve 0 solo si los dos regímenes quedan determinados, estables, completos y con los mismos titulares. En el [corpus](https://github.com/mshodai/calculo-titularidad-real/blob/main/corpus/README.md) pasa en uno de doce casos, y es lo esperado: 0 no significa que la herramienta esté segura, sino que nada de lo que comprueba cambiaría el resultado.
 
 **Un resultado «determinado» no es una determinación jurídica.** Significa que, con los datos de la entrada y las lecturas declaradas, las pruebas dan esos titulares. Los supuestos supletorios van más lejos en esa dirección:
 - el español es siempre «condicional», porque la Ley exige que nadie ejerza el control «por otros medios» y la presunción admite «prueba en contrario» (RD 304/2014, art. 8.b);

@@ -485,7 +485,7 @@ Si un grupo de entidades se tiene entre sí al 100 %, sin ningún titular de fue
 
 ### 6.5 Verificación de las cifras
 
-Las cifras del §6.3 y las de la tabla del §4.2 del modelo de datos se recalculan con fracciones exactas en [`verificacion/test_cifras_ciclos.py`](../verificacion/test_cifras_ciclos.py). Desde la raíz del repositorio:
+Las cifras del §6.3 y las de la tabla del §4.2 del modelo de datos se recalculan con fracciones exactas en [`verificacion/test_cifras_ciclos.py`](https://github.com/mshodai/calculo-titularidad-real/blob/main/verificacion/test_cifras_ciclos.py). Desde la raíz del repositorio:
 
 ```
 python3 -m unittest discover -s verificacion -v

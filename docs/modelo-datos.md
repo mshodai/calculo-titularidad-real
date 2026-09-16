@@ -154,7 +154,7 @@ Tras la tabla de cada objeto se indica de dónde sale cada campo. Se usará un J
     - La entrada no tiene el número de acciones, así que el cálculo no puede saber si ese valor esconde el otro lado. Por eso repite el cálculo leyendo los valores que coinciden con un umbral como si estuvieran justo por encima, y otra vez como si estuvieran justo por debajo.
     - Si en alguna de las dos repeticiones cambia quién es titular real, la salida da el aviso UMBRAL-EXACTO (especificación, C28).
   - **Lo que no cubre.** Solo el valor que coincide exactamente con el umbral. Un valor que se calcula con varias aristas acumula el error de cada una (en una suma de *n* aristas, hasta *n* × 0,00005). Por eso puede estar en realidad al otro lado del umbral aunque no dé exactamente el umbral. v0.1 no calcula esa banda.
-  - Las cifras de este punto se comprueban en [`verificacion/test_precision_umbrales.py`](../verificacion/test_precision_umbrales.py).
+  - Las cifras de este punto se comprueban en [`verificacion/test_precision_umbrales.py`](https://github.com/mshodai/calculo-titularidad-real/blob/main/verificacion/test_precision_umbrales.py).
 - **[D5 — decisión propia] Las dos claves son obligatorias.** `null` significa «desconocido».
   - No se deduce `votos` a partir de `capital` ni al revés: presumir que coinciden ocultaría, por ejemplo, las participaciones sin voto.
   - Una arista con las dos a `null` es un error. Una con una sola a `null` genera un aviso.
@@ -207,7 +207,7 @@ S tiene tres socios: P (45 %), Q (35 %) y H (20 %). A su vez, S tiene el 60 % de
 | B. Todas las cadenas: serie infinita, cada vuelta multiplica por 0,6 × 0,2 = 0,12 | 51,14 % (45/0,88) | 39,77 % | 9,09 % | 100 % |
 | C. Votos por analogía con la Dir. 22.5: se quita el 20 % de H del total porque H es filial de S | 56,25 % (45/80) | 43,75 % | 0 % | 100 % |
 
-Estas cifras se recalculan con fracciones exactas en [`verificacion/test_cifras_ciclos.py`](../verificacion/test_cifras_ciclos.py) (especificación del cálculo, §6.5).
+Estas cifras se recalculan con fracciones exactas en [`verificacion/test_cifras_ciclos.py`](https://github.com/mshodai/calculo-titularidad-real/blob/main/verificacion/test_cifras_ciclos.py) (especificación del cálculo, §6.5).
 
 **Lectura (mía):**
 - Por el umbral del 25 %, los tres métodos dan el mismo resultado: P y Q son titulares reales y R no.
