@@ -33,6 +33,12 @@ HUECO_QUE_CONTROLA = [(f"q{i}", f"Q{i}", "X", 10, 10) for i in range(1, 5)] + [(
 # X tiene el 30 % de S; el 30 % de X no está identificado, Q1 tiene el 30 %, Q2 y Q3 el 15 % y Q4
 # el 10 %. El hueco solo no controla X (sin H3) y nadie llega multiplicando (9 + 9), pero Q1 con el
 # hueco tendría el 60 % de X: POS-HUECO por control (C34). Los demás se quedan en el 45 % o menos.
+# Y tiene el 30 % de S y R el 70 %. En Y falta el 30 % y Z tiene el 40 %; en Z falta el 60 % y R tiene el
+# 40 %. Ningún hueco solo controla Y (30 %; 60 % de Z, que tiene el 40 %), pero juntos son el 30 + 24 = 54 %
+# de su capital, y dominan Y en votos (30 + 40). R es titular, así que no hay POS-HUECO.
+DOS_HUECOS = [("y", "Y", "S", 30, 30), ("r", "R", "S", 70, 70), ("z", "Z", "Y", 40, 40), ("ry", "R", "Y", 30, 30),
+              ("rz", "R", "Z", 40, 40)]
+
 SOCIO_QUE_CONTROLARIA = ([("q1", "Q1", "X", 30, 30), ("q2", "Q2", "X", 15, 15), ("q3", "Q3", "X", 15, 15),
                           ("q4", "Q4", "X", 10, 10), ("a1", "X", "S", 30, 30)])
 
@@ -331,6 +337,14 @@ def test_h3_lo_no_identificado_dominaria_una_intermedia():
     (h3,) = de(r, "H3")
     assert h3.ids == ("NO_IDENTIFICADO(X)",) and "E2" in h3.mensaje and "30,00 %" in h3.mensaje
     assert [i.ids for i in de(r, "POS-HUECO")] == [("Q1",), ("Q2",), ("Q3",), ("Q4",)]
+
+
+def test_h3_con_varios_huecos_juntos():
+    """C35: ningún hueco solo domina Y, pero todos juntos sí (30 + 40 de los votos), y Y tiene el 30 % de S."""
+    r = calcular(DOS_HUECOS)
+    assert set(titulares(r)) == {"R"} and not de(r, "H1") and not de(r, "POS-HUECO")
+    (h3,) = de(r, "H3")
+    assert h3.ids == ("NO_IDENTIFICADO(Y)", "NO_IDENTIFICADO(Z)") and "votos agregados serían el 30,00 %" in h3.mensaje
 
 
 def test_pos_hueco_por_control():

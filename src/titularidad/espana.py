@@ -27,8 +27,7 @@ from titularidad.formato import por_magnitud as _por_magnitud
 from titularidad.formato import porcentaje as _texto
 from titularidad.modelo import MAGNITUDES, EntidadJuridica, Entrada, Incidencia
 from titularidad.propagacion import (
-    NO_IDENTIFICADO,
-    OPACA,
+    TODO_LO_NO_IDENTIFICADO,
     Atribucion,
     atribuir_huecos,
     cadenas_simples,
@@ -119,13 +118,15 @@ def calcular_espana(entrada: Entrada) -> ResultadoEspana:
         posibles += _pos_hueco(grafo, ev, huecos)
     if any(i.codigo == "POS-HUECO" for i in posibles):
         avisos.append(Incidencia("H2", "Hay posibles titulares reales en los huecos de la estructura (POS-HUECO)"))
-    # H3 (C33): lo no identificado cumpliría E2, aunque lo que llega a S no alcance el umbral.
-    if ev.dominio.estable and ev.dominio.base(grafo.objetivo) > 0:
-        for v in sorted(grafo.virtuales(), key=str):
-            if v.clase in (NO_IDENTIFICADO, OPACA) and ev.dominio.proporcion(v, grafo.objetivo) > UMBRAL:
-                avisos.append(Incidencia("H3", f"«{v}» cumpliría E2: sus votos agregados son el "
-                                         f"{_texto(ev.dominio.proporcion(v, grafo.objetivo))} %. Quien esté detrás "
-                                         "de lo que no está identificado podría ser titular real", (str(v),)))
+    # H3 (C33, C35): lo no identificado cumpliría E2, aunque lo que llega a S no alcance el umbral. Todos
+    # los huecos juntos, como en H1: varios pueden ser de la misma persona.
+    if grafo.huecos() and ev.dominio.estable:
+        agregado = _e2_con_huecos(grafo, TODO_LO_NO_IDENTIFICADO)
+        if agregado is not None and agregado > UMBRAL:
+            ids = tuple(str(v) for v in grafo.huecos())
+            avisos.append(Incidencia("H3", f"Lo que no está identificado ({', '.join(ids)}) cumpliría E2 si fuera "
+                                     f"de una sola persona: sus votos agregados serían el {_texto(agregado)} %. "
+                                     "Quien esté detrás podría ser titular real", ids))
 
     posibles += _pos_t(grafo, ev, avisos)
     posibles += _pos_mezcla(grafo, ev, avisos)

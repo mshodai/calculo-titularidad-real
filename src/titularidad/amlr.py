@@ -30,8 +30,7 @@ from titularidad.control import Control, control_agregado, control_amlr, entidad
 from titularidad.formato import por_magnitud, porcentaje
 from titularidad.modelo import MAGNITUDES, EntidadJuridica, Entrada, Incidencia
 from titularidad.propagacion import (
-    NO_IDENTIFICADO,
-    OPACA,
+    TODO_LO_NO_IDENTIFICADO,
     Atribucion,
     Grafo,
     atribuir_huecos,
@@ -167,13 +166,15 @@ def calcular_amlr(entrada: Entrada) -> ResultadoAmlr:
         posibles += _pos_hueco(grafo, own, huecos, no_titulares)
     if any(i.codigo == "POS-HUECO" for i in posibles):
         avisos.append(Incidencia("H2", "Hay posibles titulares reales en los huecos de la estructura (POS-HUECO)"))
-    # H3 (C33): lo no identificado cumpliría una prueba de control, aunque lo que llega a S no alcance el umbral.
-    for v in sorted(grafo.virtuales(), key=str):
-        if v.clase in (NO_IDENTIFICADO, OPACA):
-            de_control = sorted(pruebas(grafo, own, control, v).cumplidas & {"A2", "A3", "A4"})
-            if de_control:
-                avisos.append(Incidencia("H3", f"«{v}» cumpliría {', '.join(de_control)}. Quien esté detrás de lo "
-                                         "que no está identificado podría ser titular real", (str(v),)))
+    # H3 (C33, C35): lo no identificado cumpliría una prueba de control, aunque lo que llega a S no alcance el
+    # umbral. Todos los huecos juntos, como en H1: varios pueden ser de la misma persona.
+    if grafo.huecos():
+        de_control = sorted(_pruebas_con_huecos(grafo, TODO_LO_NO_IDENTIFICADO).cumplidas & {"A2", "A3", "A4"})
+        if de_control:
+            ids = tuple(str(v) for v in grafo.huecos())
+            avisos.append(Incidencia("H3", f"Lo que no está identificado ({', '.join(ids)}) cumpliría "
+                                     f"{', '.join(de_control)} si fuera de una sola persona. Quien esté detrás "
+                                     "podría ser titular real", ids))
 
     posibles += _pos_t(grafo, no_titulares, avisos)
     posibles += _pos_agregado(grafo, own, control, no_titulares)

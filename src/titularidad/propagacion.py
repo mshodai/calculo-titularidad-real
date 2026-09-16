@@ -109,8 +109,12 @@ class Grafo:
         return sorted((v for v in self.virtuales() if v.clase in HUECOS), key=str)
 
 
+# Destinatario de `atribuir_huecos` para H3: todos los huecos juntos, como una sola persona (C35).
+TODO_LO_NO_IDENTIFICADO = Virtual("TODO_LO_NO_IDENTIFICADO", "")
+
+
 def atribuir_huecos(grafo: Grafo, destinatario) -> Grafo:
-    """El grafo con todo lo que tienen los huecos atribuido a `destinatario` (C34).
+    """El grafo con todo lo que tienen los huecos atribuido a `destinatario` (C34, C35).
 
     Cada arista de un `NO_IDENTIFICADO` o `OPACA` pasa a `destinatario` y se
     suma a la que ya tenga en la misma entidad (C3). Es la hipótesis «lo no

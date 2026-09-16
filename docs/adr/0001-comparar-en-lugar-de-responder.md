@@ -31,7 +31,7 @@ Hay tres razones.
 
 **Catorce casos que la norma no resuelve.** Cualquier respuesta única resuelve cada uno de ellos en un sentido. Algunos cambian quién es titular real en estructuras corrientes. En el ejemplo del modelo de datos, que una de las personas sea titular en el AMLR depende de cómo se lea el «salvo que» del art. 52.1. A esos catorce casos se suman cuatro que no vienen de la norma, sino del formato del dato (F1 a F4). El más visible: con porcentajes a 4 decimales, un 50 % registrado no distingue la mitad justa de la mitad más una acción en una sociedad de más de un millón de acciones.
 
-**Más de treinta decisiones propias.** La especificación del cálculo declara 34 (C1 a C34) y el modelo de datos otras 27 (D1 a D27). Cada una tiene su alternativa descartada y su motivo, y ninguna es la ley. Una salida del tipo «X es titular real» las incorpora todas sin nombrar ninguna.
+**Más de treinta decisiones propias.** La especificación del cálculo declara 35 (C1 a C35) y el modelo de datos otras 27 (D1 a D27). Cada una tiene su alternativa descartada y su motivo, y ninguna es la ley. Una salida del tipo «X es titular real» las incorpora todas sin nombrar ninguna.
 
 **Una salida que afirma más de lo que sabe sería indefendible ante quien la discuta.** Un supervisor, un auditor o la otra parte de una operación pueden leer la norma de otra forma en cualquiera de esos puntos. Si la salida declara la lectura aplicada, la discusión es sobre la lectura, que es donde tiene que estar. Si no la declara, la discusión es sobre por qué la herramienta afirmó algo que la norma no dice, y esa discusión la herramienta la pierde.
 

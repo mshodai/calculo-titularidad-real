@@ -586,7 +586,7 @@ python3 -m unittest discover -s verificacion -v
 |---|---|
 | H1 | U_m alcanza por sí solo el umbral: puede haber un titular real sin identificar |
 | H2 | Se da algún POS-HUECO |
-| H3 | Un titular virtual `NO_IDENTIFICADO` u `OPACA` cumpliría una prueba de control: A2, A3 o A4 en el AMLR, E2 en España. Quien esté detrás de lo que no está identificado podría ser titular real, aunque lo que llega a S sin identificar no alcance el umbral (H1) |
+| H3 | Todo lo que tienen los titulares virtuales `NO_IDENTIFICADO` y `OPACA`, atribuido a un mismo titular, cumpliría una prueba de control: A2, A3 o A4 en el AMLR, E2 en España (C35). Quien esté detrás de lo que no está identificado podría ser titular real, aunque lo que llega a S sin identificar no alcance el umbral (H1) |
 | CICLO-SENS | El método A cambia quién es titular real (§6.2). Cubre N7 y N12 |
 | ART54-SENS | Un titular real lo es solo por A1 y dejaría de serlo si el 54 sustituyera al 52.1 (§4.2). Solo AMLR. Cubre N3 |
 | UMBRAL-EXACTO | Leer por encima o por debajo los valores que coinciden con un umbral cambia quién es titular real (§2.6). Es un límite de los datos (modelo, D23), no de la norma |
@@ -611,7 +611,7 @@ Un «determinado» que no es estable no se presenta como un resultado cerrado. L
 
 **[C33 — decisión propia] Resultado completo.** Es un criterio aparte de la estabilidad (C32). Un resultado es inestable si otra lectura lo cambiaría. Es incompleto si lo cambiarían datos que faltan. Puede ser las dos cosas. La salida indica, para cada régimen, si el resultado es completo. No lo es si lleva alguno de estos avisos:
 - **H1:** lo que llega a S sin identificar alcanza por sí solo el umbral, así que puede haber un titular real desconocido;
-- **H3:** lo que no está identificado cumpliría una prueba de control, con el mismo resultado;
+- **H3:** lo que no está identificado, todo junto, cumpliría una prueba de control, con el mismo resultado (C35);
 - **H2 y POS-HUECO:** una persona conocida sería titular si participara en lo que no está identificado, por cualquiera de las pruebas del régimen (C34). Son el mismo caso: H2 solo dice que hay algún POS-HUECO.
 
 Lo que llega por cotizadas (COTIZADA) no cuenta: el RD 9.4 dispensa de identificarlo (C5).
@@ -796,6 +796,7 @@ Si la exención se aplicara también a la filial intermedia, los socios de X no 
 | C32 | Un resultado no es estable si lleva un aviso de lectura alternativa que cambiaría el resultado, o de una comprobación que no se ha podido hacer | §9 | Tratar todo «determinado» como un resultado cerrado | Un resultado que cambiaría con el valor justo al otro lado del umbral, o con otra lectura calculable, no es un resultado cerrado |
 | C33 | Un resultado no es completo si lleva H1, H2, H3 o POS-HUECO. Es un criterio aparte de la estabilidad, y H3 es un aviso nuevo | §9 | (a) Contarlo como inestabilidad. (b) Solo H1 | (a) Faltar datos no es tener otra lectura: la salida debe decir cuál de las dos cosas pasa. (b) H1 solo mira la participación; lo no identificado también puede controlar una entidad intermedia sin que lo que llega a S alcance el umbral |
 | C34 | POS-HUECO aplica todas las pruebas del régimen (A1 a A4, E1 y E2), con todo lo no identificado atribuido a P a la vez | §9 | (a) Solo la participación: own_m(P, S) + U_m. (b) Un aviso aparte para el control. (c) Atribuir cada hueco por separado | (a) Deja fuera a quien controlaría una entidad de la cadena con el hueco, aunque lo que llega a S no alcance el umbral (caso 12). (b) La pregunta es la misma, si P sería titular real con lo que falta, como en POS-FORMAL, que también recalcula todas las pruebas. (c) Con todos a la vez basta: las participaciones y el control de P solo crecen al añadirle aristas, así que si P cumple una prueba con parte de los huecos, también con todos |
+| C35 | H3 evalúa todos los huecos juntos, como si fueran de una sola persona | §9 | Cada hueco por separado (versión anterior) | Varios huecos pueden ser de la misma persona, y juntos controlar una entidad que ninguno controla solo: el 30 % sin identificar de Y y el 60 % sin identificar de Z, que tiene el 40 % de Y, son el 54 % de Y. Es lo que ya hace H1, que suma lo que llega a S desde todos los huecos |
 
 ## 12. Casos que la norma no resuelve
 
