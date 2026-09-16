@@ -2,6 +2,8 @@
 
 Cuando una sociedad pertenece a otras sociedades, saber quién es su titular real (la persona física que en último término la posee o la controla) exige recorrer la cadena de participaciones, y la respuesta depende del régimen con el que se calcule.
 
+Artículo: [Lo que llega y lo que manda](https://mshodai.github.io/calculo-titularidad-real/), sobre cuándo importa que parte del accionariado de una sociedad intermedia no esté identificado.
+
 Un ejemplo. La sociedad S tiene dos socios: la persona R, con el 40 %, y la sociedad C, con el 60 %. C tiene a su vez dos socios: P, con el 30 %, y Q, con el 70 %. ¿Quién es titular real de S? Según la Ley 10/2010, Q y R. Según el Reglamento (UE) 2024/1624, el AMLR, que será aplicable desde el 10 de julio de 2027, también P: C controla S, y el AMLR cuenta como titular a quien tiene el 25 % de quien controla la sociedad. La Ley española no tiene esa regla.
 
 Esta herramienta calcula los dos regímenes sobre la misma estructura, los compara y dice de qué lectura de la norma depende cada resultado. No da una respuesta cerrada: el porqué está en el [ADR 0001](docs/adr/0001-comparar-en-lugar-de-responder.md).
