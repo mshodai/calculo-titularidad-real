@@ -176,6 +176,10 @@ Los documentos se descargaron el 15 de septiembre de 2026. Las URL y las huellas
 — Comprueba la integridad de una cadena de registros de facturación de
 Verifactu: la huella de cada registro y el encadenamiento entre ellos.
 
+[plazos-conservacion-pbc](https://github.com/mshodai/plazos-conservacion-pbc)
+— Calcula el estado de conservación de la documentación de prevención del
+blanqueo, bajo la Ley 10/2010 y bajo el AMLR.
+
 ## Licencia
 
 MIT; el texto completo está en [LICENSE](LICENSE). Cubre el código y la documentación de este repositorio, no los textos legales de `docs/fuentes/`, que no se incluyen.
