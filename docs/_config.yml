@@ -1,1 +1,4 @@
 title: Cálculo de la titularidad real
+
+plugins:
+  - jekyll-sitemap
