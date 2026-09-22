@@ -167,4 +167,6 @@ Los dos últimos son límites de lo que la herramienta puede saber, y la especif
 
 El código, la especificación y el corpus están en [github.com/mshodai/calculo-titularidad-real](https://github.com/mshodai/calculo-titularidad-real).
 
+Otro artículo del proyecto: [La norma cambia debajo](cuando-la-norma-cambia-debajo.md), sobre qué le pasa a una implementación de referencia cuando cambia la norma que cita.
+
 Este artículo es un análisis de la arquitectura de una herramienta de cálculo, no asesoramiento jurídico.
