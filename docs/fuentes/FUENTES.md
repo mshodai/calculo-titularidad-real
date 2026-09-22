@@ -34,3 +34,44 @@ b90da32c6756b9d856bc2dd3073ae2c81ff58434c334b44dcba4af683fb8e147  BOE-A-1885-662
 889d4357af67e6e2925b43dbaa0326660a0af9a9cf94046822df0e24625c6681  CELEX_02013L0034-20240528_ES_TXT.pdf
 666f18e1b5d4dd6bb7e927328bd8d84420d0919e692288f0b917c357df690974  OJ_L_202401624_ES_TXT.pdf
 ```
+
+## Datos para la vigilancia automática
+
+Repite en formato legible por máquina el fichero, la URL de descarga y la huella SHA-256 de cada documento de las secciones anteriores. Lo lee el script de `vigilancia-fuentes`, que comprueba que coincida con el texto. Si difieren, prevalece el texto.
+
+```json
+{
+  "documentos": [
+    {
+      "fichero": "BOE-A-2010-6737-consolidado.pdf",
+      "url": "https://www.boe.es/buscar/pdf/2010/BOE-A-2010-6737-consolidado.pdf",
+      "sha256": "4782a40bcf44165a97bc361520fd2b348acf7efbdfaa0a8d876c58332ff8601d"
+    },
+    {
+      "fichero": "BOE-A-2014-4742-consolidado.pdf",
+      "url": "https://www.boe.es/buscar/pdf/2014/BOE-A-2014-4742-consolidado.pdf",
+      "sha256": "59d7be80313780a8cf48e1f3f87b5bd2860855a126472c0374e1c30c7fc19f0d"
+    },
+    {
+      "fichero": "BOE-A-2023-16159-consolidado.pdf",
+      "url": "https://www.boe.es/buscar/pdf/2023/BOE-A-2023-16159-consolidado.pdf",
+      "sha256": "b86ea6b9092d17a6ca21b6fa7b3ecff100a22650cf3bdc5ae88e6e029e8e9e6a"
+    },
+    {
+      "fichero": "BOE-A-1885-6627-consolidado.pdf",
+      "url": "https://www.boe.es/buscar/pdf/1885/BOE-A-1885-6627-consolidado.pdf",
+      "sha256": "b90da32c6756b9d856bc2dd3073ae2c81ff58434c334b44dcba4af683fb8e147"
+    },
+    {
+      "fichero": "CELEX_02013L0034-20240528_ES_TXT.pdf",
+      "url": "https://eur-lex.europa.eu/legal-content/ES/TXT/PDF/?uri=CELEX:02013L0034-20240528",
+      "sha256": "889d4357af67e6e2925b43dbaa0326660a0af9a9cf94046822df0e24625c6681"
+    },
+    {
+      "fichero": "OJ_L_202401624_ES_TXT.pdf",
+      "url": "https://eur-lex.europa.eu/legal-content/ES/TXT/PDF/?uri=OJ:L_202401624",
+      "sha256": "666f18e1b5d4dd6bb7e927328bd8d84420d0919e692288f0b917c357df690974"
+    }
+  ]
+}
+```
