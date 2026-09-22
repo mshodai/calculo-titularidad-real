@@ -73,6 +73,6 @@ Donde uno de estos hechos puede cambiar el resultado, la salida lo dice: con un 
 - Ley 10/2010, de 28 de abril, de prevención del blanqueo de capitales y de la financiación del terrorismo, arts. 4.1, 4.2.b, 4.2.b bis y 4.4 (texto consolidado, última modificación de 21 de marzo de 2026): <https://www.boe.es/buscar/act.php?id=BOE-A-2010-6737>
 - Real Decreto 304/2014, de 5 de mayo, Reglamento de la Ley 10/2010, arts. 8 y 9: <https://www.boe.es/buscar/act.php?id=BOE-A-2014-4742>
 - Código de Comercio, art. 42: <https://www.boe.es/buscar/act.php?id=BOE-A-1885-6627>
-- Directiva 2013/34/UE, art. 22: <https://eur-lex.europa.eu/legal-content/ES/TXT/PDF/?uri=CELEX:02013L0034-20240528>
+- Directiva 2013/34/UE, art. 22 (versión consolidada de 18 de marzo de 2026; el art. 22 no cambió respecto de la de 28 de mayo de 2024): <https://eur-lex.europa.eu/legal-content/ES/TXT/PDF/?uri=CELEX:02013L0034-20260318>
 - Reglamento (UE) 2024/1624 (AMLR), considerandos 104 y 125, arts. 20.1.b, 22.2, 51 a 54 y 90: <http://data.europa.eu/eli/reg/2024/1624/oj>
 - Versiones y huellas de los documentos usados: [fuentes/FUENTES.md](../fuentes/FUENTES.md)

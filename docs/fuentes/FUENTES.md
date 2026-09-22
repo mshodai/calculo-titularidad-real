@@ -7,7 +7,7 @@ Documentos oficiales que usa el proyecto. Los PDF no se redistribuyen (están en
 - **Autor.** Órgano emisor, tal como figura en la cabecera del documento. Entre paréntesis, el editor del PDF según sus metadatos.
 - **Versión o fecha declarada.** Copiada literalmente del documento.
 - **Fecha de descarga.** Es la fecha de creación del fichero en disco. Los metadatos de origen de macOS (`kMDItemWhereFroms`) confirman que se descargaron de `boe.es` o de `eur-lex.europa.eu`, pero no guardan la URL completa.
-- **URL.** Es la dirección canónica deducida del identificador de cada documento. Todas se comprobaron por descarga el 22/09/2026: cada una devolvió un fichero idéntico al local (mismo SHA-256), también las dos de EUR-Lex.
+- **URL.** Es la dirección canónica deducida del identificador de cada documento. Todas se comprobaron por descarga el 22/09/2026: cada una devolvió un fichero idéntico al local (mismo SHA-256), también las dos de EUR-Lex. La Directiva 2013/34/UE se descargó ese día de su URL, al pasar a la versión consolidada de 18 de marzo de 2026.
   - EUR-Lex rechaza a veces las descargas automáticas: responde `202` con un cuerpo vacío. Por eso, en la primera comprobación, el 2026-09-15, sus dos URL no se pudieron comprobar (las cuatro del BOE sí), y el 22/09/2026 hicieron falta varios intentos.
 
 ## Documentos
@@ -18,8 +18,21 @@ Documentos oficiales que usa el proyecto. Los PDF no se redistribuyen (están en
 | `BOE-A-2014-4742-consolidado.pdf` | Real Decreto 304/2014, de 5 de mayo, por el que se aprueba el Reglamento de la Ley 10/2010, de 28 de abril, de prevención del blanqueo de capitales y de la financiación del terrorismo | Ministerio de Economía y Competitividad (Agencia Estatal Boletín Oficial del Estado) | Texto consolidado. «Última modificación: 24 de abril de 2024». Original: «BOE» núm. 110, de 06 de mayo de 2014 | 2026-09-15 | https://www.boe.es/buscar/pdf/2014/BOE-A-2014-4742-consolidado.pdf · ficha: https://www.boe.es/buscar/act.php?id=BOE-A-2014-4742 |
 | `BOE-A-2023-16159-consolidado.pdf` | Real Decreto 609/2023, de 11 de julio, por el que se crea el Registro Central de Titularidades Reales y se aprueba su Reglamento | Ministerio de la Presidencia, Relaciones con las Cortes y Memoria Democrática (Agencia Estatal Boletín Oficial del Estado) | Texto consolidado. «Última modificación: sin modificaciones». Original: «BOE» núm. 165, de 12 de julio de 2023 | 2026-09-15 | https://www.boe.es/buscar/pdf/2023/BOE-A-2023-16159-consolidado.pdf · ficha: https://www.boe.es/buscar/act.php?id=BOE-A-2023-16159 |
 | `BOE-A-1885-6627-consolidado.pdf` | Real Decreto de 22 de agosto de 1885 por el que se publica el Código de Comercio | Ministerio de Gracia y Justicia (Agencia Estatal Boletín Oficial del Estado) | Texto consolidado. «Última modificación: 09 de mayo de 2023». Original: «Gaceta de Madrid» núm. 289, de 16 de octubre de 1885 | 2026-09-15 | https://www.boe.es/buscar/pdf/1885/BOE-A-1885-6627-consolidado.pdf · ficha: https://www.boe.es/buscar/act.php?id=BOE-A-1885-6627 |
-| `CELEX_02013L0034-20240528_ES_TXT.pdf` | Directiva 2013/34/UE del Parlamento Europeo y del Consejo, de 26 de junio de 2013, sobre los estados financieros anuales, los estados financieros consolidados y otros informes afines de ciertos tipos de empresas | Parlamento Europeo y Consejo (Oficina de Publicaciones de la UE) | Versión consolidada «02013L0034 — ES — 28.05.2024 — 006.003». Última modificación incorporada: M7, Directiva (UE) 2024/1306. Original: DO L 182 de 29.6.2013, p. 19. El propio documento advierte que «no surte efecto jurídico» | 2026-09-15 | https://eur-lex.europa.eu/legal-content/ES/TXT/PDF/?uri=CELEX:02013L0034-20240528 (comprobado el 22/09/2026 por descarga) |
+| `CELEX_02013L0034-20260318_ES_TXT.pdf` | Directiva 2013/34/UE del Parlamento Europeo y del Consejo, de 26 de junio de 2013, sobre los estados financieros anuales, los estados financieros consolidados y otros informes afines de ciertos tipos de empresas | Parlamento Europeo y Consejo (Oficina de Publicaciones de la UE) | Versión consolidada «02013L0034 — ES — 18.03.2026 — 007.001». Última modificación incorporada: M8, Directiva (UE) 2026/470, DO L 470 de 26.2.2026. Original: DO L 182 de 29.6.2013, p. 19. El propio documento advierte que «no surte efecto jurídico». Ver la nota siguiente | 2026-09-22 | https://eur-lex.europa.eu/legal-content/ES/TXT/PDF/?uri=CELEX:02013L0034-20260318 |
 | `OJ_L_202401624_ES_TXT.pdf` | Reglamento (UE) 2024/1624 del Parlamento Europeo y del Consejo, de 31 de mayo de 2024, relativo a la prevención de la utilización del sistema financiero para el blanqueo de capitales o la financiación del terrorismo (AMLR) | Parlamento Europeo y Consejo (Oficina de Publicaciones de la UE) | Texto publicado, no consolidado: «DO L de 19.6.2024». No declara fecha de modificación. Art. 90: aplicable a partir del 10 de julio de 2027 | 2026-09-15 | https://eur-lex.europa.eu/legal-content/ES/TXT/PDF/?uri=OJ:L_202401624 (comprobado el 22/09/2026 por descarga) · ELI impreso en el documento: http://data.europa.eu/eli/reg/2024/1624/oj |
+
+### Nota sobre la versión de la Directiva 2013/34/UE
+
+Hasta el 22/09/2026 el proyecto citaba la versión consolidada de 28 de mayo de 2024 («02013L0034 — ES — 28.05.2024 — 006.003», `CELEX_02013L0034-20240528_ES_TXT.pdf`, SHA-256 `889d4357af67e6e2925b43dbaa0326660a0af9a9cf94046822df0e24625c6681`). La de 18 de marzo de 2026 solo añade una modificación: **M8, Directiva (UE) 2026/470**, de 24 de febrero de 2026.
+
+**Los apartados 22.1 a 22.5, que son los que cita el proyecto, no cambiaron.** Se comparó el texto de los dos consolidados, párrafo a párrafo, y el artículo 22 es idéntico en sus nueve apartados, incluida la marca de la rectificación C5. Tampoco cambió el artículo 24, cuyo apartado 3.a cita el modelo de datos. Las citas literales de la documentación siguen siendo exactas.
+
+**Qué introdujo la modificación M8.** Afecta a la información sobre sostenibilidad y no a los estados financieros consolidados ni al cálculo de derechos de voto:
+
+- La obligación de informar sobre sostenibilidad pasa a aplicarse solo a empresas, o a grupos de forma consolidada, con un volumen de negocios neto superior a 450 000 000 EUR y más de 1 000 empleados de media (arts. 1, 19 bis y 29 bis).
+- Limita la información que puede pedirse a las empresas de la cadena de valor que no superan esos tamaños («empresa protegida», arts. 19 bis, 29 bis y 34.2 bis).
+- Sube los umbrales de las filiales y sucursales de empresas de terceros países (art. 40 bis).
+- Extiende la revisión por inflación a los nuevos umbrales (art. 3.13) y ajusta la responsabilidad de los órganos de administración (art. 33), la verificación (art. 34) y los actos delegados (arts. 48 bis y 49).
 
 ## Huellas SHA-256 de los ficheros usados
 
@@ -30,7 +43,7 @@ Sirven para comprobar que una copia local es la misma versión con la que se hiz
 59d7be80313780a8cf48e1f3f87b5bd2860855a126472c0374e1c30c7fc19f0d  BOE-A-2014-4742-consolidado.pdf
 b86ea6b9092d17a6ca21b6fa7b3ecff100a22650cf3bdc5ae88e6e029e8e9e6a  BOE-A-2023-16159-consolidado.pdf
 b90da32c6756b9d856bc2dd3073ae2c81ff58434c334b44dcba4af683fb8e147  BOE-A-1885-6627-consolidado.pdf
-889d4357af67e6e2925b43dbaa0326660a0af9a9cf94046822df0e24625c6681  CELEX_02013L0034-20240528_ES_TXT.pdf
+5bb76823ce13feda33094e37cd1d40e9fbb5b0c0007d033a8d0ff9aba3308293  CELEX_02013L0034-20260318_ES_TXT.pdf
 666f18e1b5d4dd6bb7e927328bd8d84420d0919e692288f0b917c357df690974  OJ_L_202401624_ES_TXT.pdf
 ```
 
@@ -62,9 +75,9 @@ Repite en formato legible por máquina el fichero, la URL de descarga y la huell
       "sha256": "b90da32c6756b9d856bc2dd3073ae2c81ff58434c334b44dcba4af683fb8e147"
     },
     {
-      "fichero": "CELEX_02013L0034-20240528_ES_TXT.pdf",
-      "url": "https://eur-lex.europa.eu/legal-content/ES/TXT/PDF/?uri=CELEX:02013L0034-20240528",
-      "sha256": "889d4357af67e6e2925b43dbaa0326660a0af9a9cf94046822df0e24625c6681"
+      "fichero": "CELEX_02013L0034-20260318_ES_TXT.pdf",
+      "url": "https://eur-lex.europa.eu/legal-content/ES/TXT/PDF/?uri=CELEX:02013L0034-20260318",
+      "sha256": "5bb76823ce13feda33094e37cd1d40e9fbb5b0c0007d033a8d0ff9aba3308293"
     },
     {
       "fichero": "OJ_L_202401624_ES_TXT.pdf",

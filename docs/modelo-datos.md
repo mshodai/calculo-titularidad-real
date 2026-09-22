@@ -19,7 +19,7 @@ Este documento define el JSON con el que se describe una estructura de propiedad
 | RD 304/2014 (BOE-A-2014-4742, consolidado) | «Última modificación: 24 de abril de 2024» |
 | RD 609/2023 (BOE-A-2023-16159, consolidado) | «Última modificación: sin modificaciones» |
 | Código de Comercio (BOE-A-1885-6627, consolidado) | «Última modificación: 09 de mayo de 2023» |
-| Directiva 2013/34/UE (CELEX 02013L0034, consolidado) | «02013L0034 — ES — 28.05.2024 — 006.003» |
+| Directiva 2013/34/UE (CELEX 02013L0034, consolidado) | «02013L0034 — ES — 18.03.2026 — 007.001». Los apartados 22.1 a 22.5 no cambiaron respecto de la versión «28.05.2024 — 006.003» (ver [FUENTES.md](fuentes/FUENTES.md)) |
 | Reglamento (UE) 2024/1624, AMLR (DO L de 19.6.2024) | Sin consolidar. Art. 90: «Será aplicable a partir del 10 de julio de 2027» |
 
 ---

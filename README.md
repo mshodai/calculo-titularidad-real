@@ -163,12 +163,16 @@ Los catorce casos, y cuatro más que vienen del formato del dato y no de la norm
 | Real Decreto 304/2014, de 5 de mayo, Reglamento de la Ley 10/2010 | Texto consolidado, última modificación de 24 de abril de 2024 |
 | Real Decreto 609/2023, de 11 de julio, Registro Central de Titularidades Reales | Texto consolidado, sin modificaciones |
 | Código de Comercio (Real Decreto de 22 de agosto de 1885) | Texto consolidado, última modificación de 9 de mayo de 2023 |
-| Directiva 2013/34/UE, de 26 de junio de 2013 | Versión consolidada de 28 de mayo de 2024 |
+| Directiva 2013/34/UE, de 26 de junio de 2013 | Versión consolidada de 18 de marzo de 2026 |
 | Reglamento (UE) 2024/1624 (AMLR), de 31 de mayo de 2024 | Texto publicado en el DO L de 19 de junio de 2024, sin consolidar |
 
 **Calendario.** Hoy se aplica el régimen español. El AMLR «será aplicable a partir del 10 de julio de 2027» (art. 90). La herramienta lo calcula también con fechas anteriores, porque la comparación lo necesita, y avisa de que todavía no es aplicable.
 
-Los documentos se descargaron el 15 de septiembre de 2026. Las URL y las huellas SHA-256 de cada versión están en [docs/fuentes/FUENTES.md](docs/fuentes/FUENTES.md). Los PDF no se redistribuyen.
+Los documentos se descargaron el 15 de septiembre de 2026, salvo la Directiva 2013/34/UE, que se descargó el 22 de septiembre de 2026.
+
+**Directiva 2013/34/UE.** La versión de 18 de marzo de 2026 sustituye a la de 28 de mayo de 2024. Incorpora la Directiva (UE) 2026/470, que cambia la información sobre sostenibilidad. Los apartados 22.1 a 22.5, que son los que cita el proyecto, no cambiaron. El detalle está en [docs/fuentes/FUENTES.md](docs/fuentes/FUENTES.md).
+
+Las URL y las huellas SHA-256 de cada versión están en [docs/fuentes/FUENTES.md](docs/fuentes/FUENTES.md). Los PDF no se redistribuyen.
 
 ## Otras implementaciones de referencia
 
