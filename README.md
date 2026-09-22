@@ -184,6 +184,10 @@ blanqueo, bajo la Ley 10/2010 y bajo el AMLR.
 — Calcula la fecha de la próxima revisión obligatoria de la información de un
 cliente, bajo la Ley 10/2010 y bajo el AMLR.
 
+[registro-examen-especial-pbc](https://github.com/mshodai/registro-examen-especial-pbc)
+— Comprueba si el registro de un examen especial en el que pudo intervenir un
+sistema de IA está completo, bajo la Ley 10/2010 y bajo el AMLR.
+
 ## Licencia
 
 MIT; el texto completo está en [LICENSE](LICENSE). Cubre el código y la documentación de este repositorio, no los textos legales de `docs/fuentes/`, que no se incluyen.
