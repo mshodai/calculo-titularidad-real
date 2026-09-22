@@ -7,9 +7,8 @@ Documentos oficiales que usa el proyecto. Los PDF no se redistribuyen (están en
 - **Autor.** Órgano emisor, tal como figura en la cabecera del documento. Entre paréntesis, el editor del PDF según sus metadatos.
 - **Versión o fecha declarada.** Copiada literalmente del documento.
 - **Fecha de descarga.** Es la fecha de creación del fichero en disco. Los metadatos de origen de macOS (`kMDItemWhereFroms`) confirman que se descargaron de `boe.es` o de `eur-lex.europa.eu`, pero no guardan la URL completa.
-- **URL.** Es la dirección canónica deducida del identificador de cada documento. Se comprobó el 2026-09-15:
-  - las cuatro del BOE devuelven un fichero idéntico al local (mismo SHA-256);
-  - EUR-Lex respondió a la descarga automática con `202` y un cuerpo vacío, por lo que sus dos URL **no se han podido comprobar**.
+- **URL.** Es la dirección canónica deducida del identificador de cada documento. Todas se comprobaron por descarga el 22/09/2026: cada una devolvió un fichero idéntico al local (mismo SHA-256), también las dos de EUR-Lex.
+  - EUR-Lex rechaza a veces las descargas automáticas: responde `202` con un cuerpo vacío. Por eso, en la primera comprobación, el 2026-09-15, sus dos URL no se pudieron comprobar (las cuatro del BOE sí), y el 22/09/2026 hicieron falta varios intentos.
 
 ## Documentos
 
